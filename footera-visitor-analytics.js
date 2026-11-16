@@ -1,4 +1,5 @@
 /* Footera V21.133 – optional first-party visitor analytics. No tracking before consent.
+   V21.408: the same consent also covers anonymous error reports (footera-error-report.js).
    A browser (not a person) is represented by a local random UUID. No IP or URL is sent. */
 (()=>{
  "use strict";
@@ -106,7 +107,7 @@
    headline.textContent="Footera · Besucherstatistik";
    headline.style.cssText="display:block;font-size:15px;margin-bottom:7px;color:#ffb8d2";
    const details=document.createElement("p");
-   details.textContent="Möchtest du uns helfen, Besuche und Instagram-Reichweite zu zählen? Wir verwenden dazu nur eine zufällige Browser-ID, keine IP-Adresse und keine vollständige Besuchs-URL. Freiwillig und jederzeit widerrufbar.";
+   details.textContent="Hilfst du uns, Besuche zu zählen und Fehler schneller zu finden? Nur eine zufällige Browser-ID, keine IP-Adresse, keine Besuchs-URL. Fehlerberichte nur mit Version, Bildschirm und Fehlertext. Freiwillig, jederzeit widerrufbar.";
    details.style.cssText="margin:0 0 12px;color:#e9c9d5";
    const actions=document.createElement("div");
    actions.style.cssText="display:flex;gap:9px;flex-wrap:wrap";

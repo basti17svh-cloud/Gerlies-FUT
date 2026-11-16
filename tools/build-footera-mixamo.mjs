@@ -49,10 +49,38 @@ const CLIPS={
  // Turned (yaw, degrees) so it starts in the lying pose the trip ends in.
  stand_up:{file:'standing up.fbx',side:0,yaw:-80,keys:{lying:.2,up:1.6}},
 };
+// V21.433 everyday gait set (--gait): Mixamo "Locomotion Pack" plus single
+// motions Basti downloaded (No Character, 30 fps, In Place). leftForward
+// 'auto' = the loop fraction where the left foot is furthest ahead.
+const GAIT_CLIPS={
+ walk:{file:'walking.fbx',side:0,loop:true,keys:{leftForward:'auto'}},
+ run:{file:'Running.fbx',side:0,loop:true,keys:{leftForward:'auto'}},
+ sprint:{file:'Fast_Run.fbx',side:0,loop:true,keys:{leftForward:'auto'}},
+ idle_breath:{file:'Breathing_Idle.fbx',side:0,end:6,keys:{}},
+ idle_stand:{file:'Standing_Idle.fbx',side:0,end:6,keys:{}},
+ look_around:{file:'Look_Around.fbx',side:0,keys:{}},
+};
+// V21.434 goal celebrations (--celebrate): single Mixamo motions Basti
+// downloaded (No Character, 30 fps). end trims long captures to the part
+// a goal celebration uses.
+const CELEBRATE_CLIPS={
+ fist_pump:{file:'Fist_Pump.fbx',side:0,keys:{}},
+ cheering:{file:'Cheering.fbx',side:0,keys:{}},
+ excited:{file:'Excited.fbx',side:0,keys:{}},
+ rallying:{file:'Rallying.fbx',side:0,keys:{}},
+ waving:{file:'Waving.fbx',side:0,keys:{}},
+ samba:{file:'Samba_Dancing.fbx',side:0,end:6,keys:{}},
+ hip_hop:{file:'Hip_Hop_Dancing.fbx',side:0,end:6,keys:{}},
+ // V21.439 final whistle: a winner's fist-pump idle (Victory Idle).
+ victory:{file:'Victory_Idle.fbx',side:0,end:6,keys:{}},
+};
 const RATE=30;
-const dir=process.argv[2];
-const OUT=path.join(path.dirname(new URL(import.meta.url).pathname),'..','3d-mocap-mixamo-data.mjs');
-if(!dir)throw new Error('usage: build-footera-mixamo.mjs <folder with .fbx>');
+const gait=process.argv.includes('--gait'),celebrate=process.argv.includes('--celebrate'),dir=process.argv.slice(2).find(a=>!a.startsWith('--'));
+const MODE=gait?{clips:GAIT_CLIPS,file:'3d-mocap-mixamo-gait-data.mjs',name:'FOOTERA_MIXAMO_GAIT',what:'everyday gait from Adobe Mixamo (Locomotion Pack and single motions, free for'}
+ :celebrate?{clips:CELEBRATE_CLIPS,file:'3d-mocap-mixamo-celebrate-data.mjs',name:'FOOTERA_MIXAMO_CELEBRATE',what:'goal celebrations from Adobe Mixamo (single motions, free for'}
+ :{clips:CLIPS,file:'3d-mocap-mixamo-data.mjs',name:'FOOTERA_MIXAMO',what:'football motions from Adobe Mixamo (Soccer Game Pack, free for'};
+const OUT=path.join(path.dirname(new URL(import.meta.url).pathname),'..',MODE.file);
+if(!dir)throw new Error('usage: build-footera-mixamo.mjs [--gait|--celebrate] <folder with .fbx>');
 
 function load(file){
  const buf=fs.readFileSync(file);
@@ -70,7 +98,7 @@ const pack=rows=>{
  return Buffer.from(out.buffer).toString('base64');
 };
 let restDirs=null;const clips={};
-for(const [name,spec] of Object.entries(CLIPS)){
+for(const [name,spec] of Object.entries(MODE.clips)){
  const c=load(path.join(dir,spec.file));
  if(!restDirs)restDirs=MAP.map(([,j,child])=>c.rest.get(child).p.clone().sub(c.rest.get(j).p).normalize().toArray().map(v=>Math.round(v*1e4)/1e4));
  // end: keep only the first seconds of a long capture (e.g. the trap, not the turn after it).
@@ -82,11 +110,20 @@ for(const [name,spec] of Object.entries(CLIPS)){
   for(const [,j] of MAP)rows.push(turn.clone().multiply(c.B.get(j).getWorldQuaternion(new THREE.Quaternion()).multiply(inv.get(j))).normalize());
   hips.push(Math.round(c.B.get('Hips').getWorldPosition(new THREE.Vector3()).y)/100);
  }
- clips[name]={frames,rate:RATE,side:spec.side,loop:!!spec.loop,keys:spec.keys,source:'Mixamo '+spec.file.replace(/\.fbx$/,''),hipY:hips.map(v=>Math.round(v*100)/100),bytes:pack(rows)};
+ const keys={...spec.keys};
+ if(keys.leftForward==='auto'){
+  let best=-Infinity;
+  for(let f=0;f<frames-1;f++){
+   c.set(f/RATE);
+   const z=c.B.get('LeftFoot').getWorldPosition(new THREE.Vector3()).z-c.B.get('RightFoot').getWorldPosition(new THREE.Vector3()).z;
+   if(z>best){best=z;keys.leftForward=Math.round(f/(frames-1)*1000)/1000}
+  }
+ }
+ clips[name]={frames,rate:RATE,side:spec.side,loop:!!spec.loop,keys,source:'Mixamo '+spec.file.replace(/\.fbx$/,''),hipY:hips.map(v=>Math.round(v*100)/100),bytes:pack(rows)};
 }
 const body={bones:MAP.map(m=>m[0]),restDirs,clips};
-fs.writeFileSync(OUT,'/* Footera: football motions from Adobe Mixamo (Soccer Game Pack, free for\n'+
+fs.writeFileSync(OUT,'/* Footera: '+MODE.what+'\n'+
  ' * use in games), baked by tools/build-footera-mixamo.mjs. World rotation away\n'+
  ' * from the T-pose per bone, capture facing +Z, 30 fps. Do not edit. */\n'+
- 'export const FOOTERA_MIXAMO='+JSON.stringify(body)+';\n');
+ 'export const '+MODE.name+'='+JSON.stringify(body)+';\n');
 console.log('wrote',OUT,fs.statSync(OUT).size,'bytes',Object.keys(clips).join(','));

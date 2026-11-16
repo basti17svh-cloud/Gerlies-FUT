@@ -10,8 +10,8 @@
  * overshoot, forearms trail the upper arms, elbows never lock straight and
  * the whole body keeps breathing, swaying and shifting its weight.
  */
-export const CELEBRATION_VERSION='21.226-ceremony-poses';
-export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms']);
+export const CELEBRATION_VERSION='21.439-celebration-spots';
+export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms','rally','dance']);
 // Celebrations only a star performs, never picked at random.
 export const STAR_CELEBRATIONS=Object.freeze(['zen','cold','samba','mask']);
 // Trademark celebrations of real stars, matched on the whole card name so a
@@ -41,9 +41,64 @@ const FOREARM_LAG=.11;
 const NATURAL=(()=>{try{return globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){return true}})();
 // [seconds into the celebration when the arms leave the run, blend seconds]
 const GESTURE={airplane:[0,.5],jump_spin:[.85,.35],knee_slide:[.4,.35],badge:[1.1,.45],arms_crossed:[1,.4],
- open_arms:[.95,.45],zen:[1,.5],cold:[.95,.4],samba:[.9,.4],mask:[1.2,.4],fist_pump:[.9,.4]};
+ open_arms:[.95,.45],zen:[1,.5],cold:[.95,.4],samba:[.9,.4],mask:[1.2,.4],fist_pump:[.9,.4],rally:[.8,.4],dance:[1,.4]};
 // Two incommensurate waves: alive, but never a metronome.
 const drift=(s,f,phase=0)=>.6*Math.sin(s*f+phase)+.4*Math.sin(s*f*1.618+phase*2.3);
+
+// V21.434 (Basti: "affig, wenn sich 3 Leute so komisch in den Arm liegen"):
+// like a real match, the scorer has his own moment first, teammates arrive
+// one after another for a short contact (a jump into his arms, a high five,
+// a pat on the head), clap, and after a few seconds the whole group jogs back
+// together. Seconds into the celebration when the scorer's own gesture ends.
+const HOLD={airplane:2.6,jump_spin:2.0,knee_slide:2.3,badge:2.2,fist_pump:2.0,arms_crossed:2.3,open_arms:2.2,
+ zen:2.5,cold:2.3,samba:2.8,mask:2.4,rally:2.4,dance:2.6};
+export function celebrationHold(kind){return HOLD[kind]??2.2}
+// V21.434: real captured motion (Mixamo clips Basti downloaded, baked into
+// 3d-mocap-mixamo-celebrate-data.mjs) for the gestures a capture does better:
+// [clip, celebration second it starts, celebration second the feet join in].
+// Before that the scorer is still running, so only the upper body follows.
+const CAPTURE={fist_pump:['fist_pump',.9,1.45],open_arms:['cheering',.95,1.7],rally:['rallying',.8,1.5],
+ dance:['hip_hop',1,1.3],samba:['samba',.9,1.25]};
+// Fallback shapes for the captured kinds when the capture is not loaded.
+const FALLBACK={rally:'open_arms',dance:'samba'};
+// After the contact a teammate claps, or celebrates his own way (captured).
+const MATE_AFTER=['applause','excited','cheering','waving'];
+// V21.439 final whistle: captured clips played from their first frame (pose
+// kind -> clip). Without the capture they fall back to clapping.
+const DIRECT={excited:'excited',cheering:'cheering',waving:'waving',victory:'victory',rallying:'rallying',pump:'fist_pump'};
+// How the scorer's own pose hands back to walking (1 = full celebration).
+export function celebrationRelease(kind,s){return 1-smooth((s-celebrationHold(kind))/.7)}
+// Metres walked back towards the halfway line after the hold (1.2 m/s, eased in).
+export function celebrationWalkBack(kind,s){
+ const t=Math.max(0,s-celebrationHold(kind)-.25),ramp=.8;
+ return 1.2*(t<ramp?t*t/(2*ramp):t-ramp/2);
+}
+export const MATE_ACTIONS=Object.freeze(['jump_hug','high_five','head_pat']);
+// What one arriving teammate does, fixed per goal and slot; never two of the same.
+export function mateAction(key='',slot=0){
+ let h=2166136261;for(const c of String(key))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
+ return MATE_ACTIONS[(h+slot)%MATE_ACTIONS.length];
+}
+// The arriving teammate's poses, s seconds after he reaches the scorer:
+// [pose kind, pose seconds, weight] (null = just his normal movement).
+// after: what he does next (MATE_AFTER, see mateAfter()).
+export function mateCelebration(action,s,after='applause'){
+ if(s<0)return null;
+ if(s<1.7)return[action,s,1-smooth((s-1.25)/.45)];
+ if(s<3.3)return[after,s-1.6,smooth((s-1.6)/.3)*(1-smooth((s-2.7)/.5))];
+ return null;
+}
+export function mateAfter(key='',slot=0){
+ let h=2166136261;for(const c of String(key)+'#after')h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
+ return MATE_AFTER[(h+slot*3)%MATE_AFTER.length];
+}
+// The captured clip that drives a celebration kind, or null.
+export function celebrationCapture(kind){
+ if(CAPTURE[kind])return CAPTURE[kind][0];
+ return DIRECT[kind]||null;
+}
+// How long the teammate stays right at the scorer's side (then walks next to him).
+export function mateCloseness(action,s){return s<0?1:1-smooth((s-1.3)/.6)}
 
 // avoid: the previous goal's celebration, so two goals in a row never repeat
 // the same one (a star's trademark celebration always wins).
@@ -73,9 +128,63 @@ export function celebrationDistance(kind,s){
  if(kind==='zen')return ease(s,1.3,5.4);
  if(kind==='cold')return ease(s,1.3,5.6);
  // Dances on the spot after a short run, drifting a little with the steps.
- if(kind==='samba')return ease(s,1.2,4.8)+.25*smooth((s-1.2)/2.4);
+ if(kind==='samba'||kind==='dance')return ease(s,1.2,4.8)+.25*smooth((s-1.2)/2.4);
+ if(kind==='rally')return ease(s,1.5,5.8);
  if(kind==='mask')return ease(s,1.4,5.8);
  return ease(s,1.5,5.6);
+}
+
+// V21.439 (Basti: "Die Torjubel spielen sich alle auf der selben Stelle ab.
+// Ich will dass die Spieler in Richtung Eckfahne gehen"): every goal picks
+// WHERE the scorer celebrates. Field-local metres (attacked goal at z -52.5,
+// camera side x*direction>0). He first sprints along the line towards that
+// spot (approach), then his own celebration (celebrationDistance) carries
+// him the last metres. The scene grows by the approach time, so the
+// celebration itself keeps its full length.
+export const CELEBRATION_SPOTS=Object.freeze(['corner_near','corner_far','fans_goal','touchline']);
+export const CELEBRATION_SPRINT=Object.freeze({min:5.6,max:7.8,top:7.2,ease:.9,maxApproach:19});
+function spotTarget(spot,start,d){
+ const sx=Math.abs(start[0])>4?Math.sign(start[0]):d;
+ if(spot==='corner_near')return[30.6*d,-49.6];
+ if(spot==='corner_far')return[-30.6*d,-49.6];
+ // Towards the fans behind the goal, beside the post on the scorer's side.
+ if(spot==='fans_goal')return[sx*Math.max(12.5,Math.min(19,Math.abs(start[0])+5)),-50.4];
+ return[30.8*d,Math.min(-14,start[1]+7)];
+}
+function spotHash(key){let h=2166136261;for(const c of String(key)+'#spot')h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
+// start: scorer's field-local position when the celebration begins.
+export function celebrationRoute(kind,key='',start=[0,-40],direction=1,forced=null){
+ const d=direction===-1?-1:1,len=celebrationDistance(kind,celebrationHold(kind)),h=spotHash(key);
+ // Starting speed of the authored run, so the sprint flows into it.
+ const v0=Math.max(CELEBRATION_SPRINT.min,Math.min(CELEBRATION_SPRINT.max,(celebrationDistance(kind,.05)-celebrationDistance(kind,0))/.05));
+ const order=CELEBRATION_SPOTS.map((_,i)=>CELEBRATION_SPOTS[(h+i)%CELEBRATION_SPOTS.length]);
+ if(CELEBRATION_SPOTS.includes(forced))order.unshift(forced);
+ for(const spot of order){
+  const target=spotTarget(spot,start,d),dx=target[0]-start[0],dz=target[1]-start[1],L=Math.hypot(dx,dz);
+  // The spot must leave room for the celebration's own run (no run off the
+  // pitch) and the far corner is only for a scorer on that half.
+  if(L<len+1.2)continue;
+  if(spot==='corner_far'&&L>31)continue;
+  const approach=Math.min(CELEBRATION_SPRINT.maxApproach,L-len-.6);
+  // A long approach is a real sprint that eases into the celebration's run.
+  const top=Math.max(v0,CELEBRATION_SPRINT.top),ease=CELEBRATION_SPRINT.ease,easeLen=(top+v0)/2*ease;
+  const sprint=approach>easeLen+.5&&top>v0;
+  const approachTime=sprint?(approach-easeLen)/top+ease:approach/v0;
+  return{spot,target,run:[dx/L,dz/L],approach,approachTime,speed:v0,top:sprint?top:v0,ease:sprint?ease:0};
+ }
+ // Fallback: the classic run-off towards the camera touchline.
+ const x=d,z=.28,l=Math.hypot(x,z);
+ return{spot:'classic',target:null,run:[x/l,z/l],approach:0,approachTime:0,speed:v0,top:v0,ease:0};
+}
+// Metres along the route, s seconds after the run-off began (sprint, then
+// the celebration's own run).
+export function celebrationRouteDistance(kind,route,s){
+ s=Math.max(0,s);const a=route?.approachTime||0;
+ if(s>=a)return(route?.approach||0)+celebrationDistance(kind,s-a);
+ const {top,speed:v0,ease}=route,cruise=a-ease;
+ if(s<=cruise)return top*s;
+ // Linear slow-down from the sprint to the celebration's own pace.
+ const u=s-cruise;return top*cruise+top*u+(v0-top)*u*u/(2*ease);
 }
 
 function blankPose(){
@@ -108,6 +217,7 @@ function looseStance(t,s,amount){
 
 function pose(t,kind,s){
  reset(t);
+ kind=FALLBACK[kind]||(DIRECT[kind]?'applause':kind);
  // Breathing heave and a little life in the shoulders for every celebration.
  const breathe=Math.sin(s*2.4);
  t.upper[0]+=.035*breathe;t.shrug[0]=t.shrug[1]=.04+.03*breathe;
@@ -223,6 +333,39 @@ function pose(t,kind,s){
   t.upper[2]=(nearLeft?-.1:.1)*wrap;t.upper[0]+=.06*wrap;t.head=[.12*wrap,(nearLeft?-.25:.25)*wrap];
   t.shrug=nearLeft?[.3*wrap,.12*wrap]:[.12*wrap,.3*wrap];t.open=nearLeft?[.8*wrap,0]:[0,.8*wrap];
   looseStance(t,s,wrap);t.lift=.05*bounce;
+ }else if(kind==='jump_hug'){
+  // V21.434: jumps into the scorer's arms: a little hop, both arms round his
+  // shoulders for a second, then lets go.
+  const wrap=spring(s,0,.35),hop=pulse(s,0,.12,.28,.5);
+  arms(t,[mix(.3,1.05,wrap),0,mix(.38,.95,wrap)],[mix(.3,1.05,wrap),0,mix(.38,.95,wrap)],mix(.5,1.35,wrap),mix(.5,1.35,wrap));
+  t.upper[0]+=-.1*wrap;t.head=[.05*wrap,.2*wrap];t.shrug=[.25*wrap,.25*wrap];t.open=[.8*wrap,.8*wrap];
+  looseStance(t,s,wrap);t.lift=.16*hop;t.legs[0][0]+=.3*hop;t.knees[0]-=.6*hop;
+ }else if(kind==='high_five'){
+  // Right hand up, a firm slap at the top, then the arm swings down into a fist.
+  const reach=spring(s,0,.3),slap=pulse(s,.32,.4,.5,.65),down=smooth((s-.7)/.4);
+  const up=reach*(1-down);
+  arms(t,[.25,0,.35],[mix(.3,2.45,up)+.12*slap,0,mix(.38,.35,up)],.5,mix(.5,.35,up)+.5*down);
+  t.upper[0]+=.08*up;t.upper[2]=-.06*up;t.head=[.22*up,0];t.shrug=[.06,.3*up];t.open=[0,.9*up];
+  looseStance(t,s,reach);t.lift=.07*slap;
+ }else if(kind==='head_pat'){
+  // A hand on the scorer's head, two quick ruffles, a grin.
+  const reach=spring(s,0,.35),ruffle=.12*(pulse(s,.35,.45,.5,.62)+pulse(s,.65,.75,.8,.95)),down=smooth((s-1)/.4);
+  const on=reach*(1-down);
+  arms(t,[mix(.3,1.55,on)+ruffle,0,mix(.38,.18,on)],[.3,0,.38],mix(.5,1.25,on),.6);
+  t.upper[0]+=-.05*on;t.upper[1]=-.12*on;t.head=[.05,-.15*on];t.shrug=[.2*on,.05];t.open=[.9*on,0];
+  looseStance(t,s,reach);
+ }else if(kind==='trophy_lift'){
+  // V21.444 Pokalübergabe: the captain reaches for the cup on its pedestal,
+  // pulls it to his chest while he turns to the cameras, then pushes it high
+  // above his head with both hands and pumps it up twice more, roaring.
+  const reach=spring(s,0,.45),carry=smooth((s-.42)/.4),lift=spring(s,1.9,.55);
+  const pump=pulse(s,3.0,3.18,3.34,3.6)+pulse(s,4.2,4.38,4.54,4.8)+pulse(s,5.5,5.68,5.84,6.1);
+  const ax=mix(mix(mix(.3,1.32,reach),1.0,carry),2.9,lift)-.32*pump*lift,az=mix(mix(.3,.13,reach),.2,carry)+.05*lift;
+  const el=mix(mix(mix(.5,.32,reach),1.4,carry),.32,lift)+.55*pump*lift;
+  arms(t,[ax,0,az],[ax,0,az],el,el);
+  t.upper[0]+=mix(-.14*reach*(1-carry),.02,carry)+.14*lift;t.head=[mix(-.25*reach*(1-carry),.1,carry)+.32*lift,0];
+  t.shrug=[.1+.2*lift,.1+.2*lift];t.open=[0,0];
+  looseStance(t,s,Math.max(reach,.6));t.lift=.07*pump*lift;
  }else if(kind==='lineup'){
   // V21.226 walk-out: chest up, hands loosely behind the back for the line-up.
   arms(t,[-.2,0,.1],[-.2,0,.1],.5,.5);t.upper[0]+=.05;t.head=[.04,0];t.shrug=[.06,.06];
@@ -291,7 +434,10 @@ function pose(t,kind,s){
  * (jump) in metres, and the shoulder shrug, head aim and open-hand amount for
  * the imported model's extra joints. */
 // weight (V21.226) fades a pose back out to the locomotion underneath.
-export function applyCelebrationPose(p,kind,s,out={},weight=1){
+// standLegs (V21.439, 0..1): a standing player may let a directly captured
+// clip (DIRECT) move his legs too; walking players keep their stride.
+export function applyCelebrationPose(p,kind,s,out={},weight=1,standLegs=0){
+ const name=kind;
  pose(late,kind,s-FOREARM_LAG);
  pose(now,kind,s);
  const w=smooth(s/.55)*clamp(weight)*now.armsOn,legs=now.legs_w*clamp(weight);
@@ -313,7 +459,17 @@ export function applyCelebrationPose(p,kind,s,out={},weight=1){
  // Lower the hips onto the knees (or lift for the jump); feet follow via IK.
  const rootY=(now.lift-now.drop)*clamp(weight);
  p.rig.position.y=mix(p.rig.position.y,rootY,Math.max(w,legs));
- out.arms=w;out.legs=legs;out.body=smooth(s/.55)*clamp(weight);out.rootY=rootY;out.kind=kind;
+ out.arms=w;out.legs=legs;out.body=smooth(s/.55)*clamp(weight);out.rootY=rootY;out.kind=name;
+ // Captured clip on the imported model (seconds into the clip, its weight;
+ // the feet join in only once the scorer has stopped running). Teammates'
+ // clips (no table entry) keep the walking legs.
+ const clip=celebrationCapture(name),cap=CAPTURE[name];
+ if(clip){
+  const start=cap?cap[1]:0,body=clamp(weight)*smooth((s-start)/.35);
+  const legs=cap?body*smooth((s-cap[2])/.4):body*clamp(standLegs);
+  out.capture=body>.001?{clip,seconds:Math.max(0,s-start),body,legs}:null;
+  if(!cap&&legs>out.legs)out.legs=legs;
+ }else out.capture=null;
  out.head=[now.head[0]*w,now.head[1]*w];
  out.shrug=[now.shrug[0]*w,now.shrug[1]*w];
  // Hands open a beat after the arm moves, like the forearm.

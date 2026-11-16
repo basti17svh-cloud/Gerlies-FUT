@@ -11,6 +11,8 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21369';
 import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
+import {FOOTERA_MIXAMO_GAIT} from './3d-mocap-mixamo-gait-data.mjs?v=21433';
+import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 export const MIXAMO_KEEPER_LAYER_VERSION='21.369-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
@@ -41,7 +43,13 @@ export function keeperThrowCaptureTime(time,keys){
  if(time<=KEEPER_THROW.release)return hold+(time-KEEPER_THROW.start)*(release-hold)/(KEEPER_THROW.release-KEEPER_THROW.start);
  return release+(time-KEEPER_THROW.release);
 }
-export function keeperCaptureWeights(time,action='classic'){
+// V21.437: the capture owns the arms. Hand IK onto the authored gloves only
+// where a glove really meets the ball (a save, around the contact) or holds
+// it (a caught ball); a beaten keeper (type 'goal' …) keeps the captured arms
+// all through his dive. Before V21.437 the IK pulled both arms onto the
+// procedural guide for most of the dive: one arm hung to the turf and the
+// elbow bent backwards on the landing.
+export function keeperCaptureWeights(time,action='classic',type='big_chance_saved'){
  // The low spread block (rush_spread) has no matching capture: it keeps the
  // authored smother and only borrows the captured ready stance.
  if(action==='rush_spread'){
@@ -52,12 +60,15 @@ export function keeperCaptureWeights(time,action='classic'){
  const ready=.8*smooth(time,3.2,3.8)*(1-smooth(time,5.05,5.45));
  // Legs join for the push-off and leave again as the authored get-up plants them.
  const legs=smooth(time,5.6,5.92)*(1-smooth(time,8.1,8.7));
- // Hand IK onto the authored gloves: full around the ball contact only.
- let hands=1-.75*smooth(time,5.55,5.9)*(1-smooth(time,6.2,6.4))-.75*smooth(time,7.05,7.5);
+ const save=type==='big_chance_saved';
+ // Authored arms only where no capture plays (before the ready stance).
+ let hands=1-Math.max(dive,ready/.8);
+ // A save: the gloves meet the ball around the contact (6.34-6.96).
+ if(save)hands=Math.max(hands,smooth(time,6.2,6.4)*(1-smooth(time,6.98,7.3)));
  // V21.369: a caught ball (classic save) stays in both gloves until the
  // keeper is up again; then the captured overhand throw owns the arms.
- const throwOut=action==='classic'?smooth(time,KEEPER_THROW.start,KEEPER_THROW.start+.3):0;
- if(action==='classic')hands=Math.max(hands,smooth(time,6.25,6.5))*(1-throwOut);
+ const throwOut=save&&action==='classic'?smooth(time,KEEPER_THROW.start,KEEPER_THROW.start+.3):0;
+ if(save&&action==='classic')hands=Math.max(hands,smooth(time,6.25,6.5))*(1-throwOut);
  return{dive,ready,legs,hands:clamp(hands),throwOut};
 }
 
@@ -70,7 +81,7 @@ export function createKeeperCaptureLayer(bones,playerRoot){
  function apply(time=0,dive=null){
   state.clip='none';state.weight=0;state.hands=1;
   if(!dive)return state;
-  const action=String(dive.action||'classic'),w=keeperCaptureWeights(time,action);
+  const action=String(dive.action||'classic'),w=keeperCaptureWeights(time,action,dive.type||'big_chance_saved');
   state.hands=w.hands;
   if(w.ready>.001&&w.dive<.999){
    const clip=rig.clips.keeper_ready;
@@ -288,71 +299,103 @@ export function createMixamoKickLayer(bones,playerRoot){
 
 // V21.364: everyday football movement. A footballer's forward jog (Mixamo
 // "jog forward") and the bent-knee ready stance ("offensive idle") replace the
-// generic library gait in their speed bands; sprints keep the library sprint.
-// Head and neck stay on the procedural look at the ball. The body (with the
-// hips) is posed before the foot IK, so the planted boots never slide; the
-// captured legs then own each leg only while it swings (applyLegs).
+// generic library gait in their speed bands. Head and neck stay on the
+// procedural look at the ball. The body (with the hips) is posed before the
+// foot IK, so the planted boots never slide; the captured legs then own each
+// leg only while it swings (applyLegs).
+// V21.433 (Basti: "Arme und Beine nicht mehr so steif"): the whole speed
+// range is captured now (Mixamo Locomotion Pack, FOOTERA_MIXAMO_GAIT): a real
+// walk between standing and jogging, a loose running stride with full arm
+// swing and a sprint with a driving arm pump instead of the CMU run, and
+// every player stands his own way (football stance, breathing, relaxed) and
+// looks around now and then. All of it is a pure function of time, speed and
+// stride, so seeking a replay gives the same pose.
 const GAIT_SKIP=new Set(['neck_01','Head']);
 const LEG_SKIP=[new Set(['neck_01','Head','thigh_r','calf_r','foot_r']),new Set(['neck_01','Head','thigh_l','calf_l','foot_l'])];
 export function gaitCaptureWeights(speed=0){
  const s=clamp(speed);
- const jog=smooth(s,.1,.2)*(1-smooth(s,.5,.68));
- const idle=1-smooth(s,.025,.09);
- // V21.369: faster runs and sprints follow a real captured running stride (CMU).
- const run=smooth(s,.5,.68);
- return{jog,idle,run};
+ const idle=1-smooth(s,.025,.07);
+ const walk=smooth(s,.025,.07)*(1-smooth(s,.12,.2));
+ // The football jog only for the slow trot; from a steady run on the loose
+ // captured running stride (most match running sits at .25-.5).
+ const jog=smooth(s,.12,.2)*(1-smooth(s,.26,.38));
+ const run=smooth(s,.26,.38)*(1-smooth(s,.72,.86));
+ const sprint=smooth(s,.72,.86);
+ return{idle,walk,jog,run,sprint};
 }
-export function createGaitCaptureLayer(bones,playerRoot){
+// The stance a player rests in: a third each, from his name (seed 0..1).
+export function gaitIdleClip(seed=0){
+ const k=Math.floor(clamp(seed,0,.9999)*3);
+ return['ready_idle','idle_breath','idle_stand'][k];
+}
+// How much a standing player is in his "look around" (every ~11 s, 3.5 s).
+export function lookAroundWeight(time=0,seed=0){
+ const period=11,u=((time+seed*period)%period+period)%period;
+ return smooth(u,.2,1)*(1-smooth(u,3,3.7));
+}
+export function createGaitCaptureLayer(bones,playerRoot,seed=0){
  const state={clip:'none',weight:0,source:'Mixamo'};
  const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
  if(!rig||!rig.clips.jog_fwd||!rig.clips.ready_idle)return{apply:()=>state,applyLegs:()=>0,state};
- const runRig=createCaptureRetarget(bones,playerRoot,FOOTERA_CMU_RUN);
+ const gaitRig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO_GAIT);
+ // Without the gait capture the CMU run keeps the fast end as before.
+ const runRig=gaitRig?null:createCaptureRetarget(bones,playerRoot,FOOTERA_CMU_RUN);
  const cyclePhase=(clip,stride)=>((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
+ const idleName=gaitRig?gaitIdleClip(seed):'ready_idle',idleRig=idleName==='ready_idle'?rig:gaitRig;
+ // [rig, clip, weight key]: the looping strides by speed band.
+ const strides=gaitRig?[[gaitRig,'walk','walk'],[rig,'jog_fwd','jog'],[gaitRig,'run','run'],[gaitRig,'sprint','sprint']]:
+  [[rig,'jog_fwd','jog'],[runRig,'run','run'],[runRig,'run','sprint']];
+ // Ping-pong through a stored stance so the loop never jumps.
+ const pingPong=(clip,at)=>{const span=(clip.frames-1)/clip.rate,u=(at%(2*span)+2*span)%(2*span);return(u<span?u:2*span-u)*clip.rate};
  // share: how much of the body the everyday gait may own right now (0 during
  // shots, celebrations, tricks, airborne moments; see the prototype).
  function apply(time=0,speed=0,stride=0,share=1){
   state.clip='none';state.weight=0;
   const k=clamp(share);if(k<=.001)return state;
-  const w=gaitCaptureWeights(speed);
-  if(w.jog*k>.001){
-   const clip=rig.clips.jog_fwd,loop=clip.frames-1;
-   const phase=((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
-   rig.pose('jog_fwd',phase*loop,{body:w.jog*k,legs:0},0,GAIT_SKIP);
-   state.clip='jog_fwd';state.weight=w.jog*k;
-  }
-  if(runRig&&w.run*k>.001){
-   const clip=runRig.clips.run;
-   runRig.pose('run',cyclePhase(clip,stride)*(clip.frames-1),{body:w.run*k,legs:0},0,GAIT_SKIP);
-   if(w.run>w.jog){state.clip='run';state.weight=w.run*k}
+  const w=gaitCaptureWeights(speed);let top=0;
+  for(const [r,name,key] of strides){
+   const weight=w[key]*k;if(!r||weight<=.001)continue;
+   const clip=r.clips[name];
+   r.pose(name,cyclePhase(clip,stride)*(clip.frames-1),{body:weight,legs:0},0,GAIT_SKIP);
+   if(w[key]>top){top=w[key];state.clip=name;state.weight=weight}
   }
   if(w.idle*k>.001){
-   // Ping-pong through the stored stance so the loop never jumps.
    // Players do not sway in step: the distance each has run (stride) offsets
    // the stance, deterministically.
-   const clip=rig.clips.ready_idle,span=(clip.frames-1)/clip.rate,at=time+.6*stride,u=(at%(2*span)+2*span)%(2*span);
-   const t=u<span?u:2*span-u;
-   rig.pose('ready_idle',t*clip.rate,{body:.8*w.idle*k,legs:0},0,GAIT_SKIP);
-   if(w.idle>w.jog){state.clip='ready_idle';state.weight=w.idle*k}
+   const clip=idleRig.clips[idleName];
+   idleRig.pose(idleName,pingPong(clip,time+.6*stride),{body:.8*w.idle*k,legs:0},0,GAIT_SKIP);
+   if(w.idle>top){top=w.idle;state.clip=idleName;state.weight=w.idle*k}
+   const look=gaitRig?lookAroundWeight(time,seed)*w.idle*k:0;
+   if(look>.001){
+    // Upper body only: the stance's legs and hips stay planted.
+    const la=gaitRig.clips.look_around,u=((time+seed*11)%11+11)%11;
+    gaitRig.pose('look_around',clamp(u*la.rate,0,la.frames-1),{body:.7*look,legs:0},0,LOOK_SKIP);
+   }
   }
   return state;
  }
  // swing: [left, right] 0..1, how much each leg is in the air right now.
+ // V21.437: a proper weighted blend of the speed bands (running average);
+ // before, each band slerped on top of the last, so a share of the old leg
+ // pose stayed in every band change.
  function applyLegs(speed=0,stride=0,share=1,swing=[0,0]){
   const g=gaitCaptureWeights(speed),k=clamp(share);
-  const layers=[[rig,'jog_fwd',g.jog*k],[runRig,'run',g.run*k]];
-  let total=0;
-  for(const [r,name,w] of layers){
+  let total=0;const acc=[1-k*clamp(swing[0]),1-k*clamp(swing[1])];
+  for(const [r,name,key] of strides){
+   const w=g[key]*k;
    if(!r||w<=.001)continue;total+=w;
    const clip=r.clips[name],frame=cyclePhase(clip,stride)*(clip.frames-1);
    for(let i=0;i<2;i++){
     const legs=w*clamp(swing[i]);if(legs<=.001)continue;
-    r.pose(name,frame,{body:0,legs},0,LEG_SKIP[i]);
+    acc[i]+=legs;
+    r.pose(name,frame,{body:0,legs:legs/acc[i]},0,LEG_SKIP[i]);
    }
   }
   return total;
  }
- return{apply,applyLegs,state};
+ return{apply,applyLegs,state,fullGait:!!gaitRig};
 }
+const LOOK_SKIP=new Set(['pelvis','thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r']);
 
 // V21.369: captured two-handed throw-in. Game seconds of the set piece
 // (physical, not the stretched highlight clock): the ball is back behind the
@@ -413,4 +456,31 @@ export function createFallCaptureLayer(bones,playerRoot){
   return state;
  }
  return{apply,state};
+}
+
+// V21.434: captured goal celebrations (Mixamo Fist Pump, Cheering, Rallying,
+// Hip Hop and Samba Dancing, Excited, Waving). The scene picks the clip and
+// the seconds (3d-goal-celebration.mjs celebrationCapture); the root path,
+// kneel/jump height and the facing stay authored. Long holds play the capture
+// back and forth, so a pose never jumps.
+const HIPS=new Set(['pelvis','spine_01']);
+export function createCelebrateCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO_CELEBRATE);
+ if(!rig)return{apply:()=>state,state,handles:()=>false};
+ const handles=name=>!!rig.clips[name];
+ // capture: {clip, seconds, body, legs}
+ function apply(capture=null){
+  state.clip='none';state.weight=0;
+  if(!capture||!handles(capture.clip))return state;
+  const body=clamp(capture.body);if(body<=.001)return state;
+  const clip=rig.clips[capture.clip],span=(clip.frames-1)/clip.rate,t=Math.max(0,capture.seconds||0);
+  const u=t%(2*span),at=u<span?u:2*span-u;
+  // Without the legs (a teammate walking back) the hips stay with the walk,
+  // so the capture never leans the whole body over the striding legs.
+  const legs=clamp(capture.legs)*body;
+  rig.pose(capture.clip,clamp(at*clip.rate,0,clip.frames-1),{body:legs>.001?body:body*.75,legs},0,legs>.001?null:HIPS);
+  state.clip=capture.clip;state.weight=body;return state;
+ }
+ return{apply,state,handles};
 }

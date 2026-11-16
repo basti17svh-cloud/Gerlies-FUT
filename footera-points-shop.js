@@ -88,7 +88,7 @@
    if(document.getElementById("footeraVisitorAnalyticsScript"))return;
    const s=document.createElement("script");
    s.id="footeraVisitorAnalyticsScript";
-   s.src="./footera-visitor-analytics.js";
+   s.src="./footera-visitor-analytics.js?v=21408";
    s.defer=true;
    document.head.append(s);
  })();

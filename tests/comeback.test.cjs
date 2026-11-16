@@ -52,9 +52,29 @@ test('a clock from the future or broken values never pay',()=>{
  assert.equal(load({seenAt:'x',giftAt:-5}).FooteraComeback.claim(T0),null);
 });
 
+test('V21.417: the save does not change every few seconds (Player Picks need a stable save)',()=>{
+ const ctx=load({seenAt:T0}),api=ctx.FooteraComeback;
+ api.touch(T0+5000);
+ const first=JSON.stringify(ctx.state);
+ for(let t=10000;t<36e5-12*60e3;t+=5000)api.touch(T0+t);
+ assert.equal(JSON.stringify(ctx.state),first,'same hour: no change to the save');
+ api.touch(T0+2*36e5+1234);
+ assert.equal(ctx.state.comeback.seenAt,T0+2*36e5,'next hours still recorded, rounded down');
+});
+
+test('V21.417: no touch while a Player Pick or Cup claim is running',()=>{
+ const ctx=load({seenAt:T0});
+ ctx.FooteraPlayerPicks={isActive:()=>true};
+ ctx.FooteraComeback.touch(T0+3*36e5);
+ assert.equal(ctx.state.comeback.seenAt,T0);
+ ctx.FooteraPlayerPicks={isActive:()=>false};
+ ctx.FooteraComeback.touch(T0+3*36e5);
+ assert.equal(ctx.state.comeback.seenAt,T0+3*36e5);
+});
+
 test('files ship with the build',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const f of ['footera-comeback.js?v=21411','footera-comeback.css?v=21411']){
+ for(const f of ['footera-comeback.js?v=21417','footera-comeback.css?v=21411']){
   assert.ok(html.includes(f),`index.html ${f}`);
   assert.ok(sw.includes(`"./${f}"`),`service worker ${f}`);
  }

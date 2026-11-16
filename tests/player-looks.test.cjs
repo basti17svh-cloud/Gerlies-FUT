@@ -21,7 +21,7 @@ test('every hand-set and measured look decodes to known values; ids match the pl
  const db=new Set(fs.readFileSync(path.join(root,'assets/players-db.csv'),'utf8').split('\n').map(l=>l.split(',')[0]));
  const hand=Object.entries(api.HAND);
  assert.ok(hand.length>=100,'about 100 well-known players: '+hand.length);
- for(const [id,code] of hand){assert.match(code,/^[1-6][kfrax][SDBLGPRYW][nvm]$/,id);const l=api.decode(code);assert.ok(l.skin&&l.hair&&l.hairColor&&l.beard,id)}
+ for(const [id,code] of hand){assert.match(code,/^[1-6][kfraxdpb][SDBLGPRYW][nvm]$/,id);const l=api.decode(code);assert.ok(l.skin&&l.hair&&l.hairColor&&l.beard,id)}
  // The weekly DB rebuild may drop a player; a stale look is harmless, but most must still match.
  const missing=hand.filter(([id])=>!db.has(id)).map(([id])=>id);
  assert.ok(missing.length<=hand.length*.1,'EA ids missing from player DB: '+missing.join(', '));
@@ -49,4 +49,31 @@ test('3D look override: haircut, bald, beard and colour; nothing keeps the name 
  const shaved=footeraHumanLook('Erling Haaland','#f1d2b3',info,{beard:'none',hair:'afro01'});
  assert.equal(shaved.facial,null);assert.equal(shaved.hair,'afro01');assert.equal(shaved.hairColor,auto.hairColor);
  assert.equal(footeraHumanLook('Erling Haaland','#f1d2b3',info,{hair:'mohawk'}).hair,auto.hair);
+});
+test('V21.419: every Icon has a hand-set look; Pele deep brown, Gullit with dreadlocks; Icon women get the female body',()=>{
+ const api=looksApi(),app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
+ const names=[...app.matchAll(/^ \["([^"]+)",\d+,"[A-Z]+","[^"]*","[^"]+",\d+,/gm)].map(m=>m[1]);
+ assert.ok(names.length>=130,'icon rows found: '+names.length);
+ const slug=n=>'midicon-'+n.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,'-');
+ for(const n of names){const code=api.ICONS[slug(n)];assert.ok(code,'missing Icon look: '+n);assert.match(code,/^[1-6][kfraxdpbt][SDBLGPRYW][nvm]$/,n)}
+ assert.equal(Object.keys(api.ICONS).length,names.length);
+ assert.equal(api.sceneSkin({id:'midicon-pele'}),'6');
+ assert.equal(api.sceneLook({id:'midicon-ruud-gullit'}).hair,'dreads01');
+ assert.equal(api.sceneLook({id:'midicon-ruud-gullit'}).beard,'Moustache');
+ assert.equal(api.sceneLook({id:'midicon-roberto-baggio'}).hair,'ponytail01');
+ const hamm=api.sceneLook({id:'midicon-mia-hamm'});assert.equal(hamm.female,true);assert.equal(hamm.hair,'ponytail01');assert.equal(hamm.beard,undefined);
+ assert.equal(api.sceneLook({id:'midicon-sissi'}).hair,'bald');
+ assert.equal(api.isFemale({id:'midicon-pele'}),false);
+ // Icon women only ever carry a women's haircut code.
+ for(const [id,code] of Object.entries(api.ICONS))if(api.isFemale({id}))assert.match(code[1],/[pbtx]/,id);
+});
+test('V21.419: dreadlocks and long cuts only when a look asks for them',async()=>{
+ const {footeraHumanLook}=await import(path.join(root,'3d-player-human.mjs'));
+ const info={hair:['short02','short04','short01','afro01'],hairSpecial:['dreads01'],hairFemale:['ponytail01','Braid01','bob02'],facial:['Full_beard','Moustache'],brows:['eyebrow001']};
+ assert.equal(footeraHumanLook('Ruud Gullit','#805035',info,{hair:'dreads01'}).hair,'dreads01');
+ assert.equal(footeraHumanLook('Roberto Baggio','#f1d2b3',info,{hair:'ponytail01'}).hair,'ponytail01');
+ assert.equal(footeraHumanLook('Sissi','#805035',info,{female:true,hair:'bald'}).hair,null);
+ assert.equal(footeraHumanLook('Mia Hamm','#f1d2b3',info,{female:true,hair:'short02'}).female,true);
+ assert.ok(info.hairFemale.includes(footeraHumanLook('Mia Hamm','#f1d2b3',info,{female:true,hair:'short02'}).hair));
+ for(let i=0;i<300;i++)assert.ok(info.hair.includes(footeraHumanLook('Spieler '+i,'#c88f69',info).hair),'name pick stays short');
 });

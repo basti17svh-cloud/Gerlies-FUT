@@ -516,15 +516,126 @@ shoe_mat = g.material(name='FooteraBoots', pbrMetallicRoughness={
     'metallicFactor': 0, 'roughnessFactor': .45})
 add('FooteraBoots', shoe_mesh, shoe_mat, morph=False)
 
+def dreadlocks(count=95, sides=5, segs=5, seed=7):
+    """Footera's own shoulder-length dreadlocks (V21.418; Ruud Gullit's
+    'Wuschelkopf'): the afro01 cap for volume at the roots plus rope-like
+    locks grown from it, falling under gravity around the skull and kept
+    clear of the face. Every lock follows the head bone and the face morphs
+    of the scalp point it grows from. Returns a raw proxy and its texture."""
+    rng = np.random.default_rng(seed)
+    keep = [n != 'female' for n, _ in MORPHS]
+    cap = proxy_raw(os.path.join(DATA, 'proxies/hair/afro01/afro01.json'))
+    cp = cap['pos']
+    lo, hi = cp.min(0), cp.max(0)
+    c = (lo + hi) / 2; rad = (hi - lo) / 2
+    c[1] -= .1 * rad[1]
+    # Roots: an even spread over the cap, never on the forehead fringe.
+    nrm = (cp - c) / rad
+    ok = np.where((nrm[:, 1] > -.35) & ~((nrm[:, 2] > .55) & (nrm[:, 1] < .55)))[0]
+    pick = [ok[0]]; d = np.linalg.norm(cp[ok] - cp[ok[0]], axis=1)
+    for _ in range(count - 1):
+        k = int(np.argmax(d)); pick.append(ok[k]); d = np.minimum(d, np.linalg.norm(cp[ok] - cp[ok[k]], axis=1))
+    # A lock moves with its root only where the shift is visible (over 3 mm).
+    def lock_delta(j, d):
+        return d if keep[j] and np.abs(d).max() * UNIT > .003 else np.zeros(3, np.float32)
+    head_y = JOINTS[BONE_INDEX['Head'], 1]; neck_y = JOINTS[BONE_INDEX['neck_01'], 1]
+    floor_y = neck_y - .25 * (head_y - neck_y)  # tips rest on the shoulders' top line
+    pos, tris, tuv, w, deltas = [], [], [], [], [[] for _ in cap['deltas']]
+    uvs = [[u * .5, v] for u, v in cap['uvs']]
+    base_tris = cap['tris']; base_tuv = cap['tuv']
+    n0 = len(cp)
+    pos += list(cp); w += list(cap['w'])
+    for j, dd in enumerate(cap['deltas']):
+        deltas[j] += list(dd)
+    uv0 = len(uvs)
+    for s in range(sides + 1):
+        for t in range(segs + 1):
+            uvs.append([.5 + .5 * s / sides, t / segs])
+    T_ = [base_tris]; TU = [base_tuv]
+    for i, r in enumerate(pick):
+        root = cp[r]; out = (root - c) / np.linalg.norm(root - c)
+        front = out[2]
+        length = (.8 if front > .3 else 2.3) * (.85 + .3 * rng.random())  # decimetres
+        thick = .1 * (.85 + .3 * rng.random())
+        # Start along the skull, downhill, lifted off it a little for volume;
+        # locks on the crown fall towards the back of the head.
+        g = np.array([0, -1., 0]); tang = g - (g @ out) * out
+        if np.linalg.norm(tang) < .35:
+            tang = tang + np.array([0, 0, -.6])
+        tang /= np.linalg.norm(tang)
+        p = root - out * .06; dirv = tang + out * .45 + rng.normal(0, .12, 3)
+        path = [p.copy()]
+        step = length / segs
+        for t in range(segs):
+            dirv = dirv / np.linalg.norm(dirv)
+            p = p + dirv * step
+            # Stay outside the skull shell; below it, fall freely.
+            q = (p - c) / (rad * .97)
+            if np.linalg.norm(q) < 1 and p[1] > c[1] - rad[1] * .6:
+                p = c + q / np.linalg.norm(q) * rad * .97
+            # Keep the face clear: nothing in front of the brow line below it.
+            if p[1] < c[1] + .2 * rad[1] and p[2] > c[2] + .35 * rad[2]:
+                p[2] = c[2] + .35 * rad[2]
+            p[1] = max(p[1], floor_y + .15 * rng.random())
+            path.append(p.copy())
+            dirv = dirv / np.linalg.norm(dirv) + np.array([0, -.7, 0]) + (p - c) * np.array([.12, 0, .12])
+        path = np.array(path)
+        start = len(pos)
+        for t in range(segs + 1):
+            a = path[min(t + 1, segs)] - path[max(t - 1, 0)]; a /= np.linalg.norm(a)
+            u = np.cross(a, [0, 0, 1.]) if abs(a[2]) < .9 else np.cross(a, [1., 0, 0]); u /= np.linalg.norm(u)
+            v = np.cross(a, u)
+            rr = thick * (1 - .45 * t / segs) * (1.15 if t == 0 else 1)
+            twist = t * .9 + i
+            for s in range(sides + 1):
+                ang = 2 * np.pi * s / sides + twist
+                pos.append(path[t] + rr * (np.cos(ang) * u + np.sin(ang) * v))
+                w.append(cap['w'][r])
+                for j, dd in enumerate(cap['deltas']):
+                    deltas[j].append(lock_delta(j, dd[r]))
+        ring = sides + 1
+        for t in range(segs):
+            for s in range(sides):
+                a0 = start + t * ring + s; b0 = a0 + ring
+                T_.append(np.array([[a0, a0 + 1, b0 + 1], [a0, b0 + 1, b0]]))
+                ua = uv0 + s * (segs + 1) + t
+                TU.append(np.array([[ua, ua + segs + 1, ua + segs + 2], [ua, ua + segs + 2, ua + 1]]))
+        # Rounded tip: a fan to the last point.
+        tip = len(pos); pos.append(path[-1] + (path[-1] - path[-2]) * .15); w.append(cap['w'][r])
+        for j, dd in enumerate(cap['deltas']):
+            deltas[j].append(lock_delta(j, dd[r]))
+        last = start + segs * ring
+        T_.append(np.array([[last + s, tip, last + s + 1] for s in range(sides)]))
+        TU.append(np.array([[uv0 + s * (segs + 1) + segs] * 3 for s in range(sides)]))
+    raw = {'pos': np.array(pos, np.float32), 'tris': np.concatenate(T_).astype(np.int64), 'tuv': np.concatenate(TU).astype(np.int64),
+           'uvs': np.array(uvs, np.float32), 'w': np.array(w, np.float32), 'deltas': [np.array(dd, np.float32) for dd in deltas]}
+    # Texture: the afro cap on the left half, a twisted rope pattern on the right.
+    capimg = Image.open(os.path.join(cap['dir'], cap['material']['mapDiffuse'])).convert('RGBA').resize((256, 512), Image.LANCZOS)
+    yy, xx = np.mgrid[0:512, 0:256].astype(np.float32)
+    rope = .62 + .25 * np.sin((xx / 256 * 2 * np.pi * 3) + yy / 512 * 2 * np.pi * 14) + .08 * np.sin(yy / 3.1 + xx / 7.0)
+    rope *= .8 + .2 * np.sin(xx / 256 * 2 * np.pi)  # darker where the faces of a lock meet
+    rope = np.clip(rope * 255, 0, 255).astype(np.uint8)
+    right = np.dstack([rope, rope, rope, np.full_like(rope, 255)])
+    tex = np.concatenate([np.asarray(capimg), right], axis=1)
+    buf = io.BytesIO(); Image.fromarray(tex, 'RGBA').save(buf, 'PNG')
+    buf.seek(0)
+    return raw, buf
+
+
 HAIR = ['short02', 'short04', 'short01', 'afro01']  # short03 (side fringe), ponytail and the long styles read wrong on footballers
 HAIR_FEMALE = ['ponytail01', 'Braid01', 'bob02']  # tied back or short, as women play; buns and long styles cost too much download
+HAIR_SPECIAL = ['dreads01']  # only when a player's look asks for it (V21.419), never name-picked
 FACIAL = ['Full_beard', 'Moustache']
 BROWS = ['eyebrow001', 'eyebrow002', 'eyebrow004']
-parts = {'hair': [], 'hairFemale': [], 'facial': [], 'brows': []}
-for kind, names, folder in (('hair', HAIR, 'hair'), ('hairFemale', HAIR_FEMALE, 'hair'), ('facial', FACIAL, 'hair'), ('brows', BROWS, 'eyebrows')):
+parts = {'hair': [], 'hairFemale': [], 'hairSpecial': [], 'facial': [], 'brows': []}
+for kind, names, folder in (('hair', HAIR, 'hair'), ('hairFemale', HAIR_FEMALE, 'hair'), ('hairSpecial', HAIR_SPECIAL, 'hair'), ('facial', FACIAL, 'hair'), ('brows', BROWS, 'eyebrows')):
     for n in names:
-        m = proxy(os.path.join(DATA, 'proxies', folder, n, n + '.json'), lift=.012 if kind == 'brows' else 0)
-        tex = os.path.join(m['dir'], m['material']['mapDiffuse'])
+        if n == 'dreads01':
+            r, tex = dreadlocks()
+            m = build_mesh(r['pos'], r['tris'], r['tuv'], r['uvs'], r['w'], r['deltas'])
+        else:
+            m = proxy(os.path.join(DATA, 'proxies', folder, n, n + '.json'), lift=.012 if kind == 'brows' else 0)
+            tex = os.path.join(m['dir'], m['material']['mapDiffuse'])
         hair = kind.startswith('hair')
         mat = g.material(name='Footera-' + n, alphaMode='MASK', alphaCutoff=.18 if kind == 'brows' else .35, doubleSided=True,
                          pbrMetallicRoughness={'baseColorTexture': {'index': g.image(*png(tex, 512 if hair else 256, mode='tint'))},
@@ -547,7 +658,7 @@ add('FooteraLashes', lashes, lash_mat)
 
 size = g.save(OUT, extras={'footera': {
     'source': 'MakeHuman 1.x system assets, CC0 1.0 (npm makehuman-data 0.0.2)',
-    'morphs': morph_names, 'hair': parts['hair'], 'hairFemale': parts['hairFemale'], 'facial': parts['facial'], 'brows': parts['brows'],
+    'morphs': morph_names, 'hair': parts['hair'], 'hairFemale': parts['hairFemale'], 'hairSpecial': parts['hairSpecial'], 'facial': parts['facial'], 'brows': parts['brows'],
     'skins': {k: v for k, v in skins.items()}, 'skinMean': skin_mean, 'bones': [b[0] for b in BONES],
     'kitBands': {'shirt': SHIRT_V, 'shorts': SHORTS_V, 'socks': SOCKS_V},
     # Metres covered by each band: half-width across, then top and bottom height.

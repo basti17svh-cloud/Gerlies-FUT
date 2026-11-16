@@ -1,0 +1,20 @@
+/* V21.424 Tor-Clips: list in the match report + video viewer */
+.gc-report{margin:10px 0;padding:12px 14px;border:1px solid #2f5a3c;border-radius:14px;background:linear-gradient(135deg,#0f1d17,#08100c);box-shadow:0 6px 16px #0006}
+.gc-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px}
+.gc-head>span{font-size:26px;line-height:1}
+.gc-head strong{display:block;font-size:15px;font-weight:900;color:#fff}
+.gc-head small{display:block;margin-top:2px;font-size:12px;font-weight:700;color:#9fb0a8}
+.gc-list{display:grid;gap:6px;margin-top:10px}
+.gc-item{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 12px;border:1px solid #2c3d34;border-radius:10px;background:#111a16;color:#f1ece0;text-align:left;cursor:pointer}
+.gc-item b{font-size:15px;font-weight:900;color:#63ff78}
+.gc-item span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}
+.gc-item small{font-size:12px;font-weight:700;color:#9fb0a8;white-space:nowrap}
+.gc-item i{font-style:normal;font-size:14px;color:#63ff78}
+.gc-item:active{transform:scale(.99)}
+#goalClipModal{z-index:260}
+#goalClipModal .gc-inner{max-width:440px;margin:0 auto}
+.gc-player{display:flex;justify-content:center;background:#000;border-radius:14px;overflow:hidden}
+.gc-player video{display:block;width:100%;max-height:68vh;aspect-ratio:9/16;object-fit:contain;background:#000}
+.gc-note{margin:8px 2px 0;font-size:12px;font-weight:700;color:#9fb0a8;text-align:center}
+.gc-actions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.gc-actions button{min-height:44px}

@@ -4,6 +4,7 @@ const vm=require('node:vm');
 
 const html=require('./helpers/app-html.cjs')();
 const source=html.slice(html.indexOf('let sbcPickerState=null'),html.indexOf('function renderSbcEditor('));
+const leagueSortSource=html.slice(html.indexOf('const TOP5_LEAGUE_ORDER='),html.indexOf('function leagueFromClub('));
 const formationSource=html.slice(html.indexOf('const FORMATIONS={'),html.indexOf('};',html.indexOf('const FORMATIONS={'))+2);
 const FORM=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW'];
 let uidCounter=0;
@@ -24,7 +25,7 @@ function setup({club=[],storage=[],squad=[],presets=[],evos=[],sbc}){
   positionLabel:p=>({GK:'TW',ST:'ST'})[p]||p,esc:String,cardHTML:(b,item,mini,shown)=>`<card pos="${shown}">`,
   toast:m=>toasts.push(m),renderSBC(){},fmt:String,PACKS:[],nationLabel:v=>v
  };
- vm.createContext(ctx);vm.runInContext(formationSource+source+';this.FORMATIONS=FORMATIONS;',ctx);
+ vm.createContext(ctx);vm.runInContext(leagueSortSource+formationSource+source+';this.FORMATIONS=FORMATIONS;',ctx);
  vm.runInContext(`SBC_WORKSPACE[${JSON.stringify(sbc.id)}]={squad:${JSON.stringify(Array.from({length:11},(_,i)=>squad[i]||null))}}`,ctx);
  return{ctx,toasts,squad:()=>Array.from(vm.runInContext(`sbcDraft(${JSON.stringify(sbc.id)}).squad`,ctx)),stats:()=>vm.runInContext(`sbcDraftStats(getActiveSbcById(${JSON.stringify(sbc.id)}))`,ctx),run:code=>vm.runInContext(code,ctx),writes:()=>writes};
 }

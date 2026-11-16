@@ -10,10 +10,32 @@
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
 import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21349';
 
-const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21349',import.meta.url);
+const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21419',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
  'hand_l','hand_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','ball_l','ball_r'];
-let source=null,pending=null;
+// V21.433 realistic men's body ("Man Player" by RiverofCreative, CC-BY-4.0,
+// tools/build-footera-real.py): same bones and frames as the MakeHuman body,
+// a real face, cloth and boots. Women's players keep the MakeHuman body.
+// localStorage footera-3d-real=0 turns it off.
+const REAL_URL=new URL('./assets/footera/models/footera-real.glb?v=21433',import.meta.url);
+// V21.436 MetaHuman body (Basti's own MetaHuman from Unreal, DNA export,
+// tools/build-footera-metahuman.py): same bones, mesh names and kit layout as
+// the realistic body above, which stays the fallback.
+// localStorage footera-3d-metahuman=0 goes back to the Man Player body.
+const METAHUMAN_URL=new URL('./assets/footera/models/footera-metahuman.glb?v=21436',import.meta.url);
+let source=null,sourceReal=null,pending=null,realPending=null;
+const REAL_TIMEOUT_MS=45000;
+// V21.441: what the 3D badge shows about the human squad.
+const status={state:'idle',body:null,error:''};
+export function footeraHumanModelStatus(){return{...status}}
+// Resolves once the men's body has loaded (or was given up).
+export function footeraRealBodyLoaded(){return realPending||Promise.resolve(!!sourceReal)}
+export function footeraRealPlayersWanted(){
+ try{return globalThis.localStorage?.getItem('footera-3d-real')!=='0'}catch(_){return true}
+}
+export function footeraMetaHumanWanted(){
+ try{return globalThis.localStorage?.getItem('footera-3d-metahuman')!=='0'}catch(_){return true}
+}
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 
 export async function prepareFooteraHumanModel(){
@@ -22,26 +44,50 @@ export async function prepareFooteraHumanModel(){
  if(!pending)pending=(async()=>{
   const [{GLTFLoader},{clone}]=await Promise.all([
    import('./vendor/three/GLTFLoader.mjs'),import('./vendor/three/SkeletonUtils.mjs')]);
-  const gltf=await new GLTFLoader().loadAsync(HUMAN_URL.href);
-  const info=gltf.parser.json.extras?.footera,bones=new Set();let vertices=0,body=null;
-  gltf.scene.traverse(node=>{
-   if(node.isBone)bones.add(node.name);
-   if(node.isSkinnedMesh&&node.name==='FooteraBody'){body=node;vertices=node.geometry.getAttribute('position').count}
-  });
-  if(!info||!body||vertices<5000||NEEDED.some(name=>!bones.has(name)))
-   throw new Error('Footera human GLB failed rig validation');
-  const skins={};
-  for(const [tone,index] of Object.entries(info.skins||{})){
-   const texture=await gltf.parser.getDependency('texture',index);
-   texture.flipY=false;texture.colorSpace='srgb';skins[tone]=texture;
+  const load=async url=>{
+   const gltf=await new GLTFLoader().loadAsync(url);
+   const info=gltf.parser.json.extras?.footera,bones=new Set();let vertices=0,body=null;
+   gltf.scene.traverse(node=>{
+    if(node.isBone)bones.add(node.name);
+    if(node.isSkinnedMesh&&node.name==='FooteraBody'){body=node;vertices=node.geometry.getAttribute('position').count}
+   });
+   if(!info||!body||vertices<5000||NEEDED.some(name=>!bones.has(name)))
+    throw new Error('Footera human GLB failed rig validation');
+   const skins={};
+   for(const [tone,index] of Object.entries(info.skins||{})){
+    const texture=await gltf.parser.getDependency('texture',index);
+    texture.flipY=false;texture.colorSpace='srgb';skins[tone]=texture;
+   }
+   return{scene:gltf.scene,clone,info,skins,vertexCount:vertices,boneCount:bones.size};
+  };
+  // V21.441 (Basti: "plötzlich sehen alle gleich aus", the phone showed the
+  // old squad): the MakeHuman body no longer waits for the men's body. It
+  // loads first and makes the human squad ready on its own; the MetaHuman (or
+  // Man Player) body follows afterwards, never in parallel, so a phone never
+  // decodes two big models at once. A body that hangs is given up after a
+  // while and the next one is tried; until then men keep the MakeHuman body.
+  status.state='loading';status.error='';
+  const human=await load(HUMAN_URL.href);
+  source=human;status.state='ready';status.body='makehuman';
+  if(footeraRealPlayersWanted()){
+   const timed=url=>Promise.race([load(url),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout '+url.split('/').pop().split('?')[0])),REAL_TIMEOUT_MS))]);
+   const tries=footeraMetaHumanWanted()?[[METAHUMAN_URL.href,'metahuman'],[REAL_URL.href,'real']]:[[REAL_URL.href,'real']];
+   realPending=(async()=>{
+    for(const [url,body] of tries){
+     try{const real=await timed(url);sourceReal={...real,real:true};status.body=body;return true}
+     catch(error){status.error=String(error?.message||error).slice(0,120)}
+    }
+    return false;
+   })();
   }
-  source={scene:gltf.scene,clone,info,skins,vertexCount:vertices,boneCount:bones.size};
   return true;
- })().catch(error=>{pending=null;throw error});
+ })().catch(error=>{pending=null;status.state='failed';status.error=String(error?.message||error).slice(0,120);throw error});
  return pending;
 }
 export function isFooteraHumanModelReady(){return !!source}
-export function footeraHumanSource(){return source}
+// The body a look is made for: men on the realistic body when it loaded.
+export function footeraHumanSource(look=null){return look?.real&&sourceReal?sourceReal:source}
+export function footeraRealSource(){return sourceReal}
 
 function hash(text){
  let h=2166136261;for(const ch of String(text)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}
@@ -58,8 +104,14 @@ const HAIR_SHADES=['#1b1512','#2a1d16','#3b2a1f','#14110f','#4f3826','#6e5038','
 // beard:'none'|'Full_beard'|'Moustache'}; anything missing stays name-picked.
 // custom.female (V21.258, women's players from the EA record): the female body
 // morph and skin, a women's haircut and never a beard.
+// V21.419: custom.hair may also name a special cut (info.hairSpecial, e.g.
+// 'dreads01') or, for men, a women's cut (ponytail01, bob02).
 // role (V21.346): {keeper:true} for goalkeepers, who stand a little taller.
-export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,custom=null,role=null){
+export function footeraHumanLook(name='',skinTone='#c88f69',info,custom=null,role=null){
+ // Men go on the realistic body when it is there (V21.433); women and an
+ // explicitly passed info keep their body.
+ const real=info===undefined&&custom?.female!==true&&!!sourceReal;
+ if(info===undefined)info=real?sourceReal.info:source?.info;
  const h=hash(name),pick=(list,shift)=>list[(h>>>shift)%list.length];
  const female=custom?.female===true&&!!info?.hairFemale?.length;
  const hair=female?info.hairFemale:info?.hair||['short02'],facial=info?.facial||[],brows=info?.brows||['eyebrow001'];
@@ -88,10 +140,14 @@ export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,cu
  const beard=(h>>>13)%10,facialHair=female?null:beard>=9?facial[1]:beard>=5?facial[0]:null;
  const look={hair:pick(hair,3),facial:facialHair||null,brows:female?brows[0]:pick(brows,9),morphs,
   skin:tone,skinKey:(dark?'dark':'light')+(female?'Female':''),female,height:Math.round(height*1000)/1000,
-  hairColor:dark?pick(['#120f0e','#1b1512','#241a14'],17):pick(HAIR_SHADES,17)};
+  hairColor:dark?pick(['#120f0e','#1b1512','#241a14'],17):pick(HAIR_SHADES,17),real};
  if(custom){
-  if(!female&&(custom.hair==='bald'||hair.includes(custom.hair)))look.hair=custom.hair==='bald'?null:custom.hair;
-  else if(female&&hair.includes(custom.hair))look.hair=custom.hair;
+  // V21.419: a set haircut may also come from the special cuts (dreadlocks)
+  // and, for long-haired men (Baggio, Nedved), from the women's ponytail or
+  // bob; women may be shaved too. The name pick never chooses these.
+  const allowed=[...hair,...(info?.hairSpecial||[]),...(female?[]:info?.hairFemale||[])];
+  if(custom.hair==='bald')look.hair=null;
+  else if(allowed.includes(custom.hair))look.hair=custom.hair;
   if(!female){if(custom.beard==='none')look.facial=null;else if(facial.includes(custom.beard))look.facial=custom.beard}
   if(/^#[0-9a-f]{6}$/i.test(String(custom.hairColor||'')))look.hairColor=custom.hairColor;
  }
@@ -180,6 +236,7 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
   ctx.fillStyle=ink;ctx.fillText(word,0,0);ctx.restore();
  }
  ctx.restore();
+ if(opts.captain)paintFooteraCaptainBand(ctx,size,shirt,bands,metres,info);
  // Shorts with side piping; the small number sits on the front left leg.
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=shorts;ctx.fillRect(0,size*bands.shorts[0]-2,size,size*(bands.shorts[1]-bands.shorts[0])+4);
  if(metres.shorts)for(const half of ['front','back']){
@@ -262,10 +319,46 @@ export function footeraSkinTint(skin,mean){
  const max=.2126*mean[0]+.7152*mean[1]+.0722*mean[2]>.5?1.12:2.4;
  return target.map((c,i)=>clamp(toLinear(c)/Math.max(.02,toLinear(mean[i])),.3,max));
 }
+// V21.436: how much of each body vertex a haircut covers (1 within 6 mm of a
+// hair vertex, fading out by 1.8 cm, so the painted scalp has a soft
+// hairline) and the triangles that touch it. Cached per body and cut
+// geometry; grid lookup in the bind pose.
+const hairCaps=new WeakMap();
+export function hairCapIndex(body,hair,full=.006,reach=.018){
+ let perBody=hairCaps.get(body);if(!perBody)hairCaps.set(body,perBody=new WeakMap());
+ if(perBody.has(hair))return perBody.get(hair);
+ const hp=hair.getAttribute('position'),bp=body.getAttribute('position'),index=body.getIndex();
+ if(!hp||!bp||!index){perBody.set(hair,null);return null}
+ const cell=reach,grid=new Map(),key=(x,y,z)=>x+','+y+','+z;let low=Infinity;
+ for(let i=0;i<hp.count;i++){
+  const x=hp.getX(i),y=hp.getY(i),z=hp.getZ(i);low=Math.min(low,y);
+  const k=key(Math.floor(x/cell),Math.floor(y/cell),Math.floor(z/cell));let list=grid.get(k);if(!list)grid.set(k,list=[]);list.push(x,y,z);
+ }
+ const cover=new Float32Array(bp.count);
+ for(let v=0;v<bp.count;v++){
+  const x=bp.getX(v),y=bp.getY(v),z=bp.getZ(v);if(y<low-reach)continue;
+  const gx=Math.floor(x/cell),gy=Math.floor(y/cell),gz=Math.floor(z/cell);let best=reach*reach;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+   const list=grid.get(key(gx+dx,gy+dy,gz+dz));if(!list)continue;
+   for(let i=0;i<list.length;i+=3){const ex=list[i]-x,ey=list[i+1]-y,ez=list[i+2]-z,d=ex*ex+ey*ey+ez*ez;if(d<best)best=d}
+  }
+  const u=Math.min(1,Math.max(0,(Math.sqrt(best)-full)/(reach-full)));cover[v]=1-u*u*(3-2*u);
+ }
+ // Thin crowns: every cut covers the top of the head, also where its cards
+ // leave a gap wider than the reach.
+ let top=-Infinity;for(let i=0;i<hp.count;i++)top=Math.max(top,hp.getY(i));
+ // From the hair's highest point down (long tails and braids hang far lower).
+ const crown=top-.065;
+ for(let v=0;v<bp.count;v++){const y=bp.getY(v);if(y>crown)cover[v]=Math.max(cover[v],Math.min(1,(y-crown)/.012))}
+ const out=[],ix=index.array;
+ for(let t=0;t<ix.length;t+=3)if(cover[ix[t]]>.01||cover[ix[t+1]]>.01||cover[ix[t+2]]>.01)out.push(ix[t],ix[t+1],ix[t+2]);
+ const result={index:bp.count>65535?Uint32Array.from(out):Uint16Array.from(out),cover};
+ perBody.set(hair,result);return result;
+}
 // Bake this player's face into private geometry copies, drop unused haircuts
 // and give every surface its own material. Returns disposables.
 export function dressFooteraHuman(THREE,model,look,kit,opts={}){
- const info=source?.info,owned=[],remove=[];
+ const asset=footeraHumanSource(look),info=asset?.info,owned=[],remove=[];
  const keep=name=>{
   if(name.startsWith('FooteraHair-'))return name==='FooteraHair-'+look.hair;
   if(name.startsWith('FooteraFacial-'))return name==='FooteraFacial-'+look.facial;
@@ -273,6 +366,9 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
   return true;
  };
  const meshes=[];model.traverse(node=>{if(node.isSkinnedMesh)(keep(node.name)?meshes:remove).push(node)});
+ // V21.436: which scalp triangles the chosen haircut covers (bind pose, before the face bake).
+ const bodyMesh=meshes.find(m=>m.name==='FooteraBody'),hairMesh=meshes.find(m=>m.name==='FooteraHair-'+look.hair);
+ const capIndex=bodyMesh&&hairMesh?hairCapIndex(bodyMesh.geometry,hairMesh.geometry):null;
  for(const node of remove)node.removeFromParent();
  const size=opts.detail?1024:512,canvas=document.createElement('canvas');canvas.width=canvas.height=size;
  const ctx=canvas.getContext('2d');
@@ -280,8 +376,8 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
  const kitMap=new THREE.CanvasTexture(canvas);kitMap.colorSpace=THREE.SRGBColorSpace;kitMap.flipY=false;
  kitMap.anisotropy=opts.detail?8:4;kitMap.name='FooteraHumanKit';owned.push({texture:kitMap});
  // A GLB without the women's skins keeps the men's texture of the same tone.
- const skinKey=source?.skins?.[look.skinKey]?look.skinKey:String(look.skinKey).replace('Female','');
- const skinMap=source?.skins?.[skinKey];
+ const skinKey=asset?.skins?.[look.skinKey]?look.skinKey:String(look.skinKey).replace('Female','');
+ const skinMap=asset?.skins?.[skinKey];
  const tint=footeraSkinTint(look.skin,info?.skinMean?.[skinKey]||[.75,.55,.45]);
  for(const mesh of meshes){
   const geometry=mesh.geometry.clone(),morphs=geometry.morphAttributes.position,names=mesh.morphTargetDictionary||{};
@@ -289,7 +385,8 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    const pos=geometry.getAttribute('position'),out=pos.array.slice();
    for(const [key,weight] of Object.entries(look.morphs||{})){
     const index=names[key],delta=morphs[index];if(index==null||!delta||!weight)continue;
-    const d=delta.array;for(let i=0;i<out.length;i++)out[i]+=d[i]*weight;
+    // V21.433: the realistic body stores its deltas as normalized int16.
+    const d=delta.array,w=delta.normalized?weight/32767:weight;for(let i=0;i<out.length;i++)out[i]+=d[i]*w;
    }
    geometry.setAttribute('position',new THREE.BufferAttribute(out,3));
    geometry.morphAttributes={};geometry.morphTargetsRelative=false;
@@ -318,7 +415,62 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
   }
   mesh.material=material;owned.push({geometry,material});
  }
+ // V21.436 (Basti: "fleckig, als würden Haare fehlen"): hair cards leave gaps
+ // where the scalp shows through. Like real football games, the scalp under
+ // the cut is painted in the hair colour: a second draw of those body
+ // triangles (same baked positions and skinning), pulled just in front of
+ // the skin. Bald players (Zidane) have no cut and keep their head.
+ if(capIndex&&capIndex.index.length){
+  const src=bodyMesh.geometry,geometry=new THREE.BufferGeometry();
+  for(const key of ['position','normal','skinIndex','skinWeight'])if(src.getAttribute(key))geometry.setAttribute(key,src.getAttribute(key));
+  geometry.setIndex(new THREE.BufferAttribute(capIndex.index,1));
+  const rgba=new Float32Array(capIndex.cover.length*4).fill(1);for(let v=0;v<capIndex.cover.length;v++)rgba[v*4+3]=capIndex.cover[v];
+  geometry.setAttribute('color',new THREE.BufferAttribute(rgba,4));
+  const material=new THREE.MeshStandardMaterial({color:new THREE.Color(look.hairColor).multiplyScalar(.8),roughness:.92,metalness:0,
+   vertexColors:true,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4});
+  const cap=new THREE.SkinnedMesh(geometry,material);cap.name='FooteraHairCap';
+  cap.bind(bodyMesh.skeleton,bodyMesh.bindMatrix);cap.frustumCulled=false;cap.castShadow=false;cap.receiveShadow=true;
+  bodyMesh.parent.add(cap);owned.push({geometry,material});
+ }
  // HD preview: richer surfaces on the close-up heroes only.
  if(opts.detail&&footeraHDWanted())owned.push(...upgradeFooteraHero(THREE,meshes,look,kitMap,footeraKitLayout(info),hash(look.hair+look.skin)%97+1));
  return{owned,kitMap,canvas};
+}
+
+// V21.428 Kapitänsbinde: the captain from the squad's "Aufgaben" wears a band
+// round the LEFT sleeve. Basti: a separate ring hung off the arm, so the band
+// is woven into the shirt itself (kit texture), and it moves with the cloth.
+// The kit is projected front/back, so the band is painted on both halves
+// (mirrored on the back) and wraps the sleeve. Bind pose, metres: upper arm
+// from the shoulder (.214,1.443) down .665/-.747; the sleeve ends ~.13 m down.
+export const FOOTERA_CAPTAIN_BAND=Object.freeze({shoulder:[.214,1.443],dir:[.665,-.747],at:.084,half:.03,across:.11,inner:.236});
+export function footeraCaptainBandColors(shirt='#1b4c52'){
+ // Classic yellow band; on yellow or gold shirts a dark one, so it always reads.
+ const [r,g,b]=hexRGB(shirt),near=Math.hypot(r-.95,g-.76,b-.19)<.42;
+ return near?{band:'#16191f',ink:'#f2c230'}:{band:'#f2c230',ink:'#16191f'};
+}
+function paintFooteraCaptainBand(ctx,size,shirt,bands,metres,info){
+ // Each body brings its own shoulder (V21.433); the MakeHuman values otherwise.
+ const B={...FOOTERA_CAPTAIN_BAND,...(info?.captainBand||{})},{band,ink}=footeraCaptainBandColors(shirt);
+ const [sx,sy]=B.shoulder,[dx,dy]=B.dir,px=-dy,py=dx,cx=sx+dx*B.at,cy=sy+dy*B.at;
+ const corner=(a,c)=>[cx+dx*a*B.half+px*c*B.across,cy+dy*a*B.half+py*c*B.across];
+ for(const half of ['front','back']){
+  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,half);
+  if(half==='back')ctx.scale(-1,1);
+  // Never onto the chest or the back next to the armpit.
+  ctx.beginPath();ctx.rect(B.inner,.9,.62-B.inner,.7);ctx.clip();
+  ctx.beginPath();[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,c],i)=>{const [x,y]=corner(a,c);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();
+  ctx.fillStyle=band;ctx.fill();
+  // Woven edges.
+  ctx.strokeStyle='rgba(0,0,0,.32)';ctx.lineWidth=.004;
+  for(const a of [-.92,.92]){const [x0,y0]=corner(a,-1),[x1,y1]=corner(a,1);ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke()}
+  if(half==='front'){
+   // The C on the outer face, upright when the arm hangs.
+   ctx.save();ctx.translate(cx+px*.03,cy+py*.03);ctx.rotate(Math.atan2(dx,-dy));
+   const h=B.half*1.55;ctx.scale(h/100,-h/100);
+   ctx.font='900 132px "Arial Narrow","Roboto Condensed",Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle=ink;ctx.fillText('C',0,6);ctx.restore();
+  }
+  ctx.restore();
+ }
 }

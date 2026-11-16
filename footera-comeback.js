@@ -23,9 +23,23 @@
   if(typeof document!=="undefined"&&document.querySelector(".modal.active"))return false;
   return true;
  }
+ // V21.417: seenAt is stored to the full hour. Writing the exact time every 5 seconds changed the save
+ // constantly, so Player Picks and Cup rewards (which compare the save before and after the cloud
+ // backup) never reached the server ("Spielstand synchronisieren"). An hour is precise enough for 7 days.
+ const HOUR=36e5;
+ function claimBusy(){
+  try{
+   if(root.FooteraPlayerPicks?.isActive?.())return true;
+   const ls=root.localStorage;
+   return !!(ls&&(ls.getItem("footera-pending-player-pick-v1")||ls.getItem("footera-pending-challenge-v1")));
+  }catch(_){return false}
+ }
  function touch(now=Date.now()){
   if(typeof state==="undefined"||!state.onboarded)return;
-  const d=data();state.comeback={seenAt:Math.max(d.seenAt>now?0:d.seenAt,now),giftAt:d.giftAt};
+  const d=data(),hour=Math.floor(now/HOUR)*HOUR,seenAt=Math.max(d.seenAt>now?0:d.seenAt,hour);
+  if(state.comeback&&state.comeback.seenAt===seenAt&&num(state.comeback.giftAt)===d.giftAt)return;
+  if(claimBusy())return;
+  state.comeback={seenAt,giftAt:d.giftAt};
  }
  function claim(now=Date.now()){
   if(typeof state==="undefined")return null;

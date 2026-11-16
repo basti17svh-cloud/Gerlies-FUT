@@ -1,5 +1,6 @@
 /* Footera V21.219 player looks for the 3D highlights: skin tone, hair colour,
- * haircut and beard per real player (V21.258: women's players flagged female).
+ * haircut and beard per real player (V21.258: women's players flagged female;
+ * V21.419: every Icon hand-set, dreadlocks and long hair, women's haircuts).
  * Two sources, both keyed by EA id:
  * assets/player-looks.json, measured from EA's own player portraits by
  * scripts/build-player-looks.cjs, and hand-set looks for well-known players,
@@ -9,7 +10,10 @@
 (function(root){
  'use strict';
  // One look = 4 characters: skin 1-6, haircut, hair colour, beard; '_' = unknown.
- const STYLE={k:'short01',f:'short02',r:'short04',a:'afro01',x:'bald'};
+ // V21.419: d dreadlocks (Gullit, Rijkaard), p ponytail/man bun (Baggio, Ibra),
+ // b shoulder-length (Nedved, Batistuta), t braid (women only).
+ const STYLE={k:'short01',f:'short02',r:'short04',a:'afro01',x:'bald',d:'dreads01',p:'ponytail01',b:'bob02',t:'Braid01'};
+ const WOMEN_STYLES=new Set(['ponytail01','bob02','Braid01','bald']);
  const COLOR={S:'#14110f',D:'#3b2a1f',B:'#6e5038',L:'#9a7448',G:'#c9a061',P:'#e8d7a8',R:'#a4552a',Y:'#8f8c88',W:'#e9e6df'};
  const BEARD={n:'none',v:'Full_beard',m:'Moustache'};
  // Hand-set for the best-known players, read off their EA portraits (and a few
@@ -19,27 +23,27 @@
   '209331':'4kSv', '231747':'4kSn', '203376':'4kSv', '231443':'5kSv', '231866':'2kSv', '239085':'1rGn', '252371':'4kSn', '192119':'2rDv',
   '202126':'1rLv', '212622':'1kLn', '212831':'2rSv', '230621':'2kSv', '233419':'2kSv', '235212':'3kSn', '238794':'5aSn', '239053':'1rDv',
   '251854':'2fDn', '255253':'2fDv', '256630':'1kPn', '277643':'4aSn', '188545':'1kBn', '200389':'1rLv', '231478':'2rSn', '232580':'4kSv',
-  '233731':'6kSn', '246669':'6aSn', '256790':'4kSn', '177683':'1fDn', '192985':'1rGn', '207865':'3aSv', '212198':'2kSv', '213331':'4kSv',
+  '233731':'6kSn', '246669':'6aSn', '256790':'4kSn', '177683':'1bDn', '192985':'1rGn', '207865':'3aSv', '212198':'2kSv', '213331':'4kSv',
   '215441':'6kSv', '215698':'5kSv', '220901':'2aSv', '222665':'1rGn', '224232':'1kLn', '228702':'1rGn', '232293':'5kGn', '234378':'1fDv',
-  '237383':'1aSn', '239837':'1kDv', '241486':'4aSm', '241651':'1rLn', '243715':'4kSv', '246191':'1rDn', '247635':'1fDv', '256079':'6kSn',
+  '237383':'1aSn', '239837':'1kDv', '241486':'4pSm', '241651':'1rLn', '243715':'4kSv', '246191':'1rDn', '247635':'1fDv', '256079':'6kSn',
   '257534':'1kRn', '158023':'2kDv', '192448':'1kBn', '205452':'6kSv', '208128':'2rSv', '211110':'1fDn', '231281':'4kSn', '235073':'1fDv',
-  '237678':'6kSn', '239818':'2rDv', '240638':'3kSn', '241096':'1fSn', '247827':'5aSn', '247851':'3kSn', '252145':'5kSn', '256196':'6kSn',
+  '237678':'6kSn', '239818':'2rDv', '240638':'3kSn', '241096':'1bSn', '247827':'5dSn', '247851':'3kSn', '252145':'5kSn', '256196':'6kSn',
   '256516':'5aGn', '20801':'2kSn', '165153':'3kSv', '200104':'2fSn', '202811':'2rDn', '215914':'6xSn', '228093':'6kSv', '229558':'6kSv',
   '237692':'1kSn', '241084':'3aYv', '243812':'4kSn', '244260':'1kLn', '246104':'5kSv', '247819':'1kLn', '271421':'4aSn', '272834':'1aBn',
-  '167495':'1kLn', '192505':'6kSv', '234396':'6kSv', '241721':'5kSn', '242516':'4kSv', '247090':'2rDn', '251517':'2aSv', '264652':'4aSn',
-  '177003':'1fGn', '208722':'6kSn', '218667':'2kSv', '236772':'2rSv', '264240':'1kBn', '248243':'6aSn', '241637':'6aSn', '240130':'4kSm',
-  '257289':'4aBn', '253149':'6aSn', '206113':'4aSm', '256675':'3aDv', '236610':'6aSm', '230899':'5aSn', '227796':'1kDv', '192318':'1kDn',
-  '212194':'1fGm', '250959':'1kDn', '194765':'1rLv', '213345':'5aSv', '226268':'1xLv', '226271':'1rDv', '234577':'2kSv', '237238':'1kRn',
-  '239231':'2aSv', '239580':'4kSv', '251570':'2kSv', '252154':'1fDn', '259532':'1kSv', '278046':'2kSn', '199503':'1kSn', '204935':'1rLn',
+  '167495':'1kLn', '192505':'6kSv', '234396':'6kSv', '241721':'5kSn', '242516':'4kSv', '247090':'2rDn', '251517':'2aSv', '264652':'4pSn',
+  '177003':'1bGn', '208722':'6kSn', '218667':'2kSv', '236772':'2rSv', '264240':'1kBn', '248243':'6aSn', '241637':'6aSn', '240130':'4kSm',
+  '257289':'4aBn', '253149':'6aSn', '206113':'4aSm', '256675':'3aDv', '236610':'6dSm', '230899':'5dSn', '227796':'1kDv', '192318':'1kDn',
+  '212194':'1bGm', '250959':'1kDn', '194765':'1rLv', '213345':'5aSv', '226268':'1xLv', '226271':'1rDv', '234577':'2kSv', '237238':'1kRn',
+  '239231':'2dSv', '239580':'4kSv', '251570':'2kSv', '252154':'1fDn', '259532':'1kSv', '278046':'2kSn', '199503':'1kSn', '204935':'1rLn',
   '210008':'2rDv', '210035':'1kGm', '216393':'4kSn', '224293':'2rSv', '225375':'1kGv', '226161':'1fBn', '230869':'1kLv', '230872':'1fBm',
   '241159':'6kSn', '241236':'6kSv', '244176':'2kSv', '245037':'1kDv', '246863':'4kSn', '277179':'1rLn', '193698':'1rLv', '210676':'1kDv',
   '212218':'1kBv', '222077':'1aBv', '223848':'1kBm', '227678':'4kSn', '228813':'2kDv', '229476':'1kLv', '229582':'2kSn', '230142':'1kDn',
-  '234579':'5kPv', '235794':'6kSn', '236987':'4aSv', '238074':'4kSv', '240243':'4kSv', '241461':'1kDn', '243014':'4xSv', '246420':'6aSn',
+  '234579':'5kPv', '235794':'6kSn', '236987':'4aSv', '238074':'4kSv', '240243':'4kSv', '241461':'1kDn', '243014':'4xSv', '246420':'6dSn',
   '248148':'1kDn', '251805':'5kSn', '254243':'1kLn', '256197':'3kSn', '260247':'4kYn', '277846':'1fRn', '277954':'1fLn', '197781':'2rSv',
   '200145':'3kSn', '204525':'1kLv', '204638':'1fDn', '207862':'1kGn', '210514':'2kSn', '210881':'1kDv', '212228':'5kSv', '212616':'2rDv',
   '216435':'1xLv', '216549':'1kLn', '221697':'4kSn', '224371':'1kBv', '224987':'1kLv', '225193':'2kSv', '227647':'1kLv', '229237':'4kSn',
   '231447':'3xSm', '231521':'2kSn', '233096':'6aSn', '234236':'1kDn', '236015':'4aSm', '236403':'6kSn', '236703':'1kDv', '237086':'3kSn',
-  '240225':'1kLn', '242444':'1fBn', '243576':'2kSn', '244263':'1aSn', '244669':'1aGv', '244778':'2fBm', '246147':'3kRm', '247103':'2kSv',
+  '240225':'1kLn', '242444':'1fBn', '243576':'2kSn', '244263':'1aSn', '244669':'1aGv', '244778':'2bBm', '246147':'3kRm', '247103':'2kSv',
   '247257':'1rDm', '252042':'4aSm', '253124':'3aSm', '257279':'1kDv', '259480':'3aSv', '262621':'2kSv', '264309':'1kDn', '266127':'1kGn',
   '270673':'4aSv', '272449':'1kLn', '275298':'2aSm', '277427':'3aSn', '183898':'3kSm', '185122':'1kLv', '188335':'1kDn', '192984':'1kDv',
   '198176':'1kDv', '200888':'5xSv', '201024':'6kSv', '203263':'1kDn', '203574':'1aBv', '204970':'1kSn', '206517':'1rDv', '207421':'1kDn',
@@ -47,8 +51,8 @@
   '216460':'2kSm', '217870':'1aBm', '219683':'4kSv', '220502':'3kGv', '220570':'1kDn', '220697':'1kBv', '220834':'2kSv', '227236':'6kSv',
   '229188':'3kSv', '229391':'1kSn', '229891':'1kPn', '231677':'5kSn', '232488':'2kSv', '232656':'2rSv', '233306':'1kBn', '233556':'2kDm',
   '235243':'1kLn', '236506':'1kPn', '237646':'3kSv', '239301':'2kSn', '240950':'2kDv', '241852':'6kSn', '242187':'1kDv', '242964':'1kGn',
-  '243245':'1kDv', '243657':'1kDn', '243854':'5aGm', '244067':'4kSm', '244257':'1kGn', '244675':'1kDn', '245158':'4aSv', '247263':'6aSv',
-  '248550':'1kDn', '251377':'3kYn', '251852':'4aSm', '253109':'1kLn', '253396':'1kLn', '254803':'2kDn', '256948':'1kDn', '257711':'1fDn',
+  '243245':'1kDv', '243657':'1kDn', '243854':'5dBm', '244067':'4kSm', '244257':'1kGn', '244675':'1kDn', '245158':'4aSv', '247263':'6aSv',
+  '248550':'1kDn', '251377':'3kYn', '251852':'4aSm', '253109':'1kLn', '253396':'1kLn', '254803':'2kDn', '256948':'1kDn', '257711':'1bDn',
   '259240':'1kLn', '260592':'1kDn', '261188':'5kSv', '263578':'5aSn', '264388':'1kDn', '265693':'1kDn', '266866':'4aSv', '275771':'5kSv',
   '277031':'2kDn', '278016':'3kLn', '279015':'1fPn', '70415':'1fDm', '73078':'2fSn', '181458':'1aSn', '186153':'1kLn', '192123':'1kDn',
   '192629':'2kSn', '192883':'2kSv', '193747':'2kSv', '199641':'1kLn', '200155':'1kDn', '200724':'2kSv', '202024':'1kDv', '204883':'6kSn',
@@ -76,6 +80,40 @@
   '243952':'1kLn', '244470':'1kDv', '244749':'2kSn', '245630':'6kSv', '246350':'1kDm', '247463':'6kSn', '248165':'1fDm', '250753':'1kSn',
   '250954':'4kSm', '250955':'1kLn', '251566':'2kSm', '251752':'1kDv', '253163':'3kWm', '254022':'1fLm', '254796':'6aSn', '255303':'2kSv',
   '256769':'1kLv'});
+ // Icons (V21.419, Basti 2026-11-13: "Pele" too light, Gullit without his
+ // dreadlocks): keyed by the game's Icon id, as the player looked in his Icon
+ // era, read off the Icon card portraits and public photos. Skin 1 very fair
+ // to 6 deep brown.
+ const ICONS=Object.freeze({
+  'midicon-ronaldo':'4xSn', 'midicon-mia-hamm':'1pLn', 'midicon-pele':'6kSn', 'midicon-franz-beckenbauer':'1fDn', 'midicon-eusebio':'6kSn',
+  'midicon-lothar-matthaus':'1fBn', 'midicon-zinedine-zidane':'2xDn', 'midicon-ruud-gullit':'5dSm', 'midicon-formiga':'5pSn', 'midicon-thierry-henry':'5xSn',
+  'midicon-ferenc-puskas':'1rSn', 'midicon-alex-morgan':'1pBn', 'midicon-bobby-charlton':'1rBn', 'midicon-johan-cruyff':'1bDn', 'midicon-paolo-maldini':'2bDn',
+  'midicon-diego-armando-maradona':'3aSn', 'midicon-kenny-dalglish':'1fBn', 'midicon-homare-sawa':'2bSn', 'midicon-jairzinho':'5aSn', 'midicon-zico':'2aSn',
+  'midicon-garrincha':'4kSn', 'midicon-gareth-bale':'1pDv', 'midicon-ronaldinho':'4dSn', 'midicon-carlos-alberto':'5aSn', 'midicon-gianluigi-buffon':'1fDn',
+  'midicon-lilian-thuram':'6kSn', 'midicon-yaya-toure':'6xSn', 'midicon-samuel-eto-o':'6kSn', 'midicon-karl-heinz-rummenigge':'1aLn', 'midicon-kaka':'2kDn',
+  'midicon-sergio-aguero':'2kSn', 'midicon-george-best':'1bSv', 'midicon-zlatan-ibrahimovic':'2pSv', 'midicon-lotta-schelin':'1pGn', 'midicon-francesco-totti':'1fDn',
+  'midicon-iniesta':'1xDn', 'midicon-gerd-muller':'1fSn', 'midicon-petr-cech':'1kDn', 'midicon-rio-ferdinand':'5kSn', 'midicon-alessandro-del-piero':'2fDn',
+  'midicon-patrick-vieira':'6xSn', 'midicon-emilio-butragueno':'1fDn', 'midicon-raul':'2fSn', 'midicon-oliver-kahn':'1fGn', 'midicon-christine-sinclair':'1pDn',
+  'midicon-fernando-torres':'1fGn', 'midicon-raphael-varane':'4kSn', 'midicon-rivellino':'3fSm', 'midicon-wayne-rooney':'1kBn', 'midicon-hege-riise':'1pGn',
+  'midicon-caroline-seger':'1pLn', 'midicon-ashley-cole':'4kSn', 'midicon-hristo-stoichkov':'2fSn', 'midicon-julie-foudy':'1pBn', 'midicon-roberto-baggio':'2pSv',
+  'midicon-eric-cantona':'1fSn', 'midicon-socrates':'3aSv', 'midicon-casillas':'2fSn', 'midicon-marinette-pichon':'1bDn', 'midicon-frank-lampard':'1fBn',
+  'midicon-tobin-heath':'1pLn', 'midicon-cafu':'5xSn', 'midicon-kelly-smith':'1pDn', 'midicon-michael-essien':'6xSn', 'midicon-cha-bum-kun':'2fSn',
+  'midicon-franck-ribery':'1xDn', 'midicon-michael-owen':'1kDn', 'midicon-aya-miyama':'2pSn', 'midicon-dennis-bergkamp':'1fLn', 'midicon-luis-figo':'2fDn',
+  'midicon-peter-schmeichel':'1fGn', 'midicon-claude-makelele':'5xSn', 'midicon-ian-wright':'5xSn', 'midicon-xavi':'2kDn', 'midicon-philipp-lahm':'1kBn',
+  'midicon-paul-scholes':'1kRn', 'midicon-john-barnes':'5kSn', 'midicon-roy-keane':'1kDv', 'midicon-yuki-nagasato':'2pSn', 'midicon-camille-abily':'1pBn',
+  'midicon-andriy-shevchenko':'1kLn', 'midicon-edwin-van-der-sar':'1xLn', 'midicon-marco-van-basten':'1fLn', 'midicon-giorgio-chiellini':'2fSv', 'midicon-laurent-blanc':'1kDn',
+  'midicon-didier-drogba':'6kSv', 'midicon-frank-rijkaard':'5dSn', 'midicon-robin-van-persie':'1kSv', 'midicon-ronald-koeman':'1fGn', 'midicon-marcelo':'4aSn',
+  'midicon-michael-laudrup':'1fDn', 'midicon-mario-kempes':'2bSn', 'midicon-gianluca-zambrotta':'2kSn', 'midicon-javier-zanetti':'2rSn', 'midicon-hugo-sanchez':'3fSm',
+  'midicon-lucio':'4xSn', 'midicon-dunga':'1fLn', 'midicon-marcel-desailly':'6xSn', 'midicon-steven-gerrard':'1kDn', 'midicon-bastian-schweinsteiger':'1fLn',
+  'midicon-steffi-jones':'5bSn', 'midicon-nadine-angerer':'1bDn', 'midicon-roberto-carlos':'5xSn', 'midicon-ellen-white':'1pDn', 'midicon-pavel-nedved':'1bGn',
+  'midicon-pepe':'3xSv', 'midicon-jean-pierre-papin':'1fDn', 'midicon-sissi':'5xSn', 'midicon-gheorghe-hagi':'2fSn', 'midicon-sol-campbell':'6xSn',
+  'midicon-emmanuel-petit':'1pGn', 'midicon-xabi-alonso':'1fDv', 'midicon-rivaldo':'4fSn', 'midicon-birgit-prinz':'1bLn', 'midicon-andrea-pirlo':'2bSv',
+  'midicon-alessandro-nesta':'2fSn', 'midicon-hernan-crespo':'2fDn', 'midicon-toni-kroos':'1kLn', 'midicon-bobby-moore':'1fGn', 'midicon-gary-lineker':'1fDn',
+  'midicon-franco-baresi':'2fDn', 'midicon-robert-pires':'1fDv', 'midicon-geoff-hurst':'1fBn', 'midicon-fabio-cannavaro':'2kSn', 'midicon-fernando-hierro':'2fSn',
+  'midicon-nemanja-vidic':'1kDn', 'midicon-ian-rush':'1fDm', 'midicon-juan-roman-riquelme':'3kSv', 'midicon-gabriel-batistuta':'2bSn', 'midicon-gennaro-gattuso':'2fSv',
+  'midicon-alan-shearer':'1kDn', 'midicon-maicon':'5xSn', 'midicon-miroslav-klose':'1kDn', 'midicon-david-beckham':'1fGn', 'midicon-ruud-van-nistelrooy':'1kDn',
+  'midicon-carles-puyol':'2dDn'});
+ const ICON_WOMEN=new Set(['midicon-alex-morgan', 'midicon-aya-miyama', 'midicon-birgit-prinz', 'midicon-camille-abily', 'midicon-caroline-seger', 'midicon-christine-sinclair', 'midicon-ellen-white', 'midicon-formiga', 'midicon-hege-riise', 'midicon-homare-sawa', 'midicon-julie-foudy', 'midicon-kelly-smith', 'midicon-lotta-schelin', 'midicon-marinette-pichon', 'midicon-mia-hamm', 'midicon-nadine-angerer', 'midicon-sissi', 'midicon-steffi-jones', 'midicon-tobin-heath', 'midicon-yuki-nagasato']);
  let measured={};
  function decode(code){
   const c=String(code||''),out={};
@@ -87,20 +125,22 @@
  }
  function get(player){
   const id=String(player?.id??'').trim();if(!id)return null;
-  const look={...decode(measured[id]),...decode(HAND[id])};
+  const look={...decode(measured[id]),...decode(HAND[id]??ICONS[id])};
   return Object.keys(look).length?look:null;
  }
  // Women's players (EA gender "Women's Football", V21.258) get the female
  // body, a women's haircut and no beard in 3D; a men's haircut code never applies.
  function isFemale(player){
   const g=String(player?.gender??player?.sex??'').trim().toLowerCase();
-  return g==='f'||/wom[ae]n|female|frau/.test(g);
+  return g==='f'||/wom[ae]n|female|frau/.test(g)||ICON_WOMEN.has(String(player?.id??''));
  }
  // What the 3D scene takes: skin as tone 1-6, the rest as a custom look.
  function sceneSkin(player){return get(player)?.skin||null}
  function sceneLook(player){
   const look=get(player)||{},female=isFemale(player);
   const out={};for(const k of female?['hairColor']:['hair','hairColor','beard'])if(look[k])out[k]=look[k];
+  // Women keep a women's haircut (ponytail, bob, braid or shaved, like Sissi).
+  if(female&&WOMEN_STYLES.has(look.hair))out.hair=look.hair;
   if(female)out.female=true;
   return Object.keys(out).length?out:null;
  }
@@ -108,5 +148,5 @@
  const ready=typeof root.fetch==='function'&&root.document
   ?root.fetch('./assets/player-looks.json').then(r=>r.ok?r.json():null).then(load).catch(()=>0)
   :Promise.resolve(0);
- root.FooteraPlayerLooks=Object.freeze({HAND,decode,get,isFemale,sceneSkin,sceneLook,load,ready});
+ root.FooteraPlayerLooks=Object.freeze({HAND,ICONS,decode,get,isFemale,sceneSkin,sceneLook,load,ready});
 })(typeof window!=='undefined'?window:globalThis);

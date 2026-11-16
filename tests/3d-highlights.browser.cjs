@@ -75,7 +75,8 @@ if(require.main===module)(async()=>{
    });
    // At first kickoff the CC0 rig may still load. The fallback is intentional;
     // 390/412px scenes must then mount the real GLB, not silently stay legacy.
-    const modelOk=modelBadge.source==='glb'&&modelBadge.text==='GLB AKTIV'||
+    // V21.441: the badge names the GLB squad (weak phones: KLASSISCH · LOW).
+    const modelOk=modelBadge.source==='glb'&&/^(KLASSISCH|METAHUMAN|MAN PLAYER|MAKEHUMAN)/.test(modelBadge.text)||
       width===360&&modelBadge.source==='legacy'&&modelBadge.reason==='not-ready'&&modelBadge.text==='ALT · LOW';
     check(`${width}: visible GLB or initially permitted skinned fallback`,
       modelBadge.visible&&modelOk);

@@ -32,8 +32,8 @@ function sheet(images,cell=256,cols=8,ms=[]){
    const sx=Math.floor(x*img.width/cell),sy=Math.floor(y*img.height/cell),s=(sy*img.width+sx)*4,d=((oy+y)*out.width+ox+x)*4;
    const a=img.data[s+3]/255,grid=false;
    for(let c=0;c<3;c++)out.data[d+c]=grid?(c===0?255:90):Math.round(img.data[s+c]*a+60*(1-a));out.data[d+3]=255}
-  // Measured skin | hair | chin as a bar along the bottom of each cell.
-  const m=ms[k];if(m)[m.skin,m.hair,m.chin].forEach((col,j)=>{if(!col)return;for(let y=cell-22;y<cell;y++)for(let x=j*cell/3;x<(j+1)*cell/3-2;x++){const d=((oy+y)*out.width+ox+Math.floor(x))*4;out.data[d]=col[0];out.data[d+1]=col[1];out.data[d+2]=col[2]}});
+  // Bottom bar: final skin tone (palette) | final hair colour | measured skin.
+  const m=ms[k];if(m)[m.tone,m.hairTone,m.skin].forEach((col,j)=>{if(!col)return;for(let y=cell-28;y<cell;y++)for(let x=j*cell/3;x<(j+1)*cell/3-2;x++){const d=((oy+y)*out.width+ox+Math.floor(x))*4;out.data[d]=col[0];out.data[d+1]=col[1];out.data[d+2]=col[2];out.data[d+3]=255}});
  });
  return PNG.sync.write(out);
 }
@@ -62,44 +62,42 @@ function measure(img){
 }
 (async()=>{
  const list=players();
- if(process.env.SHEET){
-  const [from,count]=String(process.env.SHEET).split(':').map(Number),pick=count?list.slice(from,from+count):list.slice(0,from||48);
-  const imgs=await pool(pick,8,p=>fetchPNG(p.player_face_url));
-  console.log('sizes',imgs.slice(0,3).map(i=>i&&i.width+'x'+i.height),'missing',imgs.filter(x=>!x).length);
-  fs.mkdirSync(path.join(root,'qa'),{recursive:true});
-  const ms=imgs.map(measure);
-  for(let k=0;k*48<imgs.length;k++)fs.writeFileSync(path.join(root,`qa/looks-sheet-${k+1}.png`),sheet(imgs.slice(k*48,k*48+48),256,8,ms.slice(k*48,k*48+48)));
-  fs.writeFileSync(path.join(root,'qa/looks-sheet.txt'),pick.map((p,i)=>{i+=(count?from:0);const m=ms[i-(count?from:0)]||{};return[i,p.player_id,p.common_name||p.short_name,'skinL',Math.round(m.skinL),'hairL',Math.round(m.hairL),'hairSkin',Math.round(m.hairSkin),'chinL',Math.round(m.chinL),'top',(m.top||0).toFixed(3),'skin',m.skin,'hair',m.hair].join(' ')}).join('\n'));
-  return;
- }
  // Full run: measure every men's portrait, calibrate the cut-offs on the
  // hand-set looks in player-looks.js and write a 4-character code per player.
- const hand=Object.fromEntries([...fs.readFileSync(path.join(root,'player-looks.js'),'utf8').matchAll(/'(\d+)':'([1-6][kfrax][SDBLGPRYW][nvm])'/g)].map(m=>[m[1],m[2]]));
+ const hand=Object.fromEntries([...fs.readFileSync(path.join(root,'player-looks.js'),'utf8').matchAll(/'(\d+)':'([1-6][kfraxdpbt][SDBLGPRYW][nvm])'/g)].map(m=>[m[1],m[2]]));
  const minOvr=Number(process.env.MIN_OVR||0),todo=list.filter(p=>Number(p.overall)>=minOvr);
  let done=0;
- const ms=await pool(todo,16,async p=>{const m=measure(await fetchPNG(p.player_face_url));if(++done%1000===0)console.log('measured',done);return m});
- const labelled=todo.map((p,i)=>[hand[p.player_id],ms[i]]).filter(([c,m])=>c&&m&&m.hair);
- const centroid=(key,pick)=>{const g={};for(const [c,m] of labelled){const k=c[key];(g[k]||(g[k]=[])).push(pick(m))}
-  return Object.fromEntries(Object.entries(g).map(([k,v])=>[k,v[0].map((_,j)=>v.map(x=>x[j]).sort((a,b)=>a-b)[v.length>>1])]))};
- const nearest=(cents,v)=>Object.entries(cents).sort((a,b)=>dist3(a[1],v)-dist3(b[1],v))[0][0];
+ // SHEET=from:count keeps those portraits (by rating) for the audit sheets.
+ const [sFrom,sCount]=String(process.env.SHEET||'').split(':').map(Number),keepImg=i=>sCount>0&&i>=sFrom&&i<sFrom+sCount,kept=[];
+ const ms=await pool(todo,16,async(p,i)=>{const img=await fetchPNG(p.player_face_url);if(keepImg(i))kept[i-sFrom]=img;const m=measure(img);if(++done%1000===0)console.log('measured',done);return m});
+ const labelled=todo.map((p,i)=>[hand[p.player_id],ms[i]]).filter(([c,m])=>c&&m);
  const dist3=(a,b)=>Math.hypot(...a.map((x,j)=>x-b[j]));
- // Skin by brightness plus warmth (r-b), hair by colour, both against the hand-set medians.
- const skinKey=m=>[m.skinL,0,0],hairKey=m=>m.hair;
- const skinC=centroid(0,skinKey),hairC=centroid(2,hairKey);
+ const nearest=(cents,v)=>Object.entries(cents).sort((a,b)=>dist3(a[1],v)-dist3(b[1],v))[0][0];
+ const centroid=(key,pick,rows)=>{const g={};for(const [c,m] of rows){const k=c[key];(g[k]||(g[k]=[])).push(pick(m))}
+  return Object.fromEntries(Object.entries(g).map(([k,v])=>[k,v[0].map((_,j)=>v.map(x=>x[j]).sort((a,b)=>a-b)[v.length>>1])]))};
+ // Skin: nearest hand-set brightness median. V21.419 tried ordered cut-offs
+ // fitted on the hand-set players: better on them (within one tone 79 -> 86 %),
+ // but it turned 782 other players from tone 4 to 2 (EA portrait exposure
+ // varies too much for brightness alone), so the centroids stay.
+ const skinKey=m=>[m.skinL,0,0],skinC=centroid(0,skinKey,labelled.filter(([,m])=>m.hair));
+ const tone=m=>nearest(skinC,skinKey(m));
+ const withHair=labelled.filter(([,m])=>m.hair);
+ const hairKey=m=>m.hair,hairC=centroid(2,hairKey,withHair);
  delete hairC.P;delete hairC.Y;delete hairC.W;delete hairC.R; // too few hand samples; dyed/grey stay hand-set only
  const beardRatio=m=>m.chinL/m.skinL;
- let best={acc:0,t:.8};for(let t=.4;t<1.05;t+=.01){const acc=labelled.filter(([c,m])=>(beardRatio(m)<t)===(c[3]!=='n')).length/labelled.length;if(acc>best.acc)best={acc,t}}
+ let best={acc:0,t:.8};for(let t=.4;t<1.05;t+=.01){const acc=withHair.filter(([c,m])=>(beardRatio(m)<t)===(c[3]!=='n')).length/Math.max(1,withHair.length);if(acc>best.acc)best={acc,t}}
  const decide=m=>{
-  if(!m||!m.hair)return null;
-  const skin=nearest(skinC,skinKey(m));
+  if(!m)return null;
+  const skin=tone(m);
+  if(!m.hair)return null;
   const bald=m.hairSkin<45&&Math.abs((m.hair[0]-m.hair[2])-(m.skin[0]-m.skin[2]))<25;
   return skin+(bald?'x':'k')+(bald?'S':nearest(hairC,hairKey(m)))+(beardRatio(m)<best.t?'v':'n');
  };
  const report=['labelled '+labelled.length,'beard cut '+best.t.toFixed(2)+' acc '+best.acc.toFixed(2)];
  for(const [j,name] of [[0,'skin'],[2,'hair'],[3,'beard']]){
-  const ok=labelled.filter(([c,m])=>{const d=decide(m);return d&&d[j]===c[j]}).length;
+  const rows=j?withHair:labelled,ok=rows.filter(([c,m])=>{const d=decide(m);return d&&d[j]===c[j]}).length;
   const near=j===0?labelled.filter(([c,m])=>{const d=decide(m);return d&&Math.abs(d[0]-c[0])<=1}).length:ok;
-  report.push(name+' exact '+(ok/labelled.length).toFixed(2)+(j===0?' within1 '+(near/labelled.length).toFixed(2):''));
+  report.push(name+' exact '+(ok/rows.length).toFixed(2)+(j===0?' within1 '+(near/labelled.length).toFixed(2):''));
  }
  report.push('skin centroids '+JSON.stringify(skinC),'hair centroids '+JSON.stringify(hairC));
  const looks={};todo.forEach((p,i)=>{const d=decide(ms[i]);if(d)looks[p.player_id]=d});
@@ -107,5 +105,13 @@ function measure(img){
  console.log(report.join('\n'));
  fs.mkdirSync(path.join(root,'qa'),{recursive:true});
  fs.writeFileSync(path.join(root,'qa/looks-report.txt'),report.join('\n')+'\n');
+ if(kept.length){
+  const PAL={1:[241,210,179],2:[219,173,136],3:[200,143,105],4:[169,109,75],5:[128,80,53],6:[80,51,38]};
+  const HAIR={S:[20,17,15],D:[59,42,31],B:[110,80,56],L:[154,116,72],G:[201,160,97],P:[232,215,168],R:[164,85,42],Y:[143,140,136],W:[233,230,223]};
+  const pick=todo.slice(sFrom,sFrom+kept.length);
+  const marks=pick.map((p,k)=>{const code=hand[p.player_id]||looks[p.player_id]||'',m=ms[sFrom+k];return{tone:PAL[code[0]],hairTone:HAIR[code[2]],skin:m?.skin}});
+  for(let k=0;k*48<kept.length;k++)fs.writeFileSync(path.join(root,`qa/looks-sheet-${k+1}.png`),sheet(kept.slice(k*48,k*48+48),256,8,marks.slice(k*48,k*48+48)));
+  fs.writeFileSync(path.join(root,'qa/looks-sheet.txt'),pick.map((p,k)=>[sFrom+k,p.player_id,p.common_name||p.short_name,'code',hand[p.player_id]?'hand:'+hand[p.player_id]:looks[p.player_id]||'-','skinL',Math.round(ms[sFrom+k]?.skinL||0)].join(' ')).join('\n')+'\n');
+ }
  fs.writeFileSync(path.join(root,'assets/player-looks.json'),JSON.stringify({version:1,source:'EA player portraits, measured by scripts/build-player-looks.cjs',looks})+'\n');
 })().catch(e=>{console.error(e);process.exit(1)});

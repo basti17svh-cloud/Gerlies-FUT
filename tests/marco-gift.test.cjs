@@ -169,3 +169,25 @@ test('the tester pack looks like the normal Jumbo pack and always holds Gullit a
  }
  assert.ok(draws.size>10,'the other cards must vary between draws')
 });
+
+const MAX='GF-35FADCCBA5AD4E15',TIPP='tippspiel-max-20261114',TIPP_CLAIM='max_tippspiel_points_20261114';
+test('only Max gets the Tippspiel pack, once, and it holds exactly 100,000 Footera Points',()=>{
+ for(const owner of ['GF-OTHER',OWNER,'GF-9AE6CDDEFE8A458D']){
+  const a=app({owner});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[TIPP],undefined);
+  a.ctx.state.packs[TIPP]=1;a.open(TIPP);assert.equal(a.ctx.state.points,500);assert.equal(a.ctx.state.packs[TIPP],1)
+ }
+ const a=app({owner:MAX});
+ assert.ok(a.run(`grantDirectRewards().some(reward=>reward.id==='${TIPP_CLAIM}')`));assert.equal(a.ctx.state.packs[TIPP],1);
+ a.run('renderStore()');assert.match(a.get('ownedPacks').innerHTML,/Tippspiel-Pack/);
+ assert.doesNotMatch(a.get('packGrid').innerHTML,new RegExp(TIPP));
+ assert.equal(a.run(`generatePack('${TIPP}').length`),0);
+ a.open(TIPP);
+ assert.equal(a.ctx.state.points,100500);assert.equal(a.ctx.state.packs[TIPP],0);assert.equal(a.ctx.state.pendingPack.length,0);
+ assert.equal(a.ctx.state.coins,500000);
+ a.open(TIPP);assert.equal(a.ctx.state.points,100500);
+ assert.equal(a.run('grantDirectRewards().length'),0);assert.equal(a.ctx.state.packs[TIPP],0);
+ const saved=a.storage.get('gerliesFutV9'),snapshot=JSON.parse(saved);
+ assert.equal(snapshot.points,100500);assert.equal(snapshot.packs[TIPP],0);assert.ok(snapshot.directClaims[TIPP_CLAIM]);assert.ok(snapshot.pointsPackClaims[TIPP]);
+ const recovered=app({saved});assert.equal(recovered.run('grantDirectRewards().length'),0);
+ recovered.ctx.state.packs[TIPP]=1;recovered.open(TIPP);assert.equal(recovered.ctx.state.points,100500);assert.equal(recovered.ctx.state.packs[TIPP],0)
+});

@@ -12,6 +12,7 @@
  *  pack(step,opts)            pack opening: 'tunnel' | 'clue' | 'flash' | 'board' | 'plain' | 'card'
  *  preload()                  fetch + decode the walkout recordings (called when a pack screen opens)
  *  preloadStadium()           fetch + decode only the match crowd recordings
+ *  recordTap()                V21.424: {stream,release()} copy of the sound for a Tor-Clip, or null
  * Every one-shot also accepts an absolute start time ('at') so the same voices
  * can be rendered into an OfflineAudioContext (QA videos).
  */
@@ -317,5 +318,11 @@
    onChange(paint)};
   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',wire,{once:true});else wire();
  }
- root.FooteraSound=Object.freeze({enabled:()=>enabled,setEnabled,onChange,context:()=>enabled?ctx:null,wake,crowd,kick,net,post,whistle,roar,groan,applause,chant,pack,preload,preloadStadium,offlineBus,KEY});
+ // V21.424 Tor-Clips: a copy of everything that plays, as an audio track for the clip recorder.
+ function recordTap(){
+  const c=context();if(!c||!out||typeof c.createMediaStreamDestination!=='function')return null;
+  try{const d=c.createMediaStreamDestination(),bus=out;bus.connect(d);let done=false;
+   return{stream:d.stream,release(){if(done)return;done=true;try{bus.disconnect(d)}catch(_){}}}}catch(_){return null}
+ }
+ root.FooteraSound=Object.freeze({enabled:()=>enabled,setEnabled,onChange,context:()=>enabled?ctx:null,wake,crowd,kick,net,post,whistle,roar,groan,applause,chant,pack,preload,preloadStadium,offlineBus,recordTap,KEY});
 })(typeof window!=='undefined'?window:globalThis);

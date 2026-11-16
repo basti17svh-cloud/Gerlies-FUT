@@ -467,6 +467,8 @@ const PACKS=[
 ];
 // This account-only gift shares the ordinary pack's name, artwork and description.
 PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
+// One-time "Tippspiel" pack for Max (Basti 2026-11-14): contains no players, only 100,000 Footera Points.
+PACKS.push({id:"tippspiel-max-20261114",name:"Tippspiel-Pack",coins:null,points:null,type:"points",count:0,min:0,max:0,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,iconChance:0,recipientSaveId:"GF-35FADCCBA5AD4E15",pointsReward:100000,desc:"Einmaliges Tippspiel-Pack · 100.000 Footera Points"});
 // Thank-you gift for the tester clubs: shown and described exactly like the ordinary Jumbo pack.
 PACKS.push({...PACKS.find(p=>p.id==="jumbo-rare"),id:"jumbo-rare-20261020",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,surpriseGift:{base:"jumbo-rare",icons:["Ruud Gullit"],players:["231747"]}});
 const TOTW_WEEK_1={id:1,name:"Team of the Week 1",releaseDate:"2026-09-16",activeUntil:"23.09.2026 18:59",players:[
@@ -482,7 +484,7 @@ const TOTW_WEEK_2={id:2,name:"Team of the Week 2",releaseDate:"2026-09-23",activ
  {names:["Michael Olise","Michael Akpovie Olise"],ovr:91,position:"RM"},
  {names:["Raphinha","Raphael Dias Belloli","Raphael Dias Belloli"],ovr:89,position:"ST"},
  {names:["Sophia Wilson","Sophia Smith","Sophia Olivia Wilson"],ovr:89,position:"ST"},
- {names:["Marquinhos","Marcos Aoas Correa","Marcos Aoás Corrêa"],ovr:88,position:"CB"},
+ {names:["Marquinhos","Marcos Aoas Correa","Marcos Aoás Corrêa"],eaId:"207865",ovr:88,position:"CB"},
  {names:["Mohamed Salah","Mohamed Salah Hamed Mahrous Ghaly"],ovr:88,position:"RM"},
  {names:["Antoine Semenyo","Antoine Serlom Semenyo"],ovr:86,position:"LM"},
  {names:["Corentin Tolisso"],ovr:84,position:"CM"},
@@ -512,7 +514,7 @@ const TOTW_WEEK_3={id:3,name:"Team of the Week 3",releaseDate:"2026-09-30",activ
  {names:["Nico Elvedi"],ovr:83,position:"CB",stats:[75,57,73,71,84,82]},
  {names:["Trent Alexander-Arnold","Trent Alexander Arnold"],ovr:87,position:"RB",stats:[78,71,91,84,80,75]},
  {names:["Mikkel Damsgaard"],ovr:84,position:"CAM",stats:[80,79,88,87,57,67]},
- {names:["Dimitris Kourbelis"],ovr:81,position:"CDM",stats:[68,75,77,75,83,84]},
+ {names:["Dimitris Kourbelis","Dimitrios Kourbelis"],eaId:"208260",ovr:81,position:"CDM",stats:[68,75,77,75,83,84],fallback:{"id": "208260", "name": "Dimitrios Kourbelis", "fullName": "Dimitrios Kourbelis", "ovr": 72, "position": "CDM", "team": "Al Khaleej", "league": "ROSHN Saudi League", "nation": "Greece", "nationFlag": "https://drop-assets.ea.com/images/1mUTBFEHJtYms9Y0VgAcIk/2665aa8641ad55e56096b7a155d6089a/f_22.png", "clubLogo": "https://drop-assets.ea.com/images/7IqGBxl8PYlu1rn8q6x9tg/639312891b00e113b42eeb1283925a2e/l112883.png", "teamId": "112883", "face": "./assets/footera/totw/3/208260.png", "gender": "male"}},
  {names:["Alex Baena","Álex Baena","Alejandro Baena Rodriguez","Alejandro Baena Rodríguez"],ovr:87,position:"CAM",stats:[81,83,89,88,65,72]},
  {names:["Leo Walta"],ovr:78,position:"CM",stats:[75,82,80,79,61,69]},
  {names:["Michael Olise","Michael Akpovie Olise"],ovr:91,position:"RM",stats:[88,88,90,93,55,70]},
@@ -529,7 +531,7 @@ const TOTW_WEEK_4={id:4,name:"Team of the Week 4",releaseDate:"2026-10-07",activ
  {names:["Joao Cancelo","João Cancelo","Joao Pedro Cavaco Cancelo"],ovr:86,position:"LB",stats:[87,78,87,88,79,75]},
  {names:["Ciaron Brown","Brown"],ovr:82,position:"CB",stats:[77,68,69,72,82,87]},
  {names:["David Hancko","Dávid Hancko"],ovr:85,position:"CB",stats:[80,65,78,76,86,86]},
- {names:["Lasha Dvali"],ovr:81,position:"CB",stats:[68,48,68,65,82,84]},
+ {names:["Lasha Dvali"],ovr:81,position:"CB",stats:[68,48,68,65,82,84],fallback:{"name": "Lasha Dvali", "fullName": "Lasha Dvali", "ovr": 81, "position": "CB", "nation": "Georgia", "nationFlag": "https://drop-assets.ea.com/images/HunFoU4x6MGj1EoqBYCUA/0517ec2ab830d517beb2f6694baef753/f_20.png", "gender": "male"}},
  {names:["Neco Williams","Neco Shay Williams"],ovr:82,position:"RB",stats:[89,74,78,82,78,78]},
  {names:["Jude Bellingham"],ovr:92,position:"CAM",stats:[82,89,90,92,82,88]},
  {names:["Mikel Merino","Mikel Merino Zazon","Mikel Merino Zazón"],ovr:87,position:"CM",stats:[72,88,86,84,84,87]},
@@ -541,7 +543,7 @@ const TOTW_WEEK_4={id:4,name:"Team of the Week 4",releaseDate:"2026-10-07",activ
  {names:["Bukayo Saka"],ovr:89,position:"RW",stats:[91,88,88,91,62,74]},
  {names:["Robert Lewandowski"],ovr:87,position:"ST",stats:[72,91,82,84,46,83]},
  {names:["Goncalo Ramos","Gonçalo Ramos"],ovr:84,position:"ST",stats:[84,87,76,82,42,84]},
- {names:["Rasmus Hojlund","Rasmus Højlund"],ovr:84,position:"ST",stats:[88,85,71,80,41,86]}
+ {names:["Rasmus Hojlund","Rasmus Højlund"],eaId:"259399",ovr:84,position:"ST",stats:[88,85,71,80,41,86]}
 ]};
 // TOTW 5: von Basti am 13.10.2026 freigegeben; Start 14.10.2026 um 19:00 Europe/Berlin. Ratings/Attribute sind redaktionelles Balancing.
 // Prüfunterlagen: docs/TOTW-5-Vorschlag-2026-10-14.md
@@ -2316,7 +2318,581 @@ const TOTW_WEEK_9={
     }
   ]
 };
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8,TOTW_WEEK_9];
+// Best of TOTW (Basti 2026-11-13): jubilee reissue of the best TOTW 1-9 cards with their original ratings.
+const TOTW_WEEK_10={
+  "id": 10,
+  "name": "Team of the Week 10",
+  "releaseDate": "2026-11-18",
+  "activeUntil": "25.11.2026 18:59",
+  "sourceStatus": "admin-approved",
+  "bestOf": true,
+  "players": [
+    {
+      "names": [
+        "Erling Haaland",
+        "Erling Braut Haaland"
+      ],
+      "eaId": "239085",
+      "ovr": 93,
+      "position": "ST",
+      "stats": [
+        89,
+        95,
+        74,
+        83,
+        49,
+        92
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/239085.png",
+        "gender": "male",
+        "name": "Erling Haaland",
+        "fullName": "Erling Haaland",
+        "ovr": 91,
+        "position": "ST",
+        "alt": "",
+        "team": "Manchester City",
+        "league": "Premier League",
+        "nation": "Norway",
+        "nationFlag": "https://drop-assets.ea.com/images/4hQ7uSEUWnYt04vImczTbF/44a5161e223630f594665532c652235d/f_36.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1z2AYmFlWqkgS3x843JD8a/6ed6da8aa9716d829aee498fc32f2e77/l10.png",
+        "teamId": "10"
+      }
+    },
+    {
+      "names": [
+        "Lamine Yamal",
+        "Lamine Yamal Nasraoui Ebana"
+      ],
+      "eaId": "277643",
+      "ovr": 93,
+      "position": "RW",
+      "stats": [
+        91,
+        90,
+        91,
+        96,
+        41,
+        66
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/277643.png",
+        "gender": "male",
+        "name": "Lamine Yamal",
+        "fullName": "Lamine Yamal Nasraoui Ebana",
+        "ovr": 90,
+        "position": "RW",
+        "alt": "",
+        "team": "FC Barcelona",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1mqjNAj4Z0u1vnDMZSwntN/a5ad57005eea6cacd12d70bbb632a295/l241.png",
+        "teamId": "241"
+      }
+    },
+    {
+      "names": [
+        "Harry Kane"
+      ],
+      "eaId": "202126",
+      "ovr": 92,
+      "position": "ST",
+      "stats": [
+        78,
+        95,
+        90,
+        89,
+        52,
+        88
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/202126.png",
+        "gender": "male",
+        "name": "Harry Kane",
+        "fullName": "Harry Kane",
+        "ovr": 90,
+        "position": "ST",
+        "alt": "",
+        "team": "FC Bayern München",
+        "league": "Bundesliga",
+        "nation": "England",
+        "nationFlag": "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5wM3rRU8Ur4APhQqMNElyT/1183d0c79858e8f9b39f7f5ff94fda25/l21.png",
+        "teamId": "21"
+      }
+    },
+    {
+      "names": [
+        "Jude Bellingham"
+      ],
+      "eaId": "252371",
+      "ovr": 92,
+      "position": "CAM",
+      "stats": [
+        82,
+        89,
+        90,
+        92,
+        82,
+        88
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/252371.png",
+        "gender": "male",
+        "name": "Jude Bellingham",
+        "fullName": "Jude Bellingham",
+        "ovr": 90,
+        "position": "CAM",
+        "alt": "",
+        "team": "Real Madrid",
+        "league": "LALIGA EA SPORTS",
+        "nation": "England",
+        "nationFlag": "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png",
+        "clubLogo": "https://drop-assets.ea.com/images/34HMRqpbKClVJjsfNA58W4/8160bfc9e82012236d0394859c80b2bf/l243.png",
+        "teamId": "243"
+      }
+    },
+    {
+      "names": [
+        "Achraf Hakimi"
+      ],
+      "eaId": "235212",
+      "ovr": 91,
+      "position": "RB",
+      "stats": [
+        94,
+        86,
+        84,
+        85,
+        84,
+        83
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/235212.png",
+        "gender": "male",
+        "name": "Achraf Hakimi",
+        "fullName": "Achraf Hakimi",
+        "ovr": 88,
+        "position": "RB",
+        "alt": "",
+        "team": "Paris SG",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Morocco",
+        "nationFlag": "https://drop-assets.ea.com/images/3UoYayFcbMxukoSVxhuNA1/7e5fc32b3a4f855f859eec7052308dec/f_129.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5khNvXbdBeFYsYuxeoNi5d/a5684fa8f1d60295481216448abaa6f1/l73.png",
+        "teamId": "73"
+      }
+    },
+    {
+      "names": [
+        "Gabriel",
+        "Gabriel dos S. Magalhães"
+      ],
+      "eaId": "232580",
+      "ovr": 90,
+      "position": "CB",
+      "stats": [
+        68,
+        51,
+        67,
+        69,
+        93,
+        87
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/232580.png",
+        "gender": "male",
+        "name": "Gabriel",
+        "fullName": "Gabriel dos S. Magalhães",
+        "ovr": 89,
+        "position": "CB",
+        "alt": "",
+        "team": "Arsenal",
+        "league": "Premier League",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zIpqTDvpVquYcP9pMkVyz/eec11242b62569723aa4b8396507b155/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5bkEBXjBM35OGYplhZJak8/e73ded69d93416a9f1ecccca15243c1f/l1.png",
+        "teamId": "1"
+      }
+    },
+    {
+      "names": [
+        "Sophia Wilson"
+      ],
+      "eaId": "264012",
+      "ovr": 90,
+      "position": "ST",
+      "stats": [
+        92,
+        91,
+        81,
+        89,
+        45,
+        80
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/264012.png",
+        "gender": "female",
+        "name": "Sophia Wilson",
+        "fullName": "Sophia Wilson",
+        "ovr": 88,
+        "position": "ST",
+        "alt": "",
+        "team": "Portland Thorns",
+        "league": "NWSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2TD0ygkKoBSbz4FrAxefsu/444f31cd75c4f07eed5eae5208fad846/l116302.png",
+        "teamId": "116302"
+      }
+    },
+    {
+      "names": [
+        "Melchie Dumornay"
+      ],
+      "eaId": "265898",
+      "ovr": 90,
+      "position": "CAM",
+      "stats": [
+        94,
+        87,
+        83,
+        92,
+        62,
+        76
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/265898.png",
+        "gender": "female",
+        "name": "Melchie Dumornay",
+        "fullName": "Melchie Dumornay",
+        "ovr": 88,
+        "position": "CAM",
+        "alt": "",
+        "team": "OL Lyonnes",
+        "league": "Arkema PL",
+        "nation": "Haiti",
+        "nationFlag": "https://drop-assets.ea.com/images/2SPS1jdi0r8Yu16gxmQWaa/dbb14e1ff1f620d344a371ce575d18ed/f_80.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6wWzOnLJxX9H4yjsyZrPZY/4697eaf2f5c0922badf61028cb82c00b/l116033.png",
+        "teamId": "116033"
+      }
+    },
+    {
+      "names": [
+        "Gregor Kobel"
+      ],
+      "eaId": "235073",
+      "ovr": 89,
+      "position": "GK",
+      "stats": [
+        89,
+        87,
+        85,
+        91,
+        56,
+        88
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/235073.png",
+        "gender": "male",
+        "name": "Gregor Kobel",
+        "fullName": "Gregor Kobel",
+        "ovr": 87,
+        "position": "GK",
+        "alt": "",
+        "team": "Borussia Dortmund",
+        "league": "Bundesliga",
+        "nation": "Switzerland",
+        "nationFlag": "https://drop-assets.ea.com/images/4Hbb0jUSB8bQeIOLkBPfp8/729dd94f435d0d75683bbf978e442b6d/f_47.png",
+        "clubLogo": "https://drop-assets.ea.com/images/d7CmUJ9ZoYPG5RSUBTJYQ/14a4c56aba96321f8901ec9726bfa7a5/l22.png",
+        "teamId": "22"
+      }
+    },
+    {
+      "names": [
+        "Manuela Giugliano"
+      ],
+      "eaId": "227095",
+      "ovr": 89,
+      "position": "CM",
+      "stats": [
+        83,
+        87,
+        86,
+        89,
+        74,
+        76
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/227095.png",
+        "gender": "female",
+        "name": "Manuela Giugliano",
+        "fullName": "Manuela Giugliano",
+        "ovr": 85,
+        "position": "CM",
+        "alt": "",
+        "team": "Roma",
+        "league": "Calcio A Femminile",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "https://drop-assets.ea.com/images/19IhOwiXzGPZFYWwufcIbb/2b0e24b4d84a485f01144ca2e2991d74/l116282.png",
+        "teamId": "116282"
+      }
+    },
+    {
+      "names": [
+        "Christopher Nkunku"
+      ],
+      "eaId": "232411",
+      "ovr": 89,
+      "position": "ST",
+      "stats": [
+        88,
+        90,
+        84,
+        91,
+        50,
+        71
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/232411.png",
+        "gender": "male",
+        "name": "Christopher Nkunku",
+        "fullName": "Christopher Nkunku",
+        "ovr": 80,
+        "position": "ST",
+        "alt": "",
+        "team": "RB Leipzig",
+        "league": "Bundesliga",
+        "nation": "France",
+        "nationFlag": "https://drop-assets.ea.com/images/6O6L3Tw8ha7CokoEp9xppS/bd62283fa0e10eeb4a55c728fd69b0cb/f_18.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png",
+        "teamId": "112172"
+      }
+    },
+    {
+      "names": [
+        "Florian Wirtz"
+      ],
+      "eaId": "256630",
+      "ovr": 88,
+      "position": "CAM",
+      "stats": [
+        87,
+        84,
+        89,
+        92,
+        52,
+        68
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/256630.png",
+        "gender": "male",
+        "name": "Florian Wirtz",
+        "fullName": "Florian Wirtz",
+        "ovr": 86,
+        "position": "CAM",
+        "alt": "",
+        "team": "Liverpool",
+        "league": "Premier League",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1yBVvRngv3RWtnaILTKHRD/3b55c3c2108821da9f35dcf9d37b9f76/l9.png",
+        "teamId": "9"
+      }
+    },
+    {
+      "names": [
+        "Scott McTominay"
+      ],
+      "eaId": "237238",
+      "ovr": 88,
+      "position": "CM",
+      "stats": [
+        82,
+        89,
+        80,
+        85,
+        82,
+        90
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/237238.png",
+        "gender": "male",
+        "name": "Scott McTominay",
+        "fullName": "Scott McTominay",
+        "ovr": 86,
+        "position": "CM",
+        "alt": "",
+        "team": "SSC Napoli",
+        "league": "Serie A Enilive",
+        "nation": "Scotland",
+        "nationFlag": "https://drop-assets.ea.com/images/70yEEZqspJ7r5uElnWnfXG/a33b722fc7fef5fef7973308ec355382/f_42.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3LrwaeMG9Bss0vv01WwOvu/f664523f946741a618254279d391575f/l48.png",
+        "teamId": "48"
+      }
+    },
+    {
+      "names": [
+        "Álex Baena",
+        "Alejandro Baena Rodríguez",
+        "Alex Baena"
+      ],
+      "eaId": "257279",
+      "ovr": 88,
+      "position": "LM",
+      "stats": [
+        82,
+        84,
+        90,
+        89,
+        67,
+        73
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/257279.png",
+        "gender": "male",
+        "name": "Álex Baena",
+        "fullName": "Alejandro Baena Rodríguez",
+        "ovr": 83,
+        "position": "LM",
+        "alt": "",
+        "team": "Atlético de Madrid",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5uY2FeTtMC6lBPGwyYu2Xt/6862fd9c16665720a21be1e843cec6d1/l240.png",
+        "teamId": "240"
+      }
+    },
+    {
+      "names": [
+        "Alessandro Bastoni"
+      ],
+      "eaId": "237383",
+      "ovr": 87,
+      "position": "CB",
+      "stats": [
+        76,
+        58,
+        83,
+        80,
+        89,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/237383.png",
+        "gender": "male",
+        "name": "Alessandro Bastoni",
+        "fullName": "Alessandro Bastoni",
+        "ovr": 86,
+        "position": "CB",
+        "alt": "",
+        "team": "Inter",
+        "league": "Serie A Enilive",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "",
+        "teamId": "131682"
+      }
+    },
+    {
+      "names": [
+        "Ellie Carpenter"
+      ],
+      "eaId": "240030",
+      "ovr": 87,
+      "position": "RB",
+      "stats": [
+        88,
+        62,
+        82,
+        80,
+        84,
+        85
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/240030.png",
+        "gender": "female",
+        "name": "Ellie Carpenter",
+        "fullName": "Ellie Carpenter",
+        "ovr": 85,
+        "position": "RB",
+        "alt": "",
+        "team": "Chelsea",
+        "league": "Barclays WSL",
+        "nation": "Australia",
+        "nationFlag": "https://drop-assets.ea.com/images/7ut4RiJMANPGetPTIa138J/c67ba149e73818ac92fff8b0a2921564/f_195.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6I13EmNTiAN7xdciB3lFZA/c53140979fd9ef1040e9225ca2f1da99/l116010.png",
+        "teamId": "116010"
+      }
+    },
+    {
+      "names": [
+        "Phallon Tullis-Joyce"
+      ],
+      "eaId": "267212",
+      "ovr": 86,
+      "position": "GK",
+      "stats": [
+        84,
+        83,
+        81,
+        87,
+        46,
+        87
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/267212.png",
+        "gender": "female",
+        "name": "Phallon Tullis-Joyce",
+        "fullName": "Phallon Tullis-Joyce",
+        "ovr": 83,
+        "position": "GK",
+        "alt": "",
+        "team": "Manchester Utd",
+        "league": "Barclays WSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4jiZaFaZ8mTJtRTC3IIZxZ/d99383533e4e505d2894d2f80c1c429f/l116012.png",
+        "teamId": "116012"
+      }
+    },
+    {
+      "names": [
+        "Esmee Brugts"
+      ],
+      "eaId": "267530",
+      "ovr": 85,
+      "position": "LB",
+      "stats": [
+        88,
+        75,
+        80,
+        82,
+        82,
+        76
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/267530.png",
+        "gender": "female",
+        "name": "Esmee Brugts",
+        "fullName": "Esmee Brugts",
+        "ovr": 84,
+        "position": "LB",
+        "alt": "",
+        "team": "FC Barcelona",
+        "league": "Liga F Moeve",
+        "nation": "Holland",
+        "nationFlag": "https://drop-assets.ea.com/images/6IUseVhI515LrEflcP5yuE/00a7b1f9b86811254b69a89750af3072/f_34.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3O18C8TunaPk3FnyZelRaC/ec559b48b127777ec0d5b17d32260719/l116325.png",
+        "teamId": "116325"
+      }
+    }
+  ]
+};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8,TOTW_WEEK_9,TOTW_WEEK_10];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -2628,7 +3204,10 @@ function resolveTotwWeekBase(team,info,index){
  let candidates=PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
  if(info?.eaId){const byId=candidates.filter(p=>String(p.id||"")===String(info.eaId));if(byId.length)candidates=byId}
  const base=uniqueTotwPlayer(candidates),out=mergeTotwWeekBase(team,base,null,index);
- TOTW_ARCHIVE_BASE_CACHE.set(key,out);if(out?.id)P_BY_ID.set(String(out.id),out);return out
+ TOTW_ARCHIVE_BASE_CACHE.set(key,out);if(out?.id)P_BY_ID.set(String(out.id),out);
+ // Cards packed while a TOTW entry could not be matched to the database kept this preview id; keep them resolvable after the fix.
+ const legacy="totw-"+(team?.id||0)+"-preview-"+index;if(out?.id&&String(out.id)!==legacy&&!P_BY_ID.has(legacy))P_BY_ID.set(legacy,out);
+ return out
 }
 function allTotwMarketBases(){return publishedTotwWeeks().flatMap(team=>team.players.map((info,index)=>resolveTotwWeekBase(team,info,index)))}
 function resolveTotwBase(info,index){
@@ -4042,7 +4621,8 @@ function portraitCandidates(p){
  faces.filter(u=>u&&!/^https?:/i.test(String(u))).forEach(add);
  if(p?.isIcon){if(p?.futwizId)add(ownFaceUrl("icons",p.futwizId));faces.forEach(add);add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
  const legacy=u=>/https?:\/\/(?:cdn\.sofifa\.net|ratings-images-prod\.pulse\.ea\.com)\//i.test(String(u||""));
- const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v))||"";
+ // Footera's own Serie C ids (900000000+) have no EA portrait anywhere, so only their own art is tried.
+ const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v)&&Number(v)<900000000)||"";
  if(portraitId)add(ownFaceUrl("faces",portraitId));faces.filter(u=>!legacy(u)).forEach(add);if(portraitId)futwizFaceCandidates(portraitId).forEach(add);faces.filter(legacy).forEach(add);if(portraitId){sofifaFaceCandidates(portraitId).forEach(add);fifaRostersFaceCandidates(portraitId,27).forEach(add)}return arr
 }
 // Portraits copied once into Footera's own Supabase storage (scripts/mirror-player-faces.cjs); external sources stay as fallback.
@@ -4874,7 +5454,15 @@ function knownEAClubLeague(team){
  KNOWN_EA_CLUB_LEAGUE_CACHE.set(raw,"");
  return""
 }
-function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
+/* V21.432 — Serie C 2026-27: 60 clubs with their real squads (assets/players-serie-c.csv) and Ronaldinho at Ravenna. */
+/* V21.431 — one name per league: different data sources spell some leagues differently, which put them twice into the league filters. */
+const LEAGUE_CANONICAL_NAMES={"bundesliga 2":"2. Bundesliga","2 bundesliga":"2. Bundesliga","o bundesliga":"Österreichische Fußball-Bundesliga","ö bundesliga":"Österreichische Fußball-Bundesliga","liga i":"SUPERLIGA","superliga romania":"SUPERLIGA","super league greece":"Hellas Liga","stoiximan super league":"Hellas Liga"};
+function canonicalLeagueName(name){const raw=String(name||"").trim();if(!raw)return raw;const k=raw.toLowerCase().replace(/[^a-z0-9äöüß ]+/g," ").replace(/\s+/g," ").trim();return LEAGUE_CANONICAL_NAMES[k]||raw}
+/* V21.431 — league filters: the Top 5 leagues first, the rest alphabetically. */
+const TOP5_LEAGUE_ORDER=["Premier League","LALIGA EA SPORTS","Bundesliga","Serie A","Ligue 1"];
+function sortLeaguesTop5First(list){return [...list].sort((a,b)=>{const ia=TOP5_LEAGUE_ORDER.indexOf(a),ib=TOP5_LEAGUE_ORDER.indexOf(b);if(ia>=0||ib>=0)return(ia<0?99:ia)-(ib<0?99:ib);return String(a).localeCompare(String(b),"de")})}
+function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){return canonicalLeagueName(leagueFromClubRaw(team,rawLeague,leagueId,gender,source))}
+function leagueFromClubRaw(team,rawLeague="",leagueId="",gender="",source=""){
  const id=String(leagueId||"").trim();if(EA_LEAGUE_NAME_BY_ID[id])return EA_LEAGUE_NAME_BY_ID[id];
  const tk=normalizeKey(team),rk=normalizeKey(rawLeague);
  const verified=verifiedClubBadge(team,{gender,league:rawLeague,source});
@@ -5374,7 +5962,7 @@ function pickerItemQuality(item,base=displayBase(item)){
 function itemMatchesQuality(item,quality,base=displayBase(item)){return !quality||pickerItemQuality(item,base)===quality||(quality==="special"&&isEvolutionItem(item))}
 function pickerAffiliationOptions(){
  const rows=state.club.map(item=>{const base=displayBase(item);if(!base)return null;const a=resolvedAffiliation(base);return{league:String(a?.league||"").trim(),club:String(a?.team||"").trim()}}).filter(Boolean);
- return{leagues:[...new Set(rows.map(x=>x.league).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de")),rows}
+ return{leagues:sortLeaguesTop5First(new Set(rows.map(x=>x.league).filter(Boolean))),rows}
 }
 function populatePickerClubFilter(league="",preferredClub=""){
  const select=$("pickerClubFilter");if(!select)return;
@@ -5838,7 +6426,7 @@ function activePromoPacks(now=new Date()){
 }
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation).map(p=>storeDealPack(p)),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
+const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg","tippspiel-max-20261114":"./assets/footera/tippspiel-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -5874,6 +6462,7 @@ function generatePack(id,tradeable=true){
  }
  const p=PACKS.find(x=>x.id===id);
  if(!p)return[];
+ if(p.pointsReward)return[];
  if(p.recipientSaveId)return generateMarcoSurprisePack(p);
  if(p.surpriseGift)return generateSurpriseGiftPack(p,tradeable);
  // Shared audited distribution: draws and published percentage figures use one algorithm.
@@ -6095,7 +6684,38 @@ if(b){
  }finally{footeraStorePurchaseBusy=false;b.disabled=false}
  return;
 }
-const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
+const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;if(PACKS.find(p=>p.id===id)?.pointsReward)return openPointsPack(id);const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
+// Points-only gift packs: one tap credits the points once and shows a short reveal.
+function openPointsPack(id){
+ const pack=PACKS.find(p=>p.id===id),amount=Number(pack?.pointsReward||0);
+ state.pointsPackClaims=state.pointsPackClaims||{};
+ if(!pack||!amount||Number(state.packs[id]||0)<1)return false;
+ if(pack.recipientSaveId&&state.profile?.saveId!==pack.recipientSaveId)return false;
+ if(state.pointsPackClaims[id]){state.packs[id]=0;save();renderStore();toast(`${pack.name} wurde bereits geöffnet.`);return false}
+ state.packs[id]=0;
+ state.points=(Number(state.points)||0)+amount;
+ state.pointsPackClaims[id]={openedAt:Date.now(),points:amount};
+ state.stats=state.stats||{};state.stats.packs=(state.stats.packs||0)+1;
+ save();if(typeof flushSave==="function")flushSave();
+ renderWallet();renderStore();showPointsPackReveal(pack,amount);
+ return true
+}
+function showPointsPackReveal(pack,amount){
+ if(typeof document==="undefined"||!document.body?.appendChild){toast(`${fmt(amount)} Footera Points gutgeschrieben.`);return}
+ document.getElementById("pointsPackReveal")?.remove();
+ const box=document.createElement("div");
+ box.id="pointsPackReveal";box.className="points-pack-reveal";box.setAttribute("role","dialog");box.setAttribute("aria-modal","true");box.setAttribute("aria-label",pack.name);
+ box.style.cssText="position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 50% 42%,rgba(20,120,90,.96),rgba(3,10,8,.98) 62%);";
+ box.innerHTML=`<div style="width:min(340px,100%);text-align:center;color:#f4fff9;font-family:inherit"><img src="${packArtSrc(pack.id)}" alt="" style="width:150px;max-width:46vw;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6));animation:pointsPackPop .55s ease-out both"><div style="margin-top:14px;font-size:12px;letter-spacing:3px;color:#9fe9cf;font-weight:800">${esc(pack.name.toUpperCase())}</div><div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px"><img src="./assets/footera/points.webp" alt="" style="width:46px;height:46px"><strong data-points-count style="font-size:40px;line-height:1;font-weight:900;color:#fff">+0</strong></div><div style="margin-top:6px;font-size:14px;color:#d7efe6">Footera Points gutgeschrieben</div><button type="button" class="primary" data-points-close style="margin-top:22px;width:100%">Super!</button></div><style>@keyframes pointsPackPop{0%{transform:scale(.6) rotate(-6deg);opacity:0}70%{transform:scale(1.08) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}</style>`;
+ document.body.appendChild(box);
+ const counter=box.querySelector("[data-points-count]"),start=performance.now(),dur=1400;
+ const tick=t=>{const k=Math.min(1,(t-start)/dur),v=Math.round(amount*(1-Math.pow(1-k,3)));if(counter)counter.textContent="+"+fmt(v);if(k<1&&box.isConnected)requestAnimationFrame(tick)};
+ requestAnimationFrame(tick);
+ try{window.FooteraSound?.wake?.();packSound("flash")}catch(_){}
+ const close=()=>box.remove();
+ box.querySelector("[data-points-close]")?.addEventListener("click",close);
+ box.addEventListener("click",e=>{if(e.target===box)close()});
+}
 let pendingResolved=new Set(state.pendingResolved);
 function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();globalThis.FooteraWeekRecap?.afterPack(items);globalThis.FooteraKabine?.afterPack(items);if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false;try{window.FooteraSound?.preload?.()}catch(_){}}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
@@ -6450,7 +7070,7 @@ function syncClubFilterOptions(rows=clubFilterItems()){
  const wantedLeague=leagueEl.value,wantedClub=clubEl.value,sourceSig=rows.map(x=>`${x.item.uid}:${x.a?.league||""}:${x.a?.team||""}`).join(";"),sig=`${AFFILIATION_CACHE_EPOCH}|${wantedLeague}|${sourceSig}`;
  if(sig===clubFilterOptionsSignature)return;
  clubFilterOptionsSignature=sig;
- const leagues=[...new Set(rows.map(x=>String(x.a?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+ const leagues=sortLeaguesTop5First(new Set(rows.map(x=>String(x.a?.league||"").trim()).filter(Boolean)));
  leagueEl.innerHTML='<option value="">Alle Ligen</option>'+leagues.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
  leagueEl.value=leagues.includes(wantedLeague)?wantedLeague:"";
  const activeLeague=leagueEl.value;
@@ -6993,7 +7613,7 @@ function qualityLabel(x){if(isMomentumItem(x))return"MOMENTUM";if(x.variant==="i
 function specialVariant(type=""){const eventName="Legacy Event",boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost,legacyEvent:true}}
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
-function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
+function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||canonicalLeagueName(p.league)===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
 function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="",promoEntry=null,extra=null;const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="Icon"}
@@ -7034,7 +7654,7 @@ const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(","),!!halloweenUpgradeFor({eventType:"halloween"})])}
-function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
+function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||canonicalLeagueName(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
  if(pool.length<=MARKET_SNAPSHOT_LIMIT)return pool.slice();
@@ -7830,7 +8450,7 @@ function sbcPickerCandidates(){
 function sbcPickerOptions(sbc){
  const nations=new Set(),leagues=new Set(),clubs=new Set(),league=String(sbcPickerState?.league||"");
  for(const x of sbcSourceItems()){const b=displayBase(x.item);if(!b||!sbc.filter(b))continue;const a=resolvedAffiliation(b)||{};if(b.nation)nations.add(String(b.nation));if(a.league)leagues.add(String(a.league));if(a.team&&(!league||a.league===league))clubs.add(String(a.team))}
- const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sort(leagues),clubs:sort(clubs)}
+ const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sortLeaguesTop5First(leagues),clubs:sort(clubs)}
 }
 function sbcPickerHTML(sbc){
  if(!sbcPickerState)return"";
@@ -8029,7 +8649,7 @@ function sbcQuickFill(opts=sbcAssistantDefaults()){
  const inserted=plan.draft.squad.filter(Boolean).length-manual.length;
  sbcAssistantState=null;sbcSetDraft(sbc.id,plan.draft);renderSBC();toast(`${inserted} günstige Spieler eingesetzt. Bereit zum Abgeben.`)
 }
-function sbcAssistantLeagues(sbc){return [...new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))}
+function sbcAssistantLeagues(sbc){return sortLeaguesTop5First(new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean)))}
 function sbcAssistantHTML(sbc){
  if(!sbcAssistantState)return"";const a=sbcAssistantState;
  const toggle=(id,title,hint,on)=>`<label class="sbc-assistant-toggle"><div><strong>${title}</strong><small>${hint}</small></div><span class="sbc-switch"><input id="${id}" type="checkbox" ${on?"checked":""}><span></span></span></label>`;
@@ -9259,6 +9879,7 @@ function renderMatchReport(){
   <div><span>Karten</span><b>${cardsHome}</b><small>${cardsAway}</small></div>
  </div>
  ${potm?`<section class="match-potm"><div class="match-potm-card">${potmCard}</div><div class="match-potm-copy"><span>SPIELER DES SPIELS</span><strong>${esc(potm.name)}</strong><small>${esc(potmTeam)}</small><div><b>${potm.rating.toFixed(1)}</b><em>Matchrating</em></div><p>${esc(matchPerformanceDetail(potm))}</p></div></section>`:""}
+ ${globalThis.FooteraGoalClip?.reportHTML?.()||""}
  ${globalThis.FooteraNewspaper?.buttonHTML?.()||""}
  ${globalThis.FooteraKabine?.buttonHTML?.()||""}
  <section class="match-report-events"><div class="match-report-section-title"><strong>Timeline</strong><span>Tore, Karten, Wechsel</span></div><div class="match-report-event-list">${timeline.length?timeline.map(e=>`<div class="match-report-event ${e.side} ${e.kind}"><time>${e.minute}'</time><i>${e.icon}</i><div><strong>${esc(e.title)}</strong><span>${esc(e.detail)}</span></div></div>`).join(""):'<div class="match-report-empty">Keine besonderen Ereignisse.</div>'}</div></section>
@@ -9338,6 +9959,8 @@ function finishMatch(){
  renderAll();
  // V21.226: the final-whistle scene first; the queue scrolls to the result after it.
  if(!(typeof queueMatchCeremony3D==="function"&&queueMatchCeremony3D("fulltime")))requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
+ // V21.444 Pokalübergabe: a won cup final is followed by the trophy presentation.
+ else if(typeof queueMatchTrophy3D==="function")queueMatchTrophy3D()
 }
 function closeFinishedMatch(){
  if(typeof hidePostMatchProgress==="function")hidePostMatchProgress();
@@ -9521,7 +10144,7 @@ function rebuildMarketFilterIndex(){const index=new Map();for(const p of PLAYERS
 function scheduleMarketFilterIndexRebuild(){if(!PLAYERS.length)return;clearTimeout(MARKET_FILTER_INDEX_TIMER);MARKET_FILTER_INDEX_TIMER=setTimeout(rebuildMarketFilterIndex,350)}
 function marketPlayersForLeague(league){if(!MARKET_FILTER_INDEX.size&&PLAYERS.length)rebuildMarketFilterIndex();return league?MARKET_FILTER_INDEX.get(String(league))||[]:PLAYERS}
 function totwFallbackFilterPlayers(){return (totwIsActive()?LIVE_TOTW.players:[]).map((info,i)=>mergeTotwBase(null,null,i)).filter(p=>p.team||p.league||p.nation)}
-function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].filter(Boolean))].sort((a,b)=>a.localeCompare(b));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
+function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].map(canonicalLeagueName).filter(Boolean))];leagues.splice(0,leagues.length,...sortLeaguesTop5First(leagues));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
 
 
 function maybePromptForUsername(){
@@ -10021,7 +10644,7 @@ $("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.clos
 
 const DIRECT_REWARDS=Object.freeze({
  "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_iconpicks_20261109",iconPick:{choices:4,count:3},label:"3× Icon Player Pick (1 aus 4)"},{id:"basti_iconpicks_restore_20261110",iconPick:{choices:4,count:5},label:"5× Icon Player Pick (1 aus 4)"}],
- "GF-35FADCCBA5AD4E15":[{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"}],
+ "GF-35FADCCBA5AD4E15":[{id:"max_tippspiel_points_20261114",pack:"tippspiel-max-20261114",qty:1,label:"Tippspiel-Pack"},{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 // Thank-you gifts for the tester clubs (Marco and Niklas), identified like their Founder cards.
@@ -10181,7 +10804,7 @@ $("campaignModal").addEventListener("click",e=>{if(e.target===$("campaignModal")
 // Windows that guard a required step or a purchase/reward flow stay open.
 const BACKDROP_LOCKED_MODALS=new Set(["usernameRequiredModal","footeraPointsPurchaseModal","weeklyRewardModal","onlineDuelModal","squadBattleModal"]);
 function dismissTopModal(){
- const id=topUiLayer(),el=id&&$(id);
+ const id=topUiLayer(),el=id?$(id):null; // no open window: topUiLayer() is "" (Escape used to throw here)
  if(!el?.classList.contains("modal")||BACKDROP_LOCKED_MODALS.has(id))return false;
  if(history.state?.gfut)history.back();else closeTopUiLayer();
  return true
@@ -10311,7 +10934,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.416";
+const GFUT_BUILD="V21.444";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10369,7 +10992,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21416",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21444",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

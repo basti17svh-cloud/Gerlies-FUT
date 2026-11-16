@@ -1229,6 +1229,7 @@
    const providers=(u.identities||[]).map(x=>x.provider).filter(Boolean);
    labelValue("footeraProfileMethod",providers.map(x=>x==="email"?"E-Mail":x==="google"?"Google":x).join(" · ")||"Anmeldung");
    labelValue("footeraProfileSince",u.created_at?new Date(u.created_at).toLocaleDateString("de-DE"):"–");
+   showStatsLinkFor(u);
    // The device is always the game source; the backup chooser stays hidden.
    if($("footeraSaveOverview"))$("footeraSaveOverview").hidden=true;
    // A fully secured club may still lack its online friend profile when an
@@ -1246,6 +1247,28 @@
        }else labelValue("footeraProfileFriendCode","Online-Profil wartet auf vollständige Aufstellung");
      }catch(e){labelValue("footeraProfileFriendCode","Online-Fehler: "+safeMessage(e))}
    }
+ }
+ // V21.418: the statistics dashboard link appears only for accounts the server lists in
+ // footera_analytics_admins. The answer is kept for a day per account, so other players
+ // ask the server at most once a day and only while their profile is open.
+ const STATS_ADMIN="footera-stats-admin-v1";
+ async function showStatsLinkFor(u){
+   const link=$("footeraProfileStatsLink");if(!link)return;
+   link.hidden=true;
+   if(!u?.id||u.is_anonymous||!u.email_confirmed_at)return;
+   let cached=null;
+   try{cached=JSON.parse(root.localStorage.getItem(STATS_ADMIN)||"null")}catch(_){}
+   if(cached?.uid===u.id&&Date.now()-Number(cached.at||0)<864e5){link.hidden=!cached.ok;return}
+   if(offline())return;
+   try{
+     const c=await clientOrOffline();
+     const {data,error}=await c.functions.invoke("footera-analytics-admin",{body:{check:true}});
+     const ok=!error&&data?.admin===true;
+     // Only a clear answer is remembered; a network or server failure asks again next time.
+     const status=error?.context?.status;
+     if(!error||status===401||status===403)root.localStorage.setItem(STATS_ADMIN,JSON.stringify({uid:u.id,ok,at:Date.now()}));
+     link.hidden=!ok;
+   }catch(_){}
  }
  async function showProfile(){
    const u=await user();
@@ -1468,6 +1491,7 @@
      '<div class="footera-profile-hero"><span class="footera-profile-avatar">F</span><div><small>MEIN ACCOUNT</small><h3 id="footeraProfileUsername">–</h3><p id="footeraProfileClub">–</p><p id="footeraProfileStatus">–</p></div></div>'+
      '<h3 class="footera-profile-section-title">Mein Verein</h3>'+
      '<div class="footera-profile-stats"><div><small>SPIELERKARTEN</small><strong id="footeraProfileCards">–</strong></div><div><small>MÜNZEN</small><strong id="footeraProfileCoins">–</strong></div><div><small>FC POINTS</small><strong id="footeraProfilePoints">–</strong></div></div>'+
+     '<a class="footera-profile-admin" id="footeraProfileStatsLink" href="./online/footera-analytics-dashboard.html" hidden>📊 Statistik &amp; Top-Fehler<small>Nur für dein Admin-Konto sichtbar</small></a>'+
      '<section class="footera-save-overview" id="footeraSaveOverview" data-state="checking" aria-labelledby="footeraSaveTitle" hidden>'+
      '<h3 id="footeraSaveTitle" role="status" aria-live="polite">Spielstand wird geprüft …</h3><p id="footeraSaveDescription"></p><p id="footeraSaveTime" class="footera-save-time"></p>'+
      '<div class="footera-save-actions"><button id="footeraProfileBackup" type="button" hidden disabled>Bitte warten …</button><button id="footeraProfileLoad" type="button" hidden disabled>Auf diesem Gerät laden</button></div>'+

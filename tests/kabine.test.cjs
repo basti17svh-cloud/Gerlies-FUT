@@ -48,21 +48,112 @@ test('the same match always gives the same chat',()=>{
  assert.equal(JSON.stringify(api.matchMessages(d)),JSON.stringify(api.matchMessages(d)));
 });
 
-test('a match is stored once, unread counts and the coach answers once',()=>{
- const rows=squad().map(p=>({uid:p.uid,base:{name:p.name,id:p.pid,position:p.pos,ovr:p.ovr},position:p.pos,rating:p.rating,goals:p.uid==='u2'?1:0,assists:0,minutes:p.minutes,saves:p.saves,reds:0}));
- const ctx={matchReportPerformanceRows:()=>rows,matchReportPotm:()=>null,matchHomeTeamName:()=>'FC Gerlies',matchAwayTeamName:()=>'Köln'};
+test('a match is stored once, unread counts and the coach answers up to three times',()=>{
+ const rows=squad().map(p=>({uid:p.uid,base:{name:p.name,id:p.pid,position:p.pos,ovr:p.ovr},position:p.pos,rating:p.uid==='u4'?5.4:p.rating,goals:p.uid==='u2'?1:0,assists:0,minutes:p.minutes,saves:p.saves,reds:0}));
+ const ctx={matchReportPerformanceRows:()=>rows,matchReportPotm:()=>({base:{name:'Harry Kane'},uid:'u2',side:'home',rating:8.4}),matchHomeTeamName:()=>'FC Gerlies',matchAwayTeamName:()=>'Köln'};
  const {api:k,store}=load(ctx);
  const m={finished:true,resultId:'r1',home:1,away:0,initialStarters:rows.slice(0,11).map(r=>r.uid),goalEvents:[g('home',30,'Harry Kane','u2')]};
  const n=k.afterMatch(m);assert.ok(n>=3);
  assert.equal(k.afterMatch(m),0,'flag on the match');
  assert.equal(k.afterMatch({...m,kabineRecorded:false}),0,'same result id is not stored twice');
  assert.equal(k.unread(),n-1,'the Abpfiff line is not counted as a message');
- const v=k.read(),ref=v.msgs[0].ref;
- assert.equal(k.replyOptions(v,ref).length,3);
- const added=k.answer(ref,2);assert.equal(added[0].kind,'me');assert.match(added[0].text,/Pizza/);
- assert.equal(k.replyOptions(k.read(),ref).length,0,'only one answer per match');
- assert.equal(k.answer(ref,0).length,0);
+ const v=k.read(),ref=v.msgs[0].ref,opts=k.replyOptions(v,ref),ids=opts.map(o=>o.id);
+ assert.ok(opts.length>=10,'a dozen coach options after a win: '+ids.join(','));
+ for(const id of ['praiseBest','criticize','bench','sermon','pizza','party','dayOff','run','voice','meme','tactics'])assert.ok(ids.includes(id),id);
+ assert.equal(opts[0].t,'⭐ Harry Kane loben','praising the best player comes first');
+ assert.equal(k.answersLeft(v,ref),3);
+ const praise=k.answer(ref,'praiseBest');
+ assert.equal(praise[0].kind,'me');assert.match(praise[0].text,/@\[Harry Kane\]/);
+ assert.equal(praise[1].who.name,'Harry Kane','the praised player answers first');
+ assert.ok(praise.filter(x=>x.kind==='msg'&&x.who.name!=='Harry Kane').length>=2,'teammates comment');
+ assert.equal(k.read().mood,72,'60 + 4 for the win + 8 for the praise');
+ assert.ok(!k.replyOptions(k.read(),ref).some(o=>o.id==='praiseBest'),'each option once');
+ k.answer(ref,'sermon');
+ const pizza=k.answer(ref,'pizza');
+ assert.ok(pizza.some(x=>/Zuckerbrot|verwöhnen|Stimmungsschwankungen/.test(x.text)),'the players notice pizza after a Kabinenpredigt');
+ assert.equal(k.replyOptions(k.read(),ref).length,0,'three answers per match');
+ assert.equal(k.answer(ref,'meme').length,0);
+ assert.deepEqual(JSON.parse(JSON.stringify(k.read().memo)),{praised:{uid:'u2',name:'Harry Kane'},sermon:true,pizza:true});
  assert.ok(!store.has('gfutState')&&[...store.keys()].every(x=>x==='footera-kabine-v1'),'only its own key');
+});
+
+test('old chats from V21.404 keep working: answered once means done, unanswered gets the new options',()=>{
+ const {api:k,store}=load();
+ const old={msgs:[{kind:'sys',text:'Abpfiff',ref:'m:a',id:'m:a#0',ts:1,result:'win'},{kind:'msg',who:{name:'Harry Kane',uid:'u2',pid:'u2'},text:'Drei Punkte',ref:'m:a',id:'m:a#1',ts:2,result:'win'},
+  {kind:'sys',text:'Abpfiff',ref:'m:b',id:'m:b#0',ts:3,result:'loss'},{kind:'msg',who:{name:'Jamal Musiala',uid:'u3',pid:'u3'},text:'Schade',ref:'m:b',id:'m:b#1',ts:4,result:'loss'}],refs:['m:a','m:b'],replies:{'m:a':1},seen:0};
+ store.set('footera-kabine-v1',JSON.stringify(old));
+ const v=k.read();
+ assert.equal(k.replyOptions(v,'m:a').length,0);
+ const ids=k.replyOptions(v,'m:b').map(o=>o.id);assert.ok(ids.includes('cheerUp')&&ids.includes('sermon')&&!ids.includes('pizza'));
+ assert.equal(k.openRef(v),'m:b');
+ assert.ok(k.answer('m:b','voice').length>=2);
+});
+
+test('the coach comes back after the next match: bench threat, praise, Straflauf, mood',()=>{
+ const players=squad();players[4].goals=1;players[4].rating=8.1;
+ const r=api.matchMessages({seed:'cb1',home:'FC Gerlies',away:'Mainz',gh:1,ga:0,players,goals:[g('home',55,'Leroy Sané','u4')],potm:null,
+  memo:{benched:{uid:'u4',name:'Leroy Sané'},run:true},mood:20});
+ const t=text(r);
+ assert.match(t,/Leroy Sané: (Bank\? Welche Bank|Hab mir die Ansage|Trainer, die Bank|Danke für die Motivation)/,'the threatened player answers with a goal');
+ assert.match(t,/Straflauf/);
+ assert.match(t,/Stimmung|Spaß|lachen|Gerade in solchen Wochen/,'low mood is felt');
+ const p2=squad();p2[4].minutes=0;p2[4].rating=0;
+ const r2=api.matchMessages({seed:'cb2',home:'FC Gerlies',away:'Mainz',gh:0,ga:1,players:p2,goals:[g('away',70,'X','')],potm:null,memo:{benched:{uid:'u4',name:'Leroy Sané'}}});
+ assert.match(text(r2),/@\[Leroy Sané\].*Bank/,'teammates tease the benched player');
+});
+
+test('streaks, competitions, upsets, weather, night games, yellow cards and injuries are talked about',()=>{
+ const base={home:'FC Gerlies',away:'Leipzig',gh:2,ga:1,goals:[g('home',20,'Harry Kane','u2'),g('away',50,'X',''),g('home',70,'Jamal Musiala','u3')],potm:null};
+ const all=new Set();
+ for(let i=0;i<40;i++){
+  const players=squad();players[6].yellows=1;
+  const r=api.matchMessages({...base,seed:'ctx'+i,players,prev:['win','win','win'],mode:i%2?'rivals':'champions',weather:i%3?'rain':'snow',hour:i%4?2:20,opp:90,power:84,injuredUid:'u5'});
+  all.add(text(r));
+ }
+ const t=[...all].join('\n');
+ assert.match(t,/4 Siege|Serie|Siege am Stück|Siege in Folge/);
+ assert.match(t,/Rivals/);assert.match(t,/Champions|Flutlicht|Hymne/);
+ assert.match(t,/Außenseiter|geglaubt|Papier/);
+ assert.match(t,/Unterhose|Schuhe|Wasserball|Schnee|Zehen/);
+ assert.match(t,/Uhr|Uhrzeit/);
+ assert.match(t,/Gelb|Kasse|Foul/);
+ assert.match(t,/Kingsley Coman: (Bin okay|Halb so wild|Der Physio)/,'the injured player gives an update');
+ assert.ok(all.size>=25,'40 matches give many different chats: '+all.size);
+ assert.ok(!/undefined|\{\w+\}|NaN/.test(t),'all placeholders filled');
+});
+
+test('running gags have fixed characters and do not repeat right away',()=>{
+ const players=squad(),roles=api.castRoles(players,players[2]);
+ const again=api.castRoles(squad().reverse(),players[2]);
+ for(const r of ['late','dj','food','gamer','style'])assert.equal(roles[r].name,again[r].name,'same '+r+' every match');
+ assert.equal(roles.kasse.name,'Harry Kane','the captain keeps the team fund');
+ const gags=new Set();let recent=[];
+ for(let i=0;i<30;i++){
+  const r=api.matchMessages({seed:'gag'+i,home:'A',away:'B',gh:1,ga:0,players:squad(),goals:[g('home',10,'Harry Kane','u2')],potm:null,recentGags:recent});
+  for(const id of r.ctx.gags){assert.ok(!recent.includes(id),'not one of the last gags');gags.add(id)}
+  recent=[...recent,...r.ctx.gags].slice(-5);
+ }
+ assert.ok(gags.size>=12,'many different gags: '+gags.size);
+});
+
+test('every coach option works in every situation without empty texts',()=>{
+ const situations=[{gh:3,ga:0},{gh:0,ga:2},{gh:1,ga:1},{gh:2,ga:1}];
+ for(const [i,s] of situations.entries()){
+  const players=squad();players[6].reds=i===1?1:0;players[4].rating=5.2;players[11].goals=i===3?1:0;
+  const goals=[];for(let k=0;k<s.gh;k++)goals.push(g('home',10+k*20,i===3&&k===0?'Thomas Müller':'Harry Kane',i===3&&k===0?'u11':'u2'));for(let k=0;k<s.ga;k++)goals.push(g('away',15+k*20,'X',''));
+  const r=api.matchMessages({seed:'all'+i,home:'A',away:'B',players,goals,potm:{name:'Harry Kane',uid:'u2',side:'home',rating:8},...s});
+  for(const id of Object.keys(api._COACH)){
+   if(!api._COACH[id].when(r.ctx))continue;
+   for(const prior of [[],['sermon'],['pizza','voice']]){
+    const out=api.coachMessages(id,r.ctx,'m:x'+i,prior);
+    assert.equal(out[0].kind,'me',id);assert.ok(out.length>=3,id+' gets at least two answers');
+    assert.ok(out.every(m=>m.text&&!/undefined|\{\w+\}|NaN|@\[\]/.test(m.text)),id+': '+out.map(m=>m.text).join(' | '));
+   }
+  }
+ }
+ const pack=api.joinMessages({name:'Florian Wirtz',uid:'n1',pid:'p1',pos:'CAM'},[{name:'Jamal Musiala',uid:'u3',pid:'u3',pos:'CAM'},{name:'Harry Kane',uid:'u2',pid:'u2',pos:'ST'}],'p:n1');
+ assert.ok(pack.some(m=>m.who?.name==='Jamal Musiala'&&/Konkurrenz|doppelt|Bank/.test(m.text)),'same position = rival');
+ for(const id of ['welcome','cake','number']){const out=api.coachMessages(id,pack[0].ctx,'p:n1');assert.ok(out.length>=2&&out.every(m=>!/undefined|\{\w+\}/.test(m.text)),id)}
 });
 
 test('top pack signings join the group, SBC players leave it',()=>{
@@ -100,4 +191,57 @@ test('the share picture uses the whole chat of the latest match, in order, nothi
  assert.deepEqual(block.map(m=>m.id),all.filter(m=>m.ref===ref).map(m=>m.id));
  assert.ok(block.length>=9,'match messages plus coach answer');
  assert.ok(block.some(m=>m.kind==='me'));
+});
+
+// V21.438: many different memes, many more lines, funny unless there is trouble.
+test('memes: many cards in six layouts, a different one every time, none from the players after trouble',()=>{
+ const rows=squad().map(p=>({uid:p.uid,base:{name:p.name,id:p.pid,position:p.pos,ovr:p.ovr},position:p.pos,rating:p.rating,goals:p.uid==='u2'?1:0,assists:0,minutes:p.minutes,saves:p.saves,reds:0}));
+ const ctx={matchReportPerformanceRows:()=>rows,matchReportPotm:()=>null,matchHomeTeamName:()=>'FC Gerlies',matchAwayTeamName:()=>'Köln'};
+ const {api:k}=load(ctx);
+ const coach=[];
+ for(let i=0;i<15;i++){
+  const res=[[2,0],[1,1],[0,1]][i%3];
+  const goals=[...Array(res[0])].map((_,x)=>g('home',10+x*20,'Harry Kane','u2')).concat([...Array(res[1])].map((_,x)=>g('away',30+x*20,'X','')));
+  k.afterMatch({finished:true,resultId:'mm'+i,home:res[0],away:res[1],initialStarters:rows.slice(0,11).map(r=>r.uid),goalEvents:goals});
+  const v=k.read(),out=k.answer(v.msgs[v.msgs.length-1].ref,'meme');coach.push(out[0]?.meme?.id);
+ }
+ const v=k.read(),memes=v.msgs.filter(m=>m.meme&&typeof m.meme==='object');
+ assert.ok(coach.every(Boolean),'every coach meme is a meme card');
+ assert.equal(new Set(coach).size,coach.length,'the coach never sends the same meme twice in 15 matches');
+ assert.ok(new Set(memes.map(m=>m.meme.t)).size>=5,'different layouts');
+ assert.ok(memes.some(m=>m.kind==='msg'),'players send memes too');
+ const html=k.listHTML(v.msgs);
+ assert.match(html,/kb-meme2/);assert.ok(!/undefined|\{\w+\}/.test(html),'all meme placeholders filled');
+ for(const m of memes)assert.ok(!/undefined|\{\w+\}/.test(m.text),m.text);
+ // after a defeat the players stay serious: no meme from them
+ const lossRefs=new Set(v.msgs.filter(m=>m.kind==='sys'&&m.ctx?.result==='loss').map(m=>m.ref));
+ assert.ok(lossRefs.size>=4);
+ assert.ok(!v.msgs.some(m=>lossRefs.has(m.ref)&&m.kind==='msg'&&m.meme),'no player memes after a defeat');
+ assert.ok(memes.filter(m=>lossRefs.has(m.ref)).every(m=>m.kind==='me'),'only the coach may cheer them up with one');
+});
+
+test('lines do not come back right away and every category has many lines',()=>{
+ for(const [key,list] of Object.entries(api._T))assert.ok(list.length>=(/^cb/.test(key)?2:5),key+' has '+list.length+' lines');
+ assert.ok(api._GAGS.length>=50,'running gags: '+api._GAGS.length);
+ let recent=[];const seen=[];
+ for(let i=0;i<8;i++){
+  const r=api.matchMessages({seed:'fresh'+i,home:'A',away:'B',gh:1,ga:0,players:squad(),goals:[g('home',10,'Harry Kane','u2')],potm:null,recentLines:recent});
+  const t=r.messages.filter(m=>m.kind==='msg'&&!m.meme).map(m=>m.text);
+  seen.push(r.messages[1].text);
+  recent=[...recent,...r.lines];
+ }
+ assert.equal(new Set(seen).size,seen.length,'the headline after eight 1:0 wins is different every time');
+});
+
+test('after a heavy defeat or a red card the group is serious: no running gags',()=>{
+ for(let i=0;i<20;i++){
+  const players=squad();
+  const r=api.matchMessages({seed:'heavy'+i,home:'A',away:'B',gh:0,ga:4,players,goals:[1,2,3,4].map(x=>g('away',x*15,'X','')),potm:null});
+  assert.deepEqual([...r.ctx.gags],[],'no gag after 0:4');
+  const p2=squad();p2[6].reds=1;
+  const r2=api.matchMessages({seed:'red'+i,home:'A',away:'B',gh:0,ga:1,players:p2,goals:[g('away',50,'X','')],potm:null});
+  assert.deepEqual([...r2.ctx.gags],[]);
+  const r3=api.matchMessages({seed:'mild'+i,home:'A',away:'B',gh:0,ga:1,players:squad(),goals:[g('away',50,'X','')],potm:null});
+  for(const id of r3.ctx.gags){const gag=api._GAGS.find(x=>x.id===id);assert.ok(gag.when==='loss'||gag.calm,'only calm gags after a defeat: '+id)}
+ }
 });
