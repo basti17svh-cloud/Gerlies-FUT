@@ -3,7 +3,7 @@
  * RNG, route offsets, possession, shots, keeper contact or score changes.
  * All poses derive from the absolute scene time, so scrubbing is stable.
  */
-import {styleAccent} from './3d-action-continuity.mjs?v=2144';
+import {styleAccent} from './3d-action-continuity.mjs?v=21445';
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(x)?x:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const rise=(t,a,b)=>smooth((t-a)/(b-a));
@@ -88,7 +88,7 @@ export function applyDefensiveDuels(p,time,distance,action,sequence,styles=[]){
  return m;
 }
 export function sampleFinishBalance(time,finish='normal'){
- const grounded=!['header','volley','bicycle'].includes(finish);
+ const grounded=!['header','volley','bicycle','backheel'].includes(finish);
  const t=clamp(time,0,10.4),load=grounded?pulse(t,5.90,6.12,6.39,6.75):0;
  const phase=load>.2?'recover-after-shot':'none';
  return{phase,load};

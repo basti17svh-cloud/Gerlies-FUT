@@ -14,7 +14,7 @@ test('V21.208: support boot steps in beside the ball, holds through contact, the
  const hold=M.plantFootSample(M.SHOT_TIME);assert.ok(hold.weight>.99&&Math.abs(hold.lift)<1e-9,'planted at contact');
  assert.ok(M.plantFootSample(5.06).lift>.05,'steps in');assert.ok(M.plantFootSample(5.68).lift>.05,'steps out');
  const src=read('3d-highlights-scene.mjs');
- assert.match(src,/const plant=event\.type!=='ball_won'&&!\['header','volley','bicycle'\]\.includes\(finish\)\?plantFootSample\(time\):null/);
+ assert.match(src,/const plant=event\.type!=='ball_won'&&!\['header','volley','bicycle','backheel'\]\.includes\(finish\)\?plantFootSample\(time\):null/);
  assert.match(src,/actorPosition\(0,SHOT_TIME,event\.type,sequence\)/);
 });
 

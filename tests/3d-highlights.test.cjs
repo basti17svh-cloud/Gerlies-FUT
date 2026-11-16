@@ -94,7 +94,7 @@ test('match simulator remains deterministic while excluding goalkeeper shots for
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=require('./helpers/app-html.cjs')(root),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-footwork-dynamics.mjs?v=21301','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=21208','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-footwork-dynamics.mjs?v=21445','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=21208','3d-motion-duels.mjs?v=21445','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  const cssVersion=(html.match(/3d-highlights\.css\?v=(\d+)/)||[])[1];
  assert.ok(cssVersion&&sw.includes('./3d-highlights.css?v='+cssVersion),'Offline CSS version must match HTML');
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
@@ -302,8 +302,8 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 test('visual, playbook, defensive and extended scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in'];
- assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,185);
- assert.equal(M.PLAY_SEQUENCES.length,240);
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,198);
+ assert.equal(M.PLAY_SEQUENCES.length,253);
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){

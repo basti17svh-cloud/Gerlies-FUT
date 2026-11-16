@@ -3,7 +3,7 @@
  * clock, camera, simulation state, draw calls or keeper outcome.
  * Absolute-time signals are deterministic during seek/replay.
  */
-import {styleAccent} from './3d-action-continuity.mjs?v=2144';
+import {styleAccent} from './3d-action-continuity.mjs?v=21445';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(v)?v:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const rise=(t,a,b)=>smooth((t-a)/(b-a));

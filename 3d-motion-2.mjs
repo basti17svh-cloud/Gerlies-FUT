@@ -8,7 +8,7 @@ const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const rise=(t,a,b)=>smooth((t-a)/(b-a));
 const pulse=(t,a,b,c,d)=>rise(t,a,b)*(1-rise(t,c,d));
 const mix=(a,b,w)=>a+(b-a)*clamp(w);
-import {styleAccent} from './3d-action-continuity.mjs?v=2144';
+import {styleAccent} from './3d-action-continuity.mjs?v=21445';
 export const MOTION_2_VERSION='2.2-touch-cut-shot-preparation';
 export const MOTION_2_SHOT=5.4;
 export const MOTION_2_SEQUENCE='cut_inside_right';
