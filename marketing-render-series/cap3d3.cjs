@@ -48,14 +48,14 @@ await page.waitForSelector('.fh3d canvas',{state:'attached'});
  const box=await page.locator('#matchLiveStage').boundingBox();const clip={x:box.x,y:box.y+66,width:box.width,height:box.height-66};console.log('clip',JSON.stringify(clip));
  if(PROBE){let last='';for(let i=0;i<400;i++){const st=await page.evaluate(()=>{window.qaVirtualNow+=100;qaStep(window.qaVirtualNow);const l=document.querySelector('.fh3d');if(!l)return null;const h=document.querySelector('.fh3d-hud');return l.dataset.playbackTime+' hud='+(h?.classList.contains('visible')?1:0)+' '+(document.querySelector('.fh3d-name')?.textContent||'')+' img='+[...document.querySelectorAll('.fh3d-player-card img')].map(i=>i.naturalWidth).join(',')});if(st===null){console.log('end at step',i);break}if(i%5===0)console.log(st)}console.log('hits',hits,'miss',[...miss].slice(0,8));await page.screenshot({path:out+'/probe.jpg',clip});await browser.close();server.close();return}
  const t0=Date.now();let n=0;const count=Math.round(+to);
- let hudAt=-1;let pt=0;while(pt<+from){pt=await page.evaluate(async()=>{window.qaVirtualNow+=200;qaStep(window.qaVirtualNow);const l=document.querySelector('.fh3d');return l?Number(l.dataset.playbackTime):99});}
+ let hudAt=-1,replayAt=-1,replayEnd=-1;let pt=0;while(pt<+from){pt=await page.evaluate(async()=>{window.qaVirtualNow+=200;qaStep(window.qaVirtualNow);const l=document.querySelector('.fh3d');return l?Number(l.dataset.playbackTime):99});}
  console.log('start at playback',pt);
  for(let f=0;f<count;f++){
-  const st=await page.evaluate(async dt=>{window.qaVirtualNow+=dt;qaStep(window.qaVirtualNow);await qaPresent();const l=document.querySelector('.fh3d');return l?l.dataset.playbackTime+(document.querySelector('.fh3d-hud')?.classList.contains('visible')?'|H':''):null},1000/(+fps));
-  if(st&&st.endsWith('|H')&&hudAt<0)hudAt=n;
+  const st=await page.evaluate(async dt=>{window.qaVirtualNow+=dt;qaStep(window.qaVirtualNow);await qaPresent();const l=document.querySelector('.fh3d');return l?l.dataset.playbackTime+(document.querySelector('.fh3d-hud')?.classList.contains('visible')?'|H':'')+(document.querySelector('.fh3d-replay-on')?'|R':''):null},1000/(+fps));
+  if(st&&st.includes('|H')&&hudAt<0)hudAt=n;if(st&&st.includes('|R')){if(replayAt<0)replayAt=n;replayEnd=n}
   if(st===null){console.log('scene ended at frame',f);break}
   await page.screenshot({path:path.join(out,`f${String(n++).padStart(4,'0')}.jpg`),clip,type:'jpeg',quality:90,timeout:180000});
   if(n%30===0)console.log(n,(Date.now()-t0)/n|0,'ms/frame','pt',st)}
- console.log('frames',n,'total s',(Date.now()-t0)/1000);fs.writeFileSync(path.join(out,'meta.json'),JSON.stringify({frames:n,hudAt,from:+from,fps:+fps}));
+ console.log('frames',n,'total s',(Date.now()-t0)/1000);fs.writeFileSync(path.join(out,'meta.json'),JSON.stringify({frames:n,hudAt,replayAt,replayEnd,from:+from,fps:+fps}));
  await browser.close();server.close();
 })().catch(e=>{console.error(e);process.exit(1)});
