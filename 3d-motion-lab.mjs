@@ -146,7 +146,7 @@ export function footballStrikeSample(time,finish='normal',sequence='central'){
 }
 export function applyFootballStrike(p,time,finish='normal',sequence='central'){
  const m=footballStrikeSample(time,finish,sequence);
- if(['header','volley','bicycle'].includes(finish))return m;
+ if(['header','volley','bicycle','backheel'].includes(finish))return m;
  const strength=m.power?1.33:m.low?.78:m.curl?.94:1;
  const curl=m.curl?1:0,low=m.low?1:0,chip=m.chip?1:0;
  // These additives are EXACTLY ZERO at the original 5.400s boot impact:

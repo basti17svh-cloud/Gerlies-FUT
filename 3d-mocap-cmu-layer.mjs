@@ -18,7 +18,8 @@ export function cmuKickClip(finish='normal'){
 // once the authored run-up is over, so the approach strides never skate.
 // A pass is the short version of the same kick around its own contact.
 export function cmuKickWeight(time,finish='normal',contact=CONTACT){
- if(['header','volley','bicycle'].includes(finish))return{body:0,legs:0};
+ // V21.445: the heel flick and the diving header bring their own body.
+ if(['header','volley','bicycle','backheel','dive'].includes(finish))return{body:0,legs:0};
  const t=clamp(time,0,10.4)-contact;
  if(finish==='pass'){
   const out=1-smooth((t-.22)/.26);

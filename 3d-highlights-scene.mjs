@@ -2,13 +2,13 @@ import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-pla
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21341';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21444';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21445';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21441';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21445';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21441';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -18,7 +18,7 @@ import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREM
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
-import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21301';
+import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21445';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraHumanModelStatus,footeraRealBodyLoaded};
 // V21.193: phones below the LOW line and players who chose the previous model
 // (localStorage footera-3d-player-model=quaternius) keep the Quaternius squad.
@@ -66,11 +66,11 @@ import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=21208
 import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
-import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
-import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity,applyReceptionContinuity} from './3d-action-continuity.mjs?v=21159';
+import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=21445';
+import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity,applyReceptionContinuity} from './3d-action-continuity.mjs?v=21445';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=21208';
-import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
+import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=21445';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
@@ -78,8 +78,9 @@ import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21410';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21341';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21445';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
+import {isDreamGoal,dreamGoal,dreamStyle,dreamContact,dreamImpact,dreamFlightPoint,dreamGateParam,dreamFinishPose,dreamFacesAway} from './3d-dream-goals.mjs?v=21445';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -215,7 +216,7 @@ function invertedRunPosition(sequence,time){
  const [x,z]=sampleFlowRun(nodes,time,-1.45,-2.0);
  return[side*x,z];
 }
-const FINISH_TYPES=Object.freeze(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
+const FINISH_TYPES=Object.freeze(['normal','header','finesse','power','low_driven','volley','bicycle','chip','backheel']);
 export const normalizeFinish=finish=>FINISH_TYPES.includes(finish)?finish:'normal';
 const contactFor=finish=>finish==='header'?[.03,1.83,-37.14]:finish==='volley'?[.11,1.05,-37.25]:finish==='bicycle'?[.1,1.53,-37.22]:shotFootPosition();
 function variantShift(variant,time){
@@ -228,7 +229,7 @@ const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_r
 // Inverted winger does not teleport to the central striker position for the strike.
 // The contact point follows the winger's final position and shooting direction.
 export function shotContact(sequence='central',finish='normal',placement=null){
- const style=normalizeFinish(finish),base=contactFor(style),seq=normalizeSequence(sequence);
+ const style=normalizeFinish(finish),seq=normalizeSequence(sequence),base=dreamContact(seq)||contactFor(style);
  if(extendedKind(seq))return extendedContact(seq,base);
  if(!INVERTED_SEQUENCES.has(seq)&&!hasAuthoredFinish(seq))return base;
  const [x,z]=hasAuthoredFinish(seq)?playPosition(0,SHOT_TIME,getPlay(seq)):invertedRunPosition(seq,SHOT_TIME),impact=shotImpact('goal',seq,style,placement);
@@ -335,7 +336,10 @@ export function lineClearImpact(sequence='central',finish='normal',placement=nul
 export function shotImpact(type,sequence='central',finish='normal',placement=null){
  const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
  const inverted=INVERTED_SEQUENCES.has(seq),near=inverted&&seq.startsWith('near_post_cut');
- const sign=placement?(placement.side===-1?-1:1):(inverted?(near?sequenceSide(seq):-sequenceSide(seq)):1);
+ let sign=placement?(placement.side===-1?-1:1):(inverted?(near?sequenceSide(seq):-sequenceSide(seq)):1);
+ // V21.445 Traumtore: a technique may own its side (Robben: far post) and its goal spot.
+ const dream=isDreamGoal(seq)?dreamImpact(seq,type,sign,placement):null;
+ if(dream){sign=dream.sign;if(dream.point)return dream.point}
  const zone=placement?.zone||'channel';
  const x=type==='big_chance_saved'?(placement?(zone==='corner'?2.86:zone==='inside'?1.42:2.15):2.52):
   type==='shot_post'?3.52:type==='big_chance_missed'?(placement?(zone==='corner'?6.05:zone==='inside'?4.45:5.1):5.1):
@@ -492,6 +496,13 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  // the same pace, so the speed never tells a goal from a save or a miss.
  // Shots that go on past the keeper keep that pace into the net or wide.
  const {gate,delay,speed}=shotGate(contact,impact);
+ if(isDreamGoal(seq)){
+  // V21.445: the dream goals fly their own curve (bend, dip, knuckle, flick)
+  // and still cross the keeper's line at IMPACT_TIME and end on the impact.
+  const sGate=dreamGateParam(seq,contact,impact,KEEPER_LINE);
+  if(t<1)return dreamFlightPoint(seq,contact,impact,flight*sGate);
+  if(delay>0&&time<IMPACT_TIME+delay)return dreamFlightPoint(seq,contact,impact,sGate+(1-sGate)*clamp((time-IMPACT_TIME)/delay));
+ }
  if(t<1){const p=lerp(contact,gate,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
  if(delay>0){if(time<IMPACT_TIME+delay)return lerp(gate,impact,(time-IMPACT_TIME)/delay);time-=delay}
  if(type==='goal'&&placement?.style==='crossbar_in'){
@@ -2022,7 +2033,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let clipEnabled=true;
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
-  const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
+  // V21.445: the diving header is a whole-body dive (dreamFinishPose), not the standing header capture.
+  const kickInfo=Object.freeze({finish:dreamStyle(sequence)==='dive'?'dive':finish,foot:(event.shotFoot||dreamGoal(sequence)?.foot)==='Left'?'Left':'Right'});
   const penaltyKickInfo=extended==='penalty'?Object.freeze({finish:'penalty',foot:kickInfo.foot,contact:SHOT_TIME,lead:extendedTiming(sequence).shot/SHOT_TIME}):null;
   // V21.437: only the scorer hands his body to the authored strike around
   // the shot; everybody else keeps the captured gait (striker:false).
@@ -2319,7 +2331,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const striker=players[0];
    // V21.78 planted shot preparation; fully released before the canonical kick.
    if(event.type!=='ball_won')applyShotApproach(striker,time,finish,sequence);
-   if(event.type!=='ball_won'&&time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
+   if(event.type!=='ball_won'&&finish!=='backheel'&&time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
     if(INVERTED_SEQUENCES.has(sequence)||hasAuthoredFinish(sequence)||extended){
      const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish);
      const shotHeading=Math.atan2(sx-aim[0],sz-aim[2]);
@@ -2572,9 +2584,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
    }
    // V21.208: the overhead kick turns the scorer's back to goal until he is up.
-   const bike=finish==='bicycle'&&event.type!=='ball_won'&&!extended?bicycleKickPose(time):null;
+   // V21.445 Traumtore: the diving header and the heel flick use the same
+   // whole-body channel (dreamFinishPose); the flick also turns his back to goal.
+   const bike=event.type==='ball_won'||extended?null:finish==='bicycle'?bicycleKickPose(time):dreamFinishPose(sequence,time);
    importedMotionFrame.acrobatic=bike;
-   if(bike){
+   if(bike&&(finish==='bicycle'||dreamFacesAway(sequence))){
     const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish),away=Math.atan2(sx-aim[0],sz-aim[2])+Math.PI;
     const from=players[0].root.rotation.y,turn=Math.atan2(Math.sin(away-from),Math.cos(away-from));
     players[0].root.rotation.y=from+turn*bike.weight;
@@ -2582,7 +2596,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // V21.208 (Basti): the support boot is planted beside the ball and stays
    // there while the body runs over it; it used to glide along with the hips.
    if(extended)for(const m of activeSignatureMoments(signatures,time))if(m.actor<16)applyPlusMotion(players[m.actor],m,time);
-   const plant=event.type!=='ball_won'&&!['header','volley','bicycle'].includes(finish)?plantFootSample(time):null;
+   const plant=event.type!=='ball_won'&&!['header','volley','bicycle','backheel'].includes(finish)?plantFootSample(time):null;
    if(plant){const p=players[0],h=p.root.rotation.y,fx=-Math.sin(h),fz=-Math.cos(h),rx=Math.cos(h),rz=-Math.sin(h);
     const [ax,az]=actorPosition(0,SHOT_TIME,event.type,sequence),spot=[ax-.108*rx+.05*fx,az-.108*rz+.05*fz];
     const hx=p.root.position.x-.108*rx,hz=p.root.position.z-.108*rz,dx=spot[0]-hx,dz=spot[1]-hz;
@@ -2591,7 +2605,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     p.legs[0].rotation.x=mix(p.legs[0].rotation.x,hip,w);p.knees[0].rotation.x=mix(p.knees[0].rotation.x,-2*bend,w);
     p.ankles[0].rotation.x=mix(p.ankles[0].rotation.x,2*bend-hip,w);p.legs[0].rotation.z=mix(p.legs[0].rotation.z,Math.atan2(aside,down),w);
    }
-   if(event.type!=='ball_won'&&!['header','bicycle'].includes(finish)){
+   if(event.type!=='ball_won'&&!['header','bicycle','backheel'].includes(finish)){
     const w=applyFootedPose(players[0],time,event.shotFoot);
     // Keep the left striking boot on the SAME authoritative ball contact.
     const h=players[0].root.rotation.y;players[0].root.position.x+=.21*Math.cos(h)*w;players[0].root.position.z-=.21*Math.sin(h)*w;

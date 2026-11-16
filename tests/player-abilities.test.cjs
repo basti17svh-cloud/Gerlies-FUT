@@ -48,7 +48,8 @@ test('all 32 new plays have continuous passing and foot contact, with ten distin
   for(const type of ['goal','big_chance_saved','big_chance_missed','shot_post']){
    const skill=S.skillScene(id),event={id:'abilities-'+id,type,actionKind:plan.family,finish:'normal',skillMove:skill?.move,skillMoves:skill?.minStars,creatorName:'Vorlage'};
    if(skill)assert.match(H.choosePresentation(event).sequence,new RegExp('^skill_'+skill.move+'_'));
-   assert.equal(H.choosePresentation(event).finish,'normal');
+   const shown=H.choosePresentation(event);
+   assert.equal(shown.finish,H.dreamFinish(shown.sequence)||'normal');
   }
  }
  assert.ok(poses.size>=18,'distinct movement shapes, not just new names');

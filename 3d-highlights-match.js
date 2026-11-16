@@ -255,7 +255,8 @@ function queueMatch3D(event){
  const lockedScene=!retiredCounter&&(!!event.sceneKind||['freekick','penalty'].includes(event.creationType)||event.type==='ball_won');
  presentation.sequence=lockedScene?(event.sequence||selected.sequence):selected.sequence;
  // V21.208: the bicycle scene is an overhead kick whatever finish the simulation named.
- presentation.finish=presentation.sequence==='bicycle'?'bicycle':event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
+ // V21.445: a dream goal always shows its own technique (heel flick, diving header ...).
+ presentation.finish=presentation.sequence==='bicycle'?'bicycle':FooteraHighlights.dreamFinish?.(presentation.sequence)||event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
  presentation.creatorActor=FooteraHighlights.creatorActor?.(presentation.sequence)||1;
   const shirtInfo=match3DShirtNumbers(presentation,current,defender,goalie,presentation.defenderIndex);
