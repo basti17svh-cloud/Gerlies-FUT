@@ -110,13 +110,9 @@
       if(model==='makehuman')root.localStorage?.removeItem('footera-3d-player-model');
     }catch(_){}
     if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
-    // V21.441: a scene that starts while the human squad is still loading
-    // waits a moment for it instead of showing the old squad at once.
-    if(!disabled&&module.footeraHumanPlayersWanted?.()){
-     const human=module.prepareFooteraHumanModel?.().then(()=>module.footeraRealBodyLoaded?.()).catch(()=>{});
-     if(human&&!(module.isFooteraHumanModelReady?.()&&module.footeraHumanModelStatus?.().body!=='makehuman'))
-      await Promise.race([human,new Promise(r=>setTimeout(r,2500))]);
-    }
+    // V21.441: the human squad is ready as soon as its own body has loaded;
+    // the MetaHuman body follows in the background.
+    if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
     if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
