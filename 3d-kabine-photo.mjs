@@ -48,7 +48,7 @@ export const PHOTO_ARMS=Object.freeze({
  pump:{upper:[.3,-.5,.55],lower:[0,.75,.65],fist:true},
  bottle:{upper:[.4,.35,.55],lower:[0,1,.3],fist:true,bottle:true},
  trophy:{upper:[.3,1,.22],lower:[-.42,1,.12],fist:false},
- // V21.446 Spielervorstellung: the new signing holds his shirt up in front of the chest, or the scarf over his head
+ // V21.447 Spielervorstellung: the new signing holds his shirt up in front of the chest, or the scarf over his head
  present:{upper:[.2,-.8,.42],lower:[-.42,.3,1],fist:true},
  scarf:{upper:[.62,.78,.12],lower:[.16,1,.02],fist:true}
 });
@@ -531,7 +531,7 @@ export async function renderKabinePhoto(spec={},opts={}){
  }
 }
 
-/* ---------- V21.446 Spielervorstellung ----------
+/* ---------- V21.447 Spielervorstellung ----------
  * The official presentation photo of a new signing, like the ones clubs post
  * when a transfer is done: the player in front of the press wall with the
  * club crest and the Footera logo, holding up his shirt with name and number
@@ -539,7 +539,7 @@ export async function renderKabinePhoto(spec={},opts={}){
  * banner. One still, our own 3D render of the user's player (body, face, hair,
  * skin from the player looks, the club's home kit and crest). Pure function of
  * the seed, never changes the club or the save. */
-export const SIGNING_PHOTO_VERSION='21.446-signing-photo';
+export const SIGNING_PHOTO_VERSION='21.447-signing-photo';
 export function signingLayout(spec={}){
  const seed=String(spec.seed||'signing'),p=spec.player||{};
  // the scarf only for outfield players (keepers always show their shirt) and about every third picture

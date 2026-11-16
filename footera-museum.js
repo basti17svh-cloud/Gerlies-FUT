@@ -1,10 +1,10 @@
-// V21.446 Vereinsmuseum: a 3D museum of the user's own club, opened from the Verein hub. Every won cup stands in the
+// V21.447 Vereinsmuseum: a 3D museum of the user's own club, opened from the Verein hub. Every won cup stands in the
 // glass cabinet with its plaque, the newest title turns on the pedestal, record boards (top scorer, most matches,
 // biggest win, player of the match) and the club record, win milestones as medals. Data comes from the save
 // (tournament titles, Halloween cup, match history, card statistics) and is only read, never written.
 (function(root){
  "use strict";
- const MODAL_ID="clubMuseumModal",KIND="club-museum",MODULE="./3d-museum.mjs?v=21446";
+ const MODAL_ID="clubMuseumModal",KIND="club-museum",MODULE="./3d-museum.mjs?v=21447";
  const MILESTONES=[[10,"bronze"],[25,"bronze"],[50,"silver"],[100,"silver"],[250,"gold"],[500,"gold"]];
  const HALLOWEEN={id:"halloween-team1",title:"Halloween-Cup",sub:"Blutmond 2026",at:Date.parse("2026-11-06T19:00:00+01:00")};
  const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};

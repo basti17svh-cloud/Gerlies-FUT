@@ -588,7 +588,7 @@
   if(mm&&hash(seed+"jmeme")%2===0){const m=memeMsg("msg",memeFor("pack","team",seed,recentM,{N:short(newcomer.name)}),mm);if(m){m.react={e:"😂",n:2+hash(seed+"jmn")%6};out.push(m)}}
   return out;
  }
- // V21.446 Spielervorstellung: after a big pull the newcomer's own first message carries his presentation photo.
+ // V21.447 Spielervorstellung: after a big pull the newcomer's own first message carries his presentation photo.
  const SIGN_TEXT=["📸 Offizielles Vorstellungsfoto ist raus!","Erstes Foto im neuen Trikot 📸✍️","Vertrag unterschrieben, Foto gemacht. Los geht's ✍️📸","Die Fotografen haben mich nicht mehr losgelassen 📸😅"];
  function withSigningPhoto(list,item,ref){
   try{
@@ -608,7 +608,7 @@
    const newcomer={name:String(best.b.name||"Spieler"),uid:String(best.item.uid||""),pid:String(best.b.id||""),icon:!!best.b.isIcon,pos:String(best.b.position||"").toUpperCase()};
    const ref="p:"+(newcomer.uid||newcomer.pid+"|"+Date.now());
    const v=read(),r=fresh(v.lines,()=>joinMessages(newcomer,squadVoices(new Set([newcomer.uid])),ref,recentMemes(v)));
-   // V21.446: the new signing posts his presentation photo (shirt or scarf in front of the press wall)
+   // V21.447: the new signing posts his presentation photo (shirt or scarf in front of the press wall)
    const list=withSigningPhoto(r.value,best.item,ref);
    return append(ref,list,{update:x=>keepLines(x,r.used)});
   }catch(e){console.warn("Kabinen-Chat:",e);return 0}
@@ -963,7 +963,7 @@
  /* ---------- V21.443 Siegerfoto ---------- */
  // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
  // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
- const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21446";
+ const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21447";
  const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}

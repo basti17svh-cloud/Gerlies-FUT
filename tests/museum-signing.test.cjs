@@ -1,5 +1,5 @@
 'use strict';
-// V21.446 two surprises: the Vereinsmuseum (3D museum of the club's cups, records and milestones) and the
+// V21.447 two surprises: the Vereinsmuseum (3D museum of the club's cups, records and milestones) and the
 // Spielervorstellung (presentation photo of a player with shirt or scarf in front of the press wall).
 // Both only read the save.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');

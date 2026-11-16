@@ -1,4 +1,4 @@
-/* V21.446 Vereinsmuseum (surprise night 2026-11-17): a small 3D museum of the
+/* V21.447 Vereinsmuseum (surprise night 2026-11-17): a small 3D museum of the
  * user's club. Every cup the club has won stands in the glass cabinet with its
  * plaque (cup and week), the newest title turns on the pedestal in the middle,
  * the record boards hang on the left wall (top scorer, most matches, biggest
@@ -11,7 +11,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {RoomEnvironment} from './vendor/three/RoomEnvironment.mjs';
 import {createTrophyMesh,TROPHY_TONES,trophyTone} from './3d-trophy-stage.mjs?v=21444';
 
-export const MUSEUM_VERSION='21.446-museum';
+export const MUSEUM_VERSION='21.447-museum';
 export const CABINET_SLOTS=12;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const hexOr=(v,fb)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):fb;

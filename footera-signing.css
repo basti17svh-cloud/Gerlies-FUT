@@ -1,4 +1,4 @@
-/* V21.446 Spielervorstellung */
+/* V21.447 Spielervorstellung */
 .sg-sub{font-size:12px;opacity:.7;margin-top:2px}
 #playerSigningBody{display:grid;gap:12px;justify-items:center;padding-bottom:6px}
 .sg-photo{display:block;width:min(100%,420px);aspect-ratio:4/5;border-radius:12px;object-fit:cover;background:#0f1115;box-shadow:0 10px 32px rgba(0,0,0,.45)}

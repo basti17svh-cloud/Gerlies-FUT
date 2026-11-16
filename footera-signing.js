@@ -1,4 +1,4 @@
-// V21.446 Spielervorstellung: the official presentation photo of a player, like the pictures clubs post when a
+// V21.447 Spielervorstellung: the official presentation photo of a player, like the pictures clubs post when a
 // transfer is done. The player stands in front of the club's press wall and holds up his shirt with name and number
 // (or the club scarf over his head). Our own 3D render (3d-kabine-photo.mjs renderSigningPhoto) of the user's card:
 // body, face, hair and skin from the player looks, the club's home kit and crest. Read-only: never changes the club,
@@ -6,7 +6,7 @@
 // also posts his presentation photo in the Kabinen-Chat.
 (function(root){
  "use strict";
- const MODAL_ID="playerSigningModal",KIND="player-signing",MODULE="./3d-kabine-photo.mjs?v=21446";
+ const MODAL_ID="playerSigningModal",KIND="player-signing",MODULE="./3d-kabine-photo.mjs?v=21447";
  // Typical shirt numbers by position, used when the card has no squad number yet.
  const NUMBERS={GK:1,RB:2,RWB:2,LB:3,LWB:3,CB:4,CDM:6,CM:8,RM:7,RW:7,LM:11,LW:11,CAM:10,CF:9,ST:9};
  let busy=false,current=null;
