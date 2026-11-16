@@ -1,8 +1,402 @@
 [
- {"name":"X1","xi":"xi-tdw-b.json","seq":"counter_sprint_left","who":"Harry Kane","minute":"30","from":"4.0","frames":"75",
-  "club":{"home":{"name":"FC Bayern München","init":"FCB","color":"#dc052d","secondary":"#0066b2","symbol":"star","shape":"round","kit":{"shirtPrimary":"#dc052d","shirtSecondary":"#ffffff","shorts":"#dc052d","socks":"#dc052d"}},
-          "away":{"name":"Borussia Dortmund","init":"BVB","color":"#fde100","secondary":"#000000","symbol":"bolt","shape":"round","kit":{"shirtPrimary":"#fde100","shirtSecondary":"#000000","shorts":"#000000","socks":"#fde100"}},"flip":true}},
- {"name":"X2","xi":"xi-tdw-a.json","seq":"counter_sprint_left","who":"Lamine Yamal","minute":"30","from":"4.0","frames":"75",
-  "club":{"home":{"name":"FC Barcelona","init":"FCB","color":"#a50044","secondary":"#004d98","symbol":"shieldmark","shape":"point","kit":{"pattern":"stripes","shirtPrimary":"#a50044","shirtSecondary":"#004d98","shorts":"#004d98","socks":"#a50044"}},
-          "away":{"name":"Real Madrid","init":"RMA","color":"#febe10","secondary":"#00529f","symbol":"crown","shape":"round","kit":{"shirtPrimary":"#f6f6f6","shirtSecondary":"#febe10","shorts":"#f6f6f6","socks":"#f6f6f6"}},"flip":false}}
+ {
+  "name": "T10",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_layoff_volley",
+  "who": "Jude Bellingham",
+  "minute": "17",
+  "club": {
+   "home": {
+    "name": "Real Madrid",
+    "init": "RMA",
+    "color": "#febe10",
+    "secondary": "#00529f",
+    "symbol": "crown",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#f6f6f6",
+     "shirtSecondary": "#febe10",
+     "shorts": "#f6f6f6",
+     "socks": "#f6f6f6"
+    }
+   },
+   "away": {
+    "name": "Atlético Madrid",
+    "init": "ATM",
+    "color": "#cb3524",
+    "secondary": "#272e61",
+    "symbol": "bear",
+    "shape": "shield",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#cb3524",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#272e61",
+     "socks": "#cb3524"
+    }
+   },
+   "flip": false
+  }
+ },
+ {
+  "name": "T09",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_diving_header_left",
+  "who": "Harry Kane",
+  "minute": "24",
+  "club": {
+   "home": {
+    "name": "FC Bayern München",
+    "init": "FCB",
+    "color": "#dc052d",
+    "secondary": "#0066b2",
+    "symbol": "star",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#dc052d",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#dc052d",
+     "socks": "#dc052d"
+    }
+   },
+   "away": {
+    "name": "Borussia Dortmund",
+    "init": "BVB",
+    "color": "#fde100",
+    "secondary": "#000000",
+    "symbol": "bolt",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#fde100",
+     "shirtSecondary": "#000000",
+     "shorts": "#000000",
+     "socks": "#fde100"
+    }
+   },
+   "flip": true
+  }
+ },
+ {
+  "name": "T08",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_trivela_right",
+  "who": "Bruno Fernandes",
+  "minute": "33",
+  "club": {
+   "home": {
+    "name": "Manchester United",
+    "init": "MUN",
+    "color": "#da291c",
+    "secondary": "#000000",
+    "symbol": "trident",
+    "shape": "shield",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#da291c",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#ffffff",
+     "socks": "#000000"
+    }
+   },
+   "away": {
+    "name": "FC Liverpool",
+    "init": "LFC",
+    "color": "#c8102e",
+    "secondary": "#00b2a9",
+    "symbol": "flame",
+    "shape": "shield",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#c8102e",
+     "shirtSecondary": "#f6eb61",
+     "shorts": "#c8102e",
+     "socks": "#c8102e"
+    }
+   },
+   "flip": false
+  }
+ },
+ {
+  "name": "T07",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_knuckle_right",
+  "who": "Dominik Szoboszlai",
+  "minute": "41",
+  "club": {
+   "home": {
+    "name": "FC Liverpool",
+    "init": "LFC",
+    "color": "#c8102e",
+    "secondary": "#00b2a9",
+    "symbol": "flame",
+    "shape": "shield",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#c8102e",
+     "shirtSecondary": "#f6eb61",
+     "shorts": "#c8102e",
+     "socks": "#c8102e"
+    }
+   },
+   "away": {
+    "name": "Newcastle United",
+    "init": "NUFC",
+    "color": "#241f20",
+    "secondary": "#ffffff",
+    "symbol": "castle",
+    "shape": "oval",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#f4f4f4",
+     "shirtSecondary": "#241f20",
+     "shorts": "#241f20",
+     "socks": "#241f20"
+    }
+   },
+   "flip": true
+  }
+ },
+ {
+  "name": "T06",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_backheel_left",
+  "who": "Erling Haaland",
+  "minute": "52",
+  "club": {
+   "home": {
+    "name": "Manchester City",
+    "init": "MCFC",
+    "color": "#6cabdd",
+    "secondary": "#1c2c5b",
+    "symbol": "eagle",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#6cabdd",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#ffffff",
+     "socks": "#6cabdd"
+    }
+   },
+   "away": {
+    "name": "Arsenal",
+    "init": "AFC",
+    "color": "#ef0107",
+    "secondary": "#063672",
+    "symbol": "target",
+    "shape": "shield",
+    "kit": {
+     "pattern": "sleeves",
+     "shirtPrimary": "#ef0107",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#ffffff",
+     "socks": "#ef0107"
+    }
+   },
+   "flip": false
+  }
+ },
+ {
+  "name": "T05",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_rocket_dip",
+  "who": "Declan Rice",
+  "minute": "60",
+  "club": {
+   "home": {
+    "name": "Arsenal",
+    "init": "AFC",
+    "color": "#ef0107",
+    "secondary": "#063672",
+    "symbol": "target",
+    "shape": "shield",
+    "kit": {
+     "pattern": "sleeves",
+     "shirtPrimary": "#ef0107",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#ffffff",
+     "socks": "#ef0107"
+    }
+   },
+   "away": {
+    "name": "Chelsea",
+    "init": "CFC",
+    "color": "#034694",
+    "secondary": "#dba111",
+    "symbol": "lion",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#034694",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#034694",
+     "socks": "#ffffff"
+    }
+   },
+   "flip": true
+  }
+ },
+ {
+  "name": "T04",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_backheel_right",
+  "who": "Rafael Leão",
+  "minute": "67",
+  "club": {
+   "home": {
+    "name": "AC Mailand",
+    "init": "ACM",
+    "color": "#fb090b",
+    "secondary": "#000000",
+    "symbol": "cross",
+    "shape": "oval",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#fb090b",
+     "shirtSecondary": "#111111",
+     "shorts": "#ffffff",
+     "socks": "#111111"
+    }
+   },
+   "away": {
+    "name": "Juventus",
+    "init": "JUV",
+    "color": "#111111",
+    "secondary": "#ffffff",
+    "symbol": "shieldmark",
+    "shape": "modern",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#f4f4f4",
+     "shirtSecondary": "#111111",
+     "shorts": "#111111",
+     "socks": "#f4f4f4"
+    }
+   },
+   "flip": false
+  }
+ },
+ {
+  "name": "T03",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_robben_cut_left",
+  "who": "Bradley Barcola",
+  "minute": "74",
+  "club": {
+   "home": {
+    "name": "Paris Saint-Germain",
+    "init": "PSG",
+    "color": "#004170",
+    "secondary": "#da291c",
+    "symbol": "fleur",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#004170",
+     "shirtSecondary": "#da291c",
+     "shorts": "#004170",
+     "socks": "#004170"
+    }
+   },
+   "away": {
+    "name": "Olympique Marseille",
+    "init": "OM",
+    "color": "#2faee0",
+    "secondary": "#ffffff",
+    "symbol": "waves",
+    "shape": "shield",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#f4f4f4",
+     "shirtSecondary": "#2faee0",
+     "shorts": "#f4f4f4",
+     "socks": "#f4f4f4"
+    }
+   },
+   "flip": true
+  }
+ },
+ {
+  "name": "T02",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_robben_cut_right",
+  "who": "Lamine Yamal",
+  "minute": "83",
+  "club": {
+   "home": {
+    "name": "FC Barcelona",
+    "init": "FCB",
+    "color": "#a50044",
+    "secondary": "#004d98",
+    "symbol": "shieldmark",
+    "shape": "point",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#a50044",
+     "shirtSecondary": "#004d98",
+     "shorts": "#004d98",
+     "socks": "#a50044"
+    }
+   },
+   "away": {
+    "name": "Real Madrid",
+    "init": "RMA",
+    "color": "#febe10",
+    "secondary": "#00529f",
+    "symbol": "crown",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#f6f6f6",
+     "shirtSecondary": "#febe10",
+     "shorts": "#f6f6f6",
+     "socks": "#f6f6f6"
+    }
+   },
+   "flip": false
+  }
+ },
+ {
+  "name": "T01",
+  "xi": "xi-tdw-c.json",
+  "seq": "dream_bicycle_left",
+  "who": "Lautaro Martínez",
+  "minute": "90",
+  "club": {
+   "home": {
+    "name": "Inter",
+    "init": "INT",
+    "color": "#0068a8",
+    "secondary": "#111111",
+    "symbol": "snake",
+    "shape": "round",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#0068a8",
+     "shirtSecondary": "#111111",
+     "shorts": "#111111",
+     "socks": "#111111"
+    }
+   },
+   "away": {
+    "name": "Juventus",
+    "init": "JUV",
+    "color": "#111111",
+    "secondary": "#ffffff",
+    "symbol": "shieldmark",
+    "shape": "modern",
+    "kit": {
+     "pattern": "stripes",
+     "shirtPrimary": "#f4f4f4",
+     "shirtSecondary": "#111111",
+     "shorts": "#111111",
+     "socks": "#f4f4f4"
+    }
+   },
+   "flip": true
+  }
+ }
 ]
