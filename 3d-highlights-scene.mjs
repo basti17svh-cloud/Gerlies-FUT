@@ -1712,7 +1712,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const defaultNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
   const squadNumbers=defaultNumbers.map((fb,i)=>{const n=Number(event.shirtNumbers?.[i]);return Number.isInteger(n)&&n>=1&&n<=99?n:fb});
   const keeperNumber=Number(event.keeperShirtNumber);
-  const squadNames=RUNS.map((r,i)=>ceremony&&event.squadNames?.[i]?event.squadNames[i]:i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i);
+  // V21.442 (Basti: "nicht bei jedem ist der Name aufm Trikot"): every actor
+  // with a real squad row carries his name, not only scorer and defender. The
+  // match orders event.squadNames like the looks and skin tones (attack 0-7,
+  // defence 8-15), so name, face and haircut always belong to one player.
+  const squadNames=RUNS.map((r,i)=>ceremony&&event.squadNames?.[i]?event.squadNames[i]:i===0&&event.playerName?event.playerName:
+   i===defenderIndex&&event.defenderName?event.defenderName:event.squadNames?.[i]?event.squadNames[i]:'footballer '+i);
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
    squadNames[i],false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true,event.keeperSkinTone);
