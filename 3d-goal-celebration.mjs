@@ -354,6 +354,18 @@ function pose(t,kind,s){
   arms(t,[mix(.3,1.55,on)+ruffle,0,mix(.38,.18,on)],[.3,0,.38],mix(.5,1.25,on),.6);
   t.upper[0]+=-.05*on;t.upper[1]=-.12*on;t.head=[.05,-.15*on];t.shrug=[.2*on,.05];t.open=[.9*on,0];
   looseStance(t,s,reach);
+ }else if(kind==='trophy_lift'){
+  // V21.444 Pokalübergabe: the captain reaches for the cup on its pedestal,
+  // pulls it to his chest while he turns to the cameras, then pushes it high
+  // above his head with both hands and pumps it up twice more, roaring.
+  const reach=spring(s,0,.45),carry=smooth((s-.42)/.4),lift=spring(s,1.9,.55);
+  const pump=pulse(s,3.0,3.18,3.34,3.6)+pulse(s,4.2,4.38,4.54,4.8)+pulse(s,5.5,5.68,5.84,6.1);
+  const ax=mix(mix(mix(.3,1.32,reach),1.0,carry),2.9,lift)-.32*pump*lift,az=mix(mix(.3,.13,reach),.2,carry)+.05*lift;
+  const el=mix(mix(mix(.5,.32,reach),1.4,carry),.32,lift)+.55*pump*lift;
+  arms(t,[ax,0,az],[ax,0,az],el,el);
+  t.upper[0]+=mix(-.14*reach*(1-carry),.02,carry)+.14*lift;t.head=[mix(-.25*reach*(1-carry),.1,carry)+.32*lift,0];
+  t.shrug=[.1+.2*lift,.1+.2*lift];t.open=[0,0];
+  looseStance(t,s,Math.max(reach,.6));t.lift=.07*pump*lift;
  }else if(kind==='lineup'){
   // V21.226 walk-out: chest up, hands loosely behind the back for the line-up.
   arms(t,[-.2,0,.1],[-.2,0,.1],.5,.5);t.upper[0]+=.05;t.head=[.04,0];t.shrug=[.06,.06];

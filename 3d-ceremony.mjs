@@ -3,8 +3,9 @@
  * the goal replay camera. Presentation only: no match state, no RNG.
  * Field-local metres, ceremonies always use attack direction 1, so the
  * broadcast side (main stand, tunnel) is +x. Heading 0 faces -z. */
-export const CEREMONY_VERSION='21.439-ceremonies';
-export const CEREMONY_KINDS=Object.freeze(['kickoff','fulltime']);
+export const CEREMONY_VERSION='21.444-trophy';
+// V21.444 'trophy': the cup presentation after a won tournament final.
+export const CEREMONY_KINDS=Object.freeze(['kickoff','fulltime','trophy']);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=v=>{const x=clamp(v);return x*x*(3-2*x)};
 const mix=(a,b,t)=>a+(b-a)*t;
@@ -129,7 +130,80 @@ function fulltimeActor(index,time,draw){
  }
  return{x:p[0],z:p[1],heading,pose:weight>0?pose:null,s,weight};
 }
+// ---- V21.444 Pokalübergabe (surprise 2026-11-16): after a won cup final
+// the beaten side forms a guard of honour, the winners jog through it to the
+// winners' stage in front of the main stand (+x) and line up before the
+// backdrop. The captain comes last, takes the cup off its pedestal, turns to
+// the cameras and lifts it: confetti, fountains, fireworks, the team jumps.
+// Actors 0-7 = winners (0 = captain), 8-15 + keeper (16) = the guard.
+export const TROPHY_LANE=20.7;
+export const TROPHY_LINE=19.45;
+export const TROPHY_BACKDROP=18.55;
+export const TROPHY_PEDESTAL=Object.freeze([20.7,.2]);
+export const TROPHY_CAPTAIN_SPOT=Object.freeze([20.7,-.42]);
+// Line slots for teammates 1-7 in the order they arrive (farthest first).
+const TROPHY_SLOTS=Object.freeze([5.2,3.9,2.6,1.3,-1.3,-2.6,-3.9]);
+const TROPHY_SPEED=2.8;
+export const TROPHY_TIMES=Object.freeze({grab:6.55,turn:7.35,lift:8.45,cut:4.6,close:8.4,end:13.9});
+const TR=TROPHY_TIMES;
+function trophyStart(index){
+ // The column: teammates in arrival order, the captain 1.6 m behind the last.
+ return index===0?-9-6*1.05-1.6:-9-(index-1)*1.05;
+}
+// [lane point where he leaves the lane, final spot]
+function trophyRoute(index){
+ if(index===0)return[TROPHY_CAPTAIN_SPOT,TROPHY_CAPTAIN_SPOT];
+ const z=TROPHY_SLOTS[index-1];return[[TROPHY_LANE,z-1.6],[TROPHY_LINE,z]];
+}
+function polyTravel(points,speed,time){
+ const t=Math.max(0,time),d=t<.5?speed*t*t:speed*(t-.25);
+ let total=0;const legs=[];for(let i=1;i<points.length;i++){const l=Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]);legs.push(l);total+=l}
+ let left=arrive(total,1,d);
+ for(let i=1;i<points.length;i++){const l=legs[i-1];if(left<=l||i===points.length-1){const u=l>1e-6?Math.min(1,left/l):1;return lerp2(points[i-1],points[i],u)}left-=l}
+ return points[points.length-1].slice();
+}
+function trophySpot(index,time){
+ if(index>=8){
+  // The guard of honour: two rows either side of the lane, the keeper at the end.
+  const j=index-8,x=index===16?TROPHY_LANE+1.6:j%2?TROPHY_LANE-1.6:TROPHY_LANE+1.6,z=index===16?-14:-6-Math.floor(j/2)*2;
+  return[x,z];
+ }
+ const [leave,spot]=trophyRoute(index),start=[TROPHY_LANE,trophyStart(index)];
+ return polyTravel(index===0?[start,spot]:[start,leave,spot],TROPHY_SPEED,time);
+}
+export function trophyArrival(index){
+ const [leave,spot]=trophyRoute(index),z0=trophyStart(index);
+ const L=index===0?Math.abs(spot[1]-z0):Math.abs(leave[1]-z0)+Math.hypot(spot[0]-leave[0],spot[1]-leave[1]);
+ return(L+1)/TROPHY_SPEED+.25;
+}
+// The jump each teammate does when the cup goes up (captured clips).
+export const TROPHY_JOY=Object.freeze(['excited','cheering','rallying','pump','excited','cheering','rallying']);
+function trophyActor(index,time){
+ const p=trophySpot(index,time),before=trophySpot(index,time-.05),after=trophySpot(index,time+.05);
+ const moving=Math.hypot(after[0]-before[0],after[1]-before[1])>.006;
+ const travelHeading=moving?Math.atan2(-(after[0]-before[0]),-(after[1]-before[1])):null;
+ if(index>=8){
+  // Applauding the winners through, turned to the lane.
+  const heading=facing(p,[TROPHY_LANE,p[1]+1.2]);
+  return{x:p[0],z:p[1],heading,pose:'applause',s:time+index*.13,weight:smooth((time-.15-(index%3)*.1)/.5)};
+ }
+ if(index===0){
+  // Walks up the lane (+z), takes the cup, turns to the cameras, lifts it.
+  const stand=Math.PI,heading=time<TR.turn?(travelHeading??stand):angleMix(stand,FACE_CAMERA,smooth((time-TR.turn)/.7));
+  const s=time-TR.grab;
+  return{x:p[0],z:p[1],heading,pose:s>-.3?'trophy_lift':null,s,weight:s>-.3?smooth((s+.3)/.3):0};
+ }
+ const done=trophyArrival(index),turn=smooth((time-done+.4)/.8);
+ const heading=travelHeading!==null&&turn<1?angleMix(travelHeading,FACE_CAMERA,turn):FACE_CAMERA;
+ const joy=time-(TR.lift+.12+(index%3)*.09);
+ if(joy>0)return{x:p[0],z:p[1],heading,pose:TROPHY_JOY[(index-1)%TROPHY_JOY.length],s:joy,weight:smooth(joy/.35)};
+ // Clapping the captain up to the cup once in line.
+ return{x:p[0],z:p[1],heading,pose:'applause',s:time-done,weight:smooth((time-done)/.6)*.9};
+}
+// Where the cup is: 0 = on the pedestal, 1 = in the captain's hands.
+export function trophyGrip(time){return smooth((time-TR.grab-.42)/.22)}
 export function ceremonyActor(kind,index,time,{draw=false}={}){
+ if(kind==='trophy')return trophyActor(index,time);
  return kind==='kickoff'?kickoffActor(index,time):fulltimeActor(index,time,draw);
 }
 
@@ -137,7 +211,8 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 // V21.406 (Basti: "vor dem Spiel soll man in einer Szene das Stadion sehen"):
 // the stadium shot runs 4 s (V21.410, was 3.4), from high above the roof down into the bowl.
 export const CEREMONY_ARENA_SHOT=4;
-export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5});
+export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5,trophy:TROPHY_TIMES.cut});
+export function ceremonyEnd(kind){return kind==='trophy'?TROPHY_TIMES.end:10.4}
 const CEREMONY_END=10.4;
 export function ceremonyCamera(kind,time){
  if(kind==='kickoff'){
@@ -148,6 +223,7 @@ export function ceremonyCamera(kind,time){
   // Aimed below the line so the players stand above the match card.
   return{position:[21.5,2.9,z],target:[9,-.55,z*.94],fov:31,phase:'lineup'};
  }
+ if(kind==='trophy')return trophyCamera(time);
  const [gx,gz]=FULLTIME_CENTRE;
  // V21.439: a wide TV picture of the whole scene first (aimed a little below
  // the players: the result card covers the lower third), then a low camera
@@ -155,6 +231,18 @@ export function ceremonyCamera(kind,time){
  if(time<CEREMONY_CUT.fulltime)return{position:[gx+22-time*.5,7-time*.25,gz-5+time*1.1],target:[gx-.5,-1.2,gz-1+time*.3],fov:34,phase:'final-whistle'};
  const u=time-CEREMONY_CUT.fulltime,[fx,fz]=FULLTIME_FANS,come=smooth(u/4.2);
  return{position:[fx+11.5-u*.3,2.2,fz+2.2-u*.4],target:[mix(fx-6,fx-1,come),mix(.2,.55,come),fz+.6-u*.2],fov:32,phase:'to-the-fans'};
+}
+
+// V21.444 cup presentation: low in front of the stage down the guard of
+// honour, then the whole team before the backdrop, then a slow low arc round
+// the captain as the cup goes up (aimed high: the result card sits below).
+function trophyCamera(time){
+ if(time<TR.cut){const u=smooth(time/TR.cut);
+  return{position:[29.2-u*.8,2.3,mix(-13.5,-5.5,u)],target:[TROPHY_LANE-.4,1.1,mix(-10.5,-2.5,u)],fov:38,phase:'guard-of-honour'}}
+ if(time<TR.close){const u=smooth((time-TR.cut)/(TR.close-TR.cut));
+  return{position:[29.6-u*1.4,2.35-u*.2,mix(-1.6,-.6,u)],target:[mix(19.4,20.2,u),mix(1.35,1.7,u),mix(-.6,-.3,u)],fov:38,phase:'winners-stage'}}
+ const u=time-TR.close,a=mix(-.5,.3,smooth(u/(TR.end-TR.close))),[cx,cz]=TROPHY_CAPTAIN_SPOT,r=mix(6.2,5.4,smooth(u/3));
+ return{position:[cx+Math.cos(a)*r,mix(1.05,1.35,smooth(u/4)),cz+Math.sin(a)*r],target:[cx-.8,mix(1.75,2.1,smooth(u/1.2)),cz+Math.sin(a)*.5],fov:46,phase:'trophy-lift'};
 }
 
 // ---- goal replay: high behind the goal, through the net, at half speed.

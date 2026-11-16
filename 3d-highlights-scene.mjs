@@ -2,8 +2,8 @@ import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-pla
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21341';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21439';
-import {createSceneSound} from './3d-stadium-sound.mjs?v=21406';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21444';
+import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
@@ -13,8 +13,9 @@ import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
-import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21439';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,CEREMONY_ARENA_SHOT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21439';
+import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21444';
+import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21301';
@@ -807,7 +808,7 @@ export function crowdReactionState(type,attackTeam,supporterTeam,time,end=DURATI
  // V21.226 ceremonies: the whole ground is up for the walk-out; at the final
  // whistle the winners' end celebrates and the losers' end goes quiet.
  if(type==='ceremony_kickoff')return{suspense:0,mood:supporter==='neutral'?.45:.85};
- if(type==='ceremony_fulltime'||type==='ceremony_draw')return{suspense:0,mood:supporter==='neutral'||type==='ceremony_draw'?.3:attacking?1:-.4};
+ if(type==='ceremony_fulltime'||type==='ceremony_draw'||type==='ceremony_trophy')return{suspense:0,mood:supporter==='neutral'||type==='ceremony_draw'?.3:attacking?1:-.4};
  const suspense=smooth((time-(SHOT_TIME-.85))/.72)*(1-smooth((time-IMPACT_TIME)/.22));
  const after=smooth((time-IMPACT_TIME)/.38),fade=Math.max(.22,1-smooth((time-(end-1.35))/1.1));
  let mood=0;
@@ -1132,7 +1133,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // scorer sprints there first; his own celebration starts at GESTURE_START and
  // the scene runs that much longer (SCENE_END), so nothing of it is cut.
  const celebrationPlan=celebrationActive?celebrationRoute(celebrationKind,celebrationKey,stagedPlayerPosition(0,CELEBRATION_START),direction,globalThis.__FOOTERA_QA_CELEBRATION_SPOT||null):null;
- const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=DURATION+CELEBRATION_APPROACH;
+ const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=ceremony==='trophy'?ceremonyEnd('trophy'):DURATION+CELEBRATION_APPROACH;
  const celebrationRun=celebrationPlan?celebrationPlan.run:(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
   if(!celebrationActive||time<=CELEBRATION_START)return 0;
@@ -1455,8 +1456,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // goal; on big nights (Champions) a tifo over the main stand at the walk-out.
   // Scene space: the far stand is world -x, the attacked goal's end -z*direction.
   const bigNight=ceremony==='kickoff'&&event.bigMatch===true;
+  // V21.444: the winners' end lights up when the cup goes up.
+  const trophyNight=ceremony==='trophy';
   const pyro=(()=>{
-   if(event.type!=='goal'&&!bigNight)return null;
+   if(event.type!=='goal'&&!bigNight&&!trophyNight)return null;
    const fanKit=event.team==='away'?crowdKits.away:crowdKits.home;
    const glow=canvasTexture(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,250,225,1)');g.addColorStop(.18,'rgba(255,170,90,.95)');g.addColorStop(.45,'rgba(255,60,25,.42)');g.addColorStop(1,'rgba(255,40,10,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
    const puff=canvasTexture(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,255,255,.9)');g.addColorStop(.55,'rgba(255,255,255,.42)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
@@ -1467,7 +1470,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const spots=[];
    // Goals: the far stand behind the scorer's close-up. Walk-out: the main
    // stand the players walk towards, seen behind them in the opening shot.
-   const side=event.type==='goal'?-1:1;
+   const side=event.type==='goal'||trophyNight?-1:1;
    for(let k=0;k<(weak?5:8);k++){
     const row=2+Math.floor(hash(k*13+7)*6),z=clamp(scorerWorld[2]+(k/(weak?4:7)-.5)*26+(hash(k*17+3)-.5)*2.4,-54,54);
     spots.push([side*(39.3+row*1.42),1.13+row*.72+1.55,z]);
@@ -1479,7 +1482,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const items=spots.map((at,k)=>{
     const flare=new THREE.Sprite(flareMaterial);flare.position.set(...at);flare.renderOrder=12;scene.add(flare);
     const smoke=[0,1].map(n=>{const sprite=new THREE.Sprite(smokeMaterial);sprite.renderOrder=11;scene.add(sprite);return sprite});
-    return{at,flare,smoke,start:(event.type==='goal'?netArrival+.25:0)+hash(k*29+11)*.9,phase:hash(k*31+5)*6.3};
+    return{at,flare,smoke,start:(event.type==='goal'?netArrival+.25:trophyNight?TROPHY_TIMES.lift+.1:0)+hash(k*29+11)*.9,phase:hash(k*31+5)*6.3};
    });
    function update(time){
     for(const item of items){
@@ -1497,7 +1500,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   })();
   // Winternächte (V21.406): New Year's Eve fireworks above the stands at goals, walk-outs and the final whistle.
   // Each rocket bursts into one THREE.Points cloud that falls and fades, then re-launches, so long scenes keep it.
-  const fireworks=silvesterNight()&&(event.type==='goal'||ceremony)?(()=>{
+  const fireworks=(silvesterNight()&&(event.type==='goal'||ceremony))||trophyNight?(()=>{
    const palette=['#ff4d6d','#ffd166','#7bdff2','#b8f2e6','#c77dff','#ffffff','#06d6a0'];
    const count=weak?4:7,sparks=weak?44:72,period=2.9,side=ceremony==='kickoff'?1:-1;
    // High above both long stands: the walk-out opening shot, the final whistle and replays look up there.
@@ -1513,7 +1516,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const material=track(new THREE.PointsMaterial({map:spark,color:palette[k%palette.length],size:weak?3.6:3.2,sizeAttenuation:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
     const points=new THREE.Points(geometry,material);points.renderOrder=13;points.frustumCulled=false;scene.add(points);
     const at=[(k%2?side:-side)*(40+hash(k*41+9)*18),30+hash(k*43+2)*8,-46+k/(count-1||1)*92+(hash(k*47+5)-.5)*8];
-    bursts.push({points,geometry,material,dirs,pos,at,radius:9+hash(k*53+1)*5,offset:(event.type==='goal'&&!ceremony?netArrival+.4:.3)+k*(period/count)+hash(k*59+3)*.5});
+    bursts.push({points,geometry,material,dirs,pos,at,radius:9+hash(k*53+1)*5,offset:(event.type==='goal'&&!ceremony?netArrival+.4:trophyNight?TROPHY_TIMES.lift+.2:.3)+k*(period/count)+hash(k*59+3)*.5});
    }
    function update(time){
     for(const b of bursts){
@@ -1561,6 +1564,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    update(0);return{update};
   })():null;
+  // V21.444 Pokalübergabe: winners' stage, pedestal, the cup, confetti and fountains.
+  const trophyStage=trophyNight?createTrophyStage({scene,parent:field,renderer,event,weak,track,hash}):null;
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
    if(crowdDetailReduced)return;
@@ -2074,6 +2079,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
+   if(trophyStage){const cap=importedPlayer?.model;trophyStage.update(time,{handL:cap?.getObjectByName?.('hand_l')||null,handR:cap?.getObjectByName?.('hand_r')||null,captainRoot:players[0]?.root||null})}
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    weather.update(time);arena?.update(time,camera);
    renderer.render(scene,camera);
@@ -2804,7 +2810,7 @@ export function play(event,signal){
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','3D-Fußballszene');layer.append(canvas);
   const top=document.createElement('div');top.className='fh3d-top';
   const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const ceremony=ceremonyKind(event);
-  const sub=document.createElement('small');sub.textContent=ceremony==='kickoff'?'LIVE · ANPFIFF':ceremony==='fulltime'?'LIVE · ABPFIFF':`LIVE · ${event.minute}'`;brand.append(sub);
+  const sub=document.createElement('small');sub.textContent=ceremony==='kickoff'?'LIVE · ANPFIFF':ceremony==='fulltime'?'LIVE · ABPFIFF':ceremony==='trophy'?'LIVE · SIEGEREHRUNG':`LIVE · ${event.minute}'`;brand.append(sub);
   const weatherNow=sceneWeatherFor(event);
   if(weatherNow&&weatherNow.kind!=='clear'){const chip=document.createElement('span');chip.className='fh3d-weather';chip.textContent=globalThis.FooteraWeather?.chipText?.(weatherNow)||(weatherNow.kind==='snow'?'❄ Schneefall':'☂ Regen');brand.append(chip)}
   layer.dataset.weather=weatherNow?.kind||'clear';
@@ -2982,9 +2988,10 @@ export function play(event,signal){
      layer.dataset.playbackTime=displayTime.toFixed(3);
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      // The result card never comes before the ball is actually in the net.
-     const revealAt=ceremony==='kickoff'?CEREMONY_CUT.kickoff+.5:ceremony?.8:event.type==='goal'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
+     const revealAt=ceremony==='kickoff'?CEREMONY_CUT.kickoff+.5:ceremony==='trophy'?TROPHY_TIMES.lift+.7:ceremony?.8:event.type==='goal'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
       if(ceremony==='kickoff'){headline.textContent=event.competition||'ANPFIFF';name.textContent=`${event.homeName||'Heim'} – ${event.awayName||'Gast'}`;detail.textContent='Die Teams laufen ein'}
+      else if(ceremony==='trophy'){headline.textContent='POKALSIEGER';name.textContent=event.homeName||'Heim';detail.textContent=`${event.trophyName||event.competition||'Cup'} gewonnen · Finale ${event.homeScore??0} : ${event.awayScore??0}`}
       else if(ceremony){headline.textContent='ABPFIFF';name.textContent=`${event.homeName||'Heim'} ${event.homeScore??0} : ${event.awayScore??0} ${event.awayName||'Gast'}`;detail.textContent=event.result==='draw'?'Unentschieden':`Sieg für ${event.team==='away'?event.awayName||'Gast':event.homeName||'Heim'}`}
       else if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({classic:' · Gefangen',fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}

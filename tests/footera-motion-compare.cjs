@@ -13,7 +13,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
   const comparison=await browser.newPage({viewport:{width:390,height:844},serviceWorkers:'block'});
   await comparison.goto(url);
   const measures=await comparison.evaluate(async()=>{
-   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=21442');
+   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=21444');
    const c=document.createElement('canvas'),r=new T.WebGLRenderer({canvas:c,antialias:false});
    const output={reference:[],pilot:[]};
    for(const baseline of [true,false]){

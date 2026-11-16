@@ -305,7 +305,7 @@ function queueMatchCeremony3D(kind){
  const field=side=>rows(side).filter(r=>!/^(GK|TW|TH)$/i.test(String(r.slot||'')));
  // V21.428: at the walk-out your captain leads the team out, first in the column.
  // (The lead is actor 0; numbers, looks and names all follow it via playerId.)
- const captainFirst=(side,list)=>{const cap=kind==='kickoff'?match3DCaptainRow(side,current):null,at=cap?list.findIndex(r=>match3DSameRow(side,r,cap)):-1;return at>0?[list[at],...list.filter((_,i)=>i!==at)]:list};
+ const captainFirst=(side,list)=>{const cap=kind==='kickoff'||kind==='trophy'?match3DCaptainRow(side,current):null,at=cap?list.findIndex(r=>match3DSameRow(side,r,cap)):-1;return at>0?[list[at],...list.filter((_,i)=>i!==at)]:list};
  const attackRows=captainFirst(team,field(team)).slice(0,8),defendRows=field(defending).slice(0,8),lead=attackRows[0]||null;
  const goalie=rows(defending).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')))||null;
  const base={type:'ceremony',team,playerId:team==='home'?lead?.uid:lead?.index,playerName:lead?.name||''};
@@ -321,10 +321,26 @@ function queueMatchCeremony3D(kind){
   homeScore:current.home,awayScore:current.away,competition:document.getElementById('matchCompetition')?.textContent||'',bigMatch:current.mode==='champions',
   teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,
   // V21.427 Fan-Choreo: the fans' own tifo at the walk-out of a home match (device-local design).
+  ...(kind==='trophy'?match3DTrophy(current):{}),
   choreo:kind==='kickoff'&&typeof FooteraChoreo!=='undefined'?FooteraChoreo.forMatch(current):null,keeperName:goalie?.name||'',
   shirtNumbers:numbers.shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:numbers.captainActors,keeperCaptain:numbers.keeperCaptain,...match3DSkinTones(base),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
+}
+// V21.444 Pokalübergabe: after a won cup final (tournament stage 3) the
+// cup presentation follows the final-whistle scene. Display data only.
+const MATCH3D_TROPHY_TONES={bronze:'bronze',silver:'silver',open:'gold'};
+function match3DTrophyWon(current){
+ if(!current?.finished||current.mode!=='tournament'||Number(current.tournament?.stage)!==3)return false;
+ return current.home>current.away||(current.home===current.away&&current.penaltyWinner==='home');
+}
+function match3DTrophy(current){
+ const id=current?.tournament?.id,cup=typeof window!=='undefined'?window.FooteraTournaments?.CUPS?.find(c=>c.id===id):null;
+ return{trophyName:cup?.name||'Footera Cup',trophyTone:MATCH3D_TROPHY_TONES[id]||'gold'};
+}
+function queueMatchTrophy3D(){
+ if(!match3DTrophyWon(match)&&!(typeof window!=='undefined'&&window.__FOOTERA_FORCE_TROPHY&&match?.finished))return false;
+ return queueMatchCeremony3D('trophy');
 }
 // Simulation records tackles, interceptions, cards and stats unchanged.
 // Standalone turnover clips are retired; slide/block moves within shots remain.

@@ -21,7 +21,7 @@ const server=http.createServer((req,res)=>{
   await page.goto('http://127.0.0.1:'+server.address().port+'/qa.html');
   const data=await page.evaluate(async({newAttacks,cameraFix,receiving})=>{
    const THREE=await import('./vendor/three/three.module.min.js');
-   const M=await import('./3d-highlights-scene.mjs?v=21442');
+   const M=await import('./3d-highlights-scene.mjs?v=21444');
    const P=await import('./3d-playbook.mjs?v=2186');
    if(!await M.prepareFooteraPlayerModel())throw Error('Production GLB not available');
    const canvas=document.createElement('canvas');document.body.append(canvas);
