@@ -1,0 +1,11 @@
+/* V21.446 Spielervorstellung */
+.sg-sub{font-size:12px;opacity:.7;margin-top:2px}
+#playerSigningBody{display:grid;gap:12px;justify-items:center;padding-bottom:6px}
+.sg-photo{display:block;width:min(100%,420px);aspect-ratio:4/5;border-radius:12px;object-fit:cover;background:#0f1115;box-shadow:0 10px 32px rgba(0,0,0,.45)}
+.sg-wait{display:grid;place-content:center;justify-items:center;gap:8px;color:#9aa3ad;font:700 13px/1.2 Inter,system-ui,sans-serif;background:linear-gradient(110deg,#0f1115 30%,#22262d 50%,#0f1115 70%);background-size:220% 100%;animation:sgDevelop 1.6s linear infinite}
+.sg-wait span{font-size:34px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+@keyframes sgDevelop{from{background-position:100% 0}to{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){.sg-wait{animation:none}}
+.sg-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:min(100%,420px)}
+.sg-actions button{flex:1 1 140px;min-height:42px}
+.sg-note{margin:0;max-width:420px;font-size:12px;line-height:1.4;opacity:.65;text-align:center}

@@ -47,7 +47,10 @@ export const PHOTO_ARMS=Object.freeze({
  hug:{upper:[.95,.05,.12],lower:[.65,-.6,.3],fist:false},
  pump:{upper:[.3,-.5,.55],lower:[0,.75,.65],fist:true},
  bottle:{upper:[.4,.35,.55],lower:[0,1,.3],fist:true,bottle:true},
- trophy:{upper:[.3,1,.22],lower:[-.42,1,.12],fist:false}
+ trophy:{upper:[.3,1,.22],lower:[-.42,1,.12],fist:false},
+ // V21.446 Spielervorstellung: the new signing holds his shirt up in front of the chest, or the scarf over his head
+ present:{upper:[.2,-.8,.42],lower:[-.42,.3,1],fist:true},
+ scarf:{upper:[.62,.78,.12],lower:[.16,1,.02],fist:true}
 });
 // Per row: up on the bench arms go high, in the middle fists and hugs, kneeling in front low (never over a face behind).
 const ARM_PAIRS={
@@ -155,7 +158,7 @@ function plateTexture(name,number,kit){
   g.fillText(String(footeraShirtName(name)||name).toUpperCase().slice(0,14),number>9?150:110,h/2+2,w-(number>9?165:125));
  });
 }
-function hangingShirtTexture(kit,number,name){
+function hangingShirtTexture(kit,number,name,hanger=true){
  return canvasTexture(256,320,(g,w,h)=>{
   g.clearRect(0,0,w,h);
   const body=new Path2D();
@@ -176,7 +179,7 @@ function hangingShirtTexture(kit,number,name){
   g.font='800 30px "Arial Narrow","Roboto Condensed",Arial,sans-serif';g.fillText(String(footeraShirtName(name)||'').toUpperCase().slice(0,12),w/2,h*.3,w*.48);
   g.font='900 120px "Arial Narrow","Roboto Condensed",Arial,sans-serif';g.fillText(String(number||''),w/2,h*.6);
   // hanger
-  g.strokeStyle='#8f8f8f';g.lineWidth=5;g.beginPath();g.moveTo(w*.5,h*.1);g.lineTo(w*.5,0);g.stroke();
+  if(hanger){g.strokeStyle='#8f8f8f';g.lineWidth=5;g.beginPath();g.moveTo(w*.5,h*.1);g.lineTo(w*.5,0);g.stroke()}
  });
 }
 function crateTexture(color){
@@ -519,6 +522,181 @@ export async function renderKabinePhoto(spec={},opts={}){
   for(let i=0;i<d.length;i+=4){s=(Math.imul(1664525,s)+1013904223)>>>0;const n=((s>>>24)-128)*.06;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
   g.putImageData(noise,0,0);
   return{url:out.toDataURL('image/jpeg',opts.quality||.86),width,height,variant:layout.variant,actors:layout.actors.length};
+ }finally{
+  for(const o of owned){
+   if(o.isMesh||o.isInstancedMesh){o.geometry?.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];for(const mm of ms){mm?.map?.dispose?.();mm?.dispose?.()}}
+   else{o.geometry?.dispose?.();o.material?.dispose?.();o.texture?.dispose?.()}
+  }
+  renderer.dispose();try{renderer.forceContextLoss()}catch(_){}
+ }
+}
+
+/* ---------- V21.446 Spielervorstellung ----------
+ * The official presentation photo of a new signing, like the ones clubs post
+ * when a transfer is done: the player in front of the press wall with the
+ * club crest and the Footera logo, holding up his shirt with name and number
+ * (or the club scarf over his head), photographers' flashes, a "NEUZUGANG"
+ * banner. One still, our own 3D render of the user's player (body, face, hair,
+ * skin from the player looks, the club's home kit and crest). Pure function of
+ * the seed, never changes the club or the save. */
+export const SIGNING_PHOTO_VERSION='21.446-signing-photo';
+export function signingLayout(spec={}){
+ const seed=String(spec.seed||'signing'),p=spec.player||{};
+ // the scarf only for outfield players (keepers always show their shirt) and about every third picture
+ const variant=spec.variant==='scarf'||spec.variant==='shirt'?spec.variant:(!p.keeper&&photoHash(seed+'variant')%3===0?'scarf':'shirt');
+ return{variant,
+  pose:{clip:spec.qaClip||'victory',frame:Number.isFinite(spec.qaFrame)?spec.qaFrame:[0,2,34,36][photoHash(seed+'frame')%4]},
+  arms:variant==='scarf'?['scarf','scarf']:['present','present'],
+  yaw:(rand(seed,'yaw')-.5)*.12,
+  camX:(rand(seed,'camx')-.5)*.36,
+  flashes:2+photoHash(seed+'fl')%3};
+}
+function pressWallTexture(kit,club,crestImg,emblemImg){
+ return canvasTexture(2048,1536,(g,w,h)=>{
+  const bg=g.createLinearGradient(0,0,0,h);const lum=new THREE.Color(kit.shirt).getHSL({}).l,f=lum>.5?.6:1;bg.addColorStop(0,shade(kit.shirt,.42*f));bg.addColorStop(1,shade(kit.shirt,.26*f));
+  g.fillStyle=bg;g.fillRect(0,0,w,h);
+  // fine diagonal fabric lines
+  g.strokeStyle='rgba(255,255,255,.035)';g.lineWidth=2;for(let x=-h;x<w;x+=18){g.beginPath();g.moveTo(x,0);g.lineTo(x+h,h);g.stroke()}
+  // step-and-repeat: crest + club name and the Footera wordmark, staggered rows
+  const cols=6,rows=6,cw=w/cols,rh=h/rows,name=String(club||'FOOTERA').toUpperCase().slice(0,22);
+  g.textAlign='center';g.textBaseline='middle';
+  for(let r=0;r<rows;r++)for(let c=-1;c<=cols;c++){
+   const x=c*cw+(r%2?cw/2:0)+cw/2,y=r*rh+rh/2;
+   if((r+c)%2===0){
+    const s=rh*.5;
+    if(crestImg)g.drawImage(crestImg,x-s/2,y-s*.62,s,s);
+    else{
+     // no crest image: a plain shield with the club's initials
+     const sw=s*.7,top=y-s*.6;g.fillStyle=kit.shirtSecondary;g.beginPath();g.moveTo(x-sw/2,top);g.lineTo(x+sw/2,top);g.lineTo(x+sw/2,top+s*.5);g.quadraticCurveTo(x+sw/2,top+s*.82,x,top+s*.95);g.quadraticCurveTo(x-sw/2,top+s*.82,x-sw/2,top+s*.5);g.closePath();g.fill();
+     g.fillStyle=kit.shirt;g.font=`900 ${Math.round(s*.34)}px "Arial Narrow",Arial,sans-serif`;g.fillText(name.split(/\s+/).map(t=>t[0]).join('').slice(0,3),x,top+s*.42);
+    }
+    g.font='800 28px "Arial Narrow","Roboto Condensed",Arial,sans-serif';g.fillStyle='rgba(255,255,255,.88)';g.fillText(name,x,y+rh*.3,cw*.86);
+   }else{
+    if(emblemImg){const s=rh*.42;g.globalAlpha=.9;g.drawImage(emblemImg,x-s/2,y-s*.7,s,s);g.globalAlpha=1}
+    g.font='900 40px "Arial Narrow","Roboto Condensed",Arial,sans-serif';g.fillStyle='rgba(255,255,255,.9)';g.fillText('FOOTERA',x,y+rh*.22,cw*.8);
+    g.font='700 16px Arial,sans-serif';g.fillStyle=kit.shirtSecondary;g.fillText('BUILD YOUR ERA',x,y+rh*.38,cw*.8);
+   }
+  }
+ });
+}
+function scarfTexture(kit,club){
+ return canvasTexture(1024,160,(g,w,h)=>{
+  g.clearRect(0,0,w,h);
+  const fringe=34,body=w-fringe*2;
+  g.fillStyle=kit.shirt;g.fillRect(fringe,0,body,h);
+  g.fillStyle=kit.shirtSecondary;g.fillRect(fringe,0,body,16);g.fillRect(fringe,h-16,body,16);
+  // blocks at the ends
+  for(const x of [fringe,w-fringe-90]){g.fillStyle=kit.shirtSecondary;g.fillRect(x,0,90,h);g.fillStyle=kit.shirt;for(let k=0;k<3;k++)g.fillRect(x+12+k*26,16,12,h-32)}
+  g.font='900 92px "Arial Narrow","Roboto Condensed",Arial,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle=kit.shirtSecondary;
+  g.fillText(String(club||'FOOTERA').toUpperCase().slice(0,20),w/2,h/2+4,body-230);
+  // tassels
+  g.strokeStyle=kit.shirtSecondary;g.lineWidth=5;
+  for(const [x0,dir] of [[fringe,-1],[w-fringe,1]])for(let y=10;y<h;y+=13){g.beginPath();g.moveTo(x0,y);g.lineTo(x0+dir*fringe*.95,y+4);g.stroke()}
+ });
+}
+function loadImage(src,timeout=1500){
+ return new Promise(res=>{try{const img=new Image();const t=setTimeout(()=>res(null),timeout);img.onload=()=>{clearTimeout(t);res(img)};img.onerror=()=>{clearTimeout(t);res(null)};img.src=src}catch(_){res(null)}});
+}
+// spec: {seed, club, player:{name,number,skin,look,keeper,pos,ovr}, kit, keeperKit, crestHTML, variant?}
+// opts: {width, height, quality}. Resolves to {url, width, height, variant}.
+export async function renderSigningPhoto(spec={},opts={}){
+ if(typeof document==='undefined')throw new Error('no document');
+ const width=opts.width||1080,height=opts.height||1350,seed=String(spec.seed||'signing');
+ await loadBodies(opts.bodyTimeout);
+ const kit=kitOf(spec.kit,{shirt:'#971d42',shirtSecondary:'#f3f4ee',shorts:'#f3f4ee',socks:'#971d42'});
+ const keeperKit=kitOf(spec.keeperKit,{shirt:'#f4b52b',shirtSecondary:'#16191d',shorts:'#16191d',socks:'#f4b52b'});
+ const p={name:'Neuzugang',number:9,...(spec.player||{})};
+ const ownKit=p.keeper?keeperKit:kit;
+ let crestImg=null;
+ if(spec.crestHTML){crestImg=footeraCrestImageNow(spec.crestHTML);if(!crestImg)try{crestImg=await Promise.race([loadFooteraCrestImage(spec.crestHTML),new Promise(r=>setTimeout(()=>r(null),1500))])}catch(_){}}
+ const emblemImg=await loadImage(opts.emblem||'./assets/footera/emblem.png');
+ const layout=signingLayout(spec);
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true,alpha:false});
+ const owned=[];
+ try{
+  renderer.setPixelRatio(1);renderer.setSize(width,height,false);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  const scene=new THREE.Scene();scene.background=new THREE.Color('#141518');
+  const pmrem=new THREE.PMREMGenerator(renderer),env=pmrem.fromScene(new RoomEnvironment(renderer),.04).texture;pmrem.dispose();
+  scene.environment=env;owned.push({texture:env});
+  const add=(mesh,cast=false,receive=true)=>{mesh.castShadow=cast;mesh.receiveShadow=receive;scene.add(mesh);owned.push(mesh);return mesh};
+  // the press wall and a dark carpet
+  const WALL_Z=-1.15;
+  const wall=add(new THREE.Mesh(new THREE.PlaneGeometry(5.2,3.9),stdMat('#ffffff',{map:pressWallTexture(kit,spec.club,crestImg,emblemImg),roughness:.78})));
+  wall.position.set(0,1.95,WALL_Z);
+  const carpet=add(new THREE.Mesh(new THREE.PlaneGeometry(8,6),stdMat('#1d1f24',{roughness:.95})));carpet.rotation.x=-Math.PI/2;carpet.position.z=.5;
+  const camera=new THREE.PerspectiveCamera(36,width/height,.1,40);
+  const scarfShot=layout.variant==='scarf';
+  camera.fov=scarfShot?39:36;camera.updateProjectionMatrix();
+  camera.position.set(layout.camX,scarfShot?1.52:1.44,scarfShot?2.45:2.72);camera.lookAt(layout.camX*.2,scarfShot?1.4:1.24,-.3);
+  if(spec.qaCamera){camera.position.fromArray(spec.qaCamera.pos);camera.fov=spec.qaCamera.fov||camera.fov;camera.updateProjectionMatrix();camera.lookAt(new THREE.Vector3().fromArray(spec.qaCamera.at))}
+  camera.updateMatrixWorld(true);
+  // studio light: two soft boxes, a rim from behind and the photographers' flashes
+  scene.add(new THREE.HemisphereLight('#f4f1ff','#2a2622',.5));
+  const flash=new THREE.SpotLight('#ffffff',26,0,Math.PI/4,.8,2);
+  flash.position.copy(camera.position).add(new THREE.Vector3(.35,.25,0));flash.target.position.set(0,1.2,-.4);
+  flash.castShadow=true;flash.shadow.mapSize.set(2048,2048);flash.shadow.bias=-.0004;flash.shadow.normalBias=.02;flash.shadow.radius=5;
+  scene.add(flash,flash.target);
+  for(const [x,i] of [[-2.1,7],[2.1,5]]){const s=new THREE.SpotLight('#fff3e2',i,0,Math.PI/5,.9,2);s.position.set(x,2.6,1.6);s.target.position.set(0,1.3,-.3);scene.add(s,s.target)}
+  const rim=new THREE.DirectionalLight('#cfe2ff',1.6);rim.position.set(-1.5,3,-2.5);rim.target.position.set(0,1.2,-.3);scene.add(rim,rim.target);
+  const rim2=new THREE.DirectionalLight('#ffe7cc',1.1);rim2.position.set(1.8,2.6,-2.4);rim2.target.position.set(0,1.2,-.3);scene.add(rim2,rim2.target);
+  // the player
+  const actor={x:0,y:0,z:-.3,yaw:layout.yaw,pose:layout.pose,arms:layout.arms,mirror:0,kneel:false,back:false};
+  const m=mountPlayer(scene,actor,p,kit,keeperKit,crestImg,owned);
+  if(m){
+   measureHeadForward(m);poseActor(m,actor,camera);
+   const hl=m.bones.get('hand_l')?.getWorldPosition(new THREE.Vector3()),hr=m.bones.get('hand_r')?.getWorldPosition(new THREE.Vector3());
+   if(hl&&hr){
+    const mid=hl.clone().add(hr).multiplyScalar(.5),span=hl.distanceTo(hr);
+    const toCam=Math.atan2(camera.position.x-mid.x,camera.position.z-mid.z);
+    if(layout.variant==='scarf'){
+     const len=Math.max(1.05,span+.42),scarf=add(new THREE.Mesh(new THREE.PlaneGeometry(len,len*160/1024),stdMat('#ffffff',{map:scarfTexture(kit,spec.club),transparent:true,alphaTest:.3,roughness:.92,side:THREE.DoubleSide})),true,false);
+     scarf.position.set(mid.x,mid.y-.01,mid.z+.05);scarf.rotation.y=toCam;
+     // sag a little in the middle
+     scarf.rotation.z=Math.atan2(hl.y-hr.y,hl.x-hr.x)*(hl.x<hr.x?1:-1)*.5;
+    }else{
+     const w=clamp(span+.2,.58,.68),shirt=add(new THREE.Mesh(new THREE.PlaneGeometry(w,w*1.25),stdMat('#ffffff',{map:hangingShirtTexture(ownKit,p.number,p.name,false),transparent:true,alphaTest:.4,roughness:.85,side:THREE.DoubleSide})),true,false);
+     shirt.position.set(mid.x,mid.y+.1-w*1.25*.44,mid.z+.05);shirt.rotation.y=toCam;
+    }
+   }
+  }
+  renderer.render(scene,camera);
+  // photo look and the presentation banner on a 2D copy
+  const out=document.createElement('canvas');out.width=width;out.height=height;const g=out.getContext('2d');
+  g.drawImage(canvas,0,0);
+  const v=g.createRadialGradient(width/2,height*.42,height*.3,width/2,height/2,height*.85);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.45)');
+  g.fillStyle=v;g.fillRect(0,0,width,height);
+  // photographers' flashes in the corners (soft star flares)
+  for(let i=0;i<layout.flashes;i++){
+   const fx=(i%2?width*(.82+rand(seed,'fx'+i)*.16):width*(.02+rand(seed,'fx'+i)*.16)),fy=height*(.5+rand(seed,'fy'+i)*.22),r=width*(.07+rand(seed,'fr'+i)*.06);
+   const fl=g.createRadialGradient(fx,fy,0,fx,fy,r);fl.addColorStop(0,'rgba(255,255,255,.95)');fl.addColorStop(.18,'rgba(235,244,255,.55)');fl.addColorStop(1,'rgba(200,220,255,0)');
+   g.globalCompositeOperation='screen';g.fillStyle=fl;g.beginPath();g.arc(fx,fy,r,0,Math.PI*2);g.fill();
+   g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=2;g.beginPath();g.moveTo(fx-r*1.4,fy);g.lineTo(fx+r*1.4,fy);g.moveTo(fx,fy-r);g.lineTo(fx,fy+r);g.stroke();
+   g.globalCompositeOperation='source-over';
+  }
+  // banner: NEUZUGANG, name, number/position/rating, club
+  const bh=height*.2,by=height-bh;
+  const band=g.createLinearGradient(0,by-height*.12,0,height);band.addColorStop(0,'rgba(8,9,12,0)');band.addColorStop(.38,'rgba(8,9,12,.82)');band.addColorStop(1,'rgba(8,9,12,.96)');
+  g.fillStyle=band;g.fillRect(0,by-height*.12,width,bh+height*.12);
+  const accent=new THREE.Color(kit.shirtSecondary).getHSL({}).l<.25?'#ffd45a':kit.shirtSecondary;
+  g.fillStyle=accent;g.fillRect(width*.06,by+bh*.08,width*.012,bh*.66);
+  g.textAlign='left';g.textBaseline='alphabetic';
+  g.font=`900 ${Math.round(width*.034)}px "Arial Narrow","Roboto Condensed",Arial,sans-serif`;g.fillStyle=accent;
+  g.fillText(p.icon?'ICON-NEUZUGANG':'NEUZUGANG',width*.095,by+bh*.25);
+  g.font=`900 ${Math.round(width*.082)}px "Arial Narrow","Roboto Condensed",Arial,sans-serif`;g.fillStyle='#ffffff';
+  g.fillText(String(p.name||'').toUpperCase(),width*.095,by+bh*.58,width*.62);
+  const facts=[p.number?'#'+p.number:'',p.pos||'',p.ovr?p.ovr+' GES':''].filter(Boolean).join('  ·  ');
+  g.font=`700 ${Math.round(width*.032)}px Arial,sans-serif`;g.fillStyle='rgba(255,255,255,.78)';
+  g.fillText(facts+(facts?'  ·  ':'')+'Willkommen bei '+String(spec.club||'uns'),width*.095,by+bh*.8,width*.84);
+  if(crestImg){const s=bh*.62;g.drawImage(crestImg,width*.94-s,by+bh*.06,s,s)}
+  else if(p.number){g.textAlign='right';g.font=`900 ${Math.round(width*.13)}px "Arial Narrow",Arial,sans-serif`;g.fillStyle='rgba(255,255,255,.2)';g.fillText(String(p.number),width*.94,by+bh*.62)}
+  // grain
+  const noise=g.getImageData(0,0,width,height),d=noise.data;let s=photoHash(seed+'grain');
+  for(let i=0;i<d.length;i+=4){s=(Math.imul(1664525,s)+1013904223)>>>0;const n=((s>>>24)-128)*.05;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
+  g.putImageData(noise,0,0);
+  return{url:out.toDataURL('image/jpeg',opts.quality||.88),width,height,variant:layout.variant,body:!!m};
  }finally{
   for(const o of owned){
    if(o.isMesh||o.isInstancedMesh){o.geometry?.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];for(const mm of ms){mm?.map?.dispose?.();mm?.dispose?.()}}
