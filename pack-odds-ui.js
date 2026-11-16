@@ -27,6 +27,9 @@
   if(founderRuleForPack(pack.id)){
    html+='<div class="pack-odds-guarantees"><strong>100 % garantiert</strong><span>'+safe(pack.desc||"Eine fest zugeordnete Founder-Karte")+'</span></div>';
    html+='<p class="pack-odds-note">Dieses personalisierte Pack enthält eine feste Karte und keine zufällige Spielerziehung.</p>';
+  }else if(pack.pointsReward){
+   html+='<div class="pack-odds-guarantees"><strong>100 % garantiert</strong><span>'+Number(pack.pointsReward).toLocaleString("de-DE")+' Footera Points</span></div>';
+   html+='<p class="pack-odds-note">Dieses einmalige Pack enthält keine Spieler, nur Footera Points.</p>';
   }else if(pack.recipientSaveId){
    html+='<div class="pack-odds-guarantees"><strong>Feste Sonderinhalte</strong><span>2 Icons und 1 Momentum-Karte; dazu 9 zufällige Karten aus dem Premium-Goldspieler-Pack.</span></div>';
    html+='<p class="pack-odds-note">Für dieses einmalige Sondergeschenk liegt keine berechnete Gesamtquote der neun zusätzlichen Spieler vor.</p>';

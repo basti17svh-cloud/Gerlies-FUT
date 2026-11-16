@@ -467,6 +467,8 @@ const PACKS=[
 ];
 // This account-only gift shares the ordinary pack's name, artwork and description.
 PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
+// One-time "Tippspiel" pack for Max (Basti 2026-11-14): contains no players, only 100,000 Footera Points.
+PACKS.push({id:"tippspiel-max-20261114",name:"Tippspiel-Pack",coins:null,points:null,type:"points",count:0,min:0,max:0,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,iconChance:0,recipientSaveId:"GF-35FADCCBA5AD4E15",pointsReward:100000,desc:"Einmaliges Tippspiel-Pack · 100.000 Footera Points"});
 // Thank-you gift for the tester clubs: shown and described exactly like the ordinary Jumbo pack.
 PACKS.push({...PACKS.find(p=>p.id==="jumbo-rare"),id:"jumbo-rare-20261020",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,surpriseGift:{base:"jumbo-rare",icons:["Ruud Gullit"],players:["231747"]}});
 const TOTW_WEEK_1={id:1,name:"Team of the Week 1",releaseDate:"2026-09-16",activeUntil:"23.09.2026 18:59",players:[
@@ -4619,7 +4621,8 @@ function portraitCandidates(p){
  faces.filter(u=>u&&!/^https?:/i.test(String(u))).forEach(add);
  if(p?.isIcon){if(p?.futwizId)add(ownFaceUrl("icons",p.futwizId));faces.forEach(add);add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
  const legacy=u=>/https?:\/\/(?:cdn\.sofifa\.net|ratings-images-prod\.pulse\.ea\.com)\//i.test(String(u||""));
- const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v))||"";
+ // Footera's own Serie C ids (900000000+) have no EA portrait anywhere, so only their own art is tried.
+ const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v)&&Number(v)<900000000)||"";
  if(portraitId)add(ownFaceUrl("faces",portraitId));faces.filter(u=>!legacy(u)).forEach(add);if(portraitId)futwizFaceCandidates(portraitId).forEach(add);faces.filter(legacy).forEach(add);if(portraitId){sofifaFaceCandidates(portraitId).forEach(add);fifaRostersFaceCandidates(portraitId,27).forEach(add)}return arr
 }
 // Portraits copied once into Footera's own Supabase storage (scripts/mirror-player-faces.cjs); external sources stay as fallback.
@@ -5451,7 +5454,15 @@ function knownEAClubLeague(team){
  KNOWN_EA_CLUB_LEAGUE_CACHE.set(raw,"");
  return""
 }
-function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
+/* V21.432 — Serie C 2026-27: 60 clubs with their real squads (assets/players-serie-c.csv) and Ronaldinho at Ravenna. */
+/* V21.431 — one name per league: different data sources spell some leagues differently, which put them twice into the league filters. */
+const LEAGUE_CANONICAL_NAMES={"bundesliga 2":"2. Bundesliga","2 bundesliga":"2. Bundesliga","o bundesliga":"Österreichische Fußball-Bundesliga","ö bundesliga":"Österreichische Fußball-Bundesliga","liga i":"SUPERLIGA","superliga romania":"SUPERLIGA","super league greece":"Hellas Liga","stoiximan super league":"Hellas Liga"};
+function canonicalLeagueName(name){const raw=String(name||"").trim();if(!raw)return raw;const k=raw.toLowerCase().replace(/[^a-z0-9äöüß ]+/g," ").replace(/\s+/g," ").trim();return LEAGUE_CANONICAL_NAMES[k]||raw}
+/* V21.431 — league filters: the Top 5 leagues first, the rest alphabetically. */
+const TOP5_LEAGUE_ORDER=["Premier League","LALIGA EA SPORTS","Bundesliga","Serie A","Ligue 1"];
+function sortLeaguesTop5First(list){return [...list].sort((a,b)=>{const ia=TOP5_LEAGUE_ORDER.indexOf(a),ib=TOP5_LEAGUE_ORDER.indexOf(b);if(ia>=0||ib>=0)return(ia<0?99:ia)-(ib<0?99:ib);return String(a).localeCompare(String(b),"de")})}
+function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){return canonicalLeagueName(leagueFromClubRaw(team,rawLeague,leagueId,gender,source))}
+function leagueFromClubRaw(team,rawLeague="",leagueId="",gender="",source=""){
  const id=String(leagueId||"").trim();if(EA_LEAGUE_NAME_BY_ID[id])return EA_LEAGUE_NAME_BY_ID[id];
  const tk=normalizeKey(team),rk=normalizeKey(rawLeague);
  const verified=verifiedClubBadge(team,{gender,league:rawLeague,source});
@@ -5951,7 +5962,7 @@ function pickerItemQuality(item,base=displayBase(item)){
 function itemMatchesQuality(item,quality,base=displayBase(item)){return !quality||pickerItemQuality(item,base)===quality||(quality==="special"&&isEvolutionItem(item))}
 function pickerAffiliationOptions(){
  const rows=state.club.map(item=>{const base=displayBase(item);if(!base)return null;const a=resolvedAffiliation(base);return{league:String(a?.league||"").trim(),club:String(a?.team||"").trim()}}).filter(Boolean);
- return{leagues:[...new Set(rows.map(x=>x.league).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de")),rows}
+ return{leagues:sortLeaguesTop5First(new Set(rows.map(x=>x.league).filter(Boolean))),rows}
 }
 function populatePickerClubFilter(league="",preferredClub=""){
  const select=$("pickerClubFilter");if(!select)return;
@@ -6415,7 +6426,7 @@ function activePromoPacks(now=new Date()){
 }
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation).map(p=>storeDealPack(p)),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
+const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg","tippspiel-max-20261114":"./assets/footera/tippspiel-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -6451,6 +6462,7 @@ function generatePack(id,tradeable=true){
  }
  const p=PACKS.find(x=>x.id===id);
  if(!p)return[];
+ if(p.pointsReward)return[];
  if(p.recipientSaveId)return generateMarcoSurprisePack(p);
  if(p.surpriseGift)return generateSurpriseGiftPack(p,tradeable);
  // Shared audited distribution: draws and published percentage figures use one algorithm.
@@ -6672,7 +6684,38 @@ if(b){
  }finally{footeraStorePurchaseBusy=false;b.disabled=false}
  return;
 }
-const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
+const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;if(PACKS.find(p=>p.id===id)?.pointsReward)return openPointsPack(id);const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
+// Points-only gift packs: one tap credits the points once and shows a short reveal.
+function openPointsPack(id){
+ const pack=PACKS.find(p=>p.id===id),amount=Number(pack?.pointsReward||0);
+ state.pointsPackClaims=state.pointsPackClaims||{};
+ if(!pack||!amount||Number(state.packs[id]||0)<1)return false;
+ if(pack.recipientSaveId&&state.profile?.saveId!==pack.recipientSaveId)return false;
+ if(state.pointsPackClaims[id]){state.packs[id]=0;save();renderStore();toast(`${pack.name} wurde bereits geöffnet.`);return false}
+ state.packs[id]=0;
+ state.points=(Number(state.points)||0)+amount;
+ state.pointsPackClaims[id]={openedAt:Date.now(),points:amount};
+ state.stats=state.stats||{};state.stats.packs=(state.stats.packs||0)+1;
+ save();if(typeof flushSave==="function")flushSave();
+ renderWallet();renderStore();showPointsPackReveal(pack,amount);
+ return true
+}
+function showPointsPackReveal(pack,amount){
+ if(typeof document==="undefined"||!document.body?.appendChild){toast(`${fmt(amount)} Footera Points gutgeschrieben.`);return}
+ document.getElementById("pointsPackReveal")?.remove();
+ const box=document.createElement("div");
+ box.id="pointsPackReveal";box.className="points-pack-reveal";box.setAttribute("role","dialog");box.setAttribute("aria-modal","true");box.setAttribute("aria-label",pack.name);
+ box.style.cssText="position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 50% 42%,rgba(20,120,90,.96),rgba(3,10,8,.98) 62%);";
+ box.innerHTML=`<div style="width:min(340px,100%);text-align:center;color:#f4fff9;font-family:inherit"><img src="${packArtSrc(pack.id)}" alt="" style="width:150px;max-width:46vw;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6));animation:pointsPackPop .55s ease-out both"><div style="margin-top:14px;font-size:12px;letter-spacing:3px;color:#9fe9cf;font-weight:800">${esc(pack.name.toUpperCase())}</div><div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px"><img src="./assets/footera/points.webp" alt="" style="width:46px;height:46px"><strong data-points-count style="font-size:40px;line-height:1;font-weight:900;color:#fff">+0</strong></div><div style="margin-top:6px;font-size:14px;color:#d7efe6">Footera Points gutgeschrieben</div><button type="button" class="primary" data-points-close style="margin-top:22px;width:100%">Super!</button></div><style>@keyframes pointsPackPop{0%{transform:scale(.6) rotate(-6deg);opacity:0}70%{transform:scale(1.08) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}</style>`;
+ document.body.appendChild(box);
+ const counter=box.querySelector("[data-points-count]"),start=performance.now(),dur=1400;
+ const tick=t=>{const k=Math.min(1,(t-start)/dur),v=Math.round(amount*(1-Math.pow(1-k,3)));if(counter)counter.textContent="+"+fmt(v);if(k<1&&box.isConnected)requestAnimationFrame(tick)};
+ requestAnimationFrame(tick);
+ try{window.FooteraSound?.wake?.();packSound("flash")}catch(_){}
+ const close=()=>box.remove();
+ box.querySelector("[data-points-close]")?.addEventListener("click",close);
+ box.addEventListener("click",e=>{if(e.target===box)close()});
+}
 let pendingResolved=new Set(state.pendingResolved);
 function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();globalThis.FooteraWeekRecap?.afterPack(items);globalThis.FooteraKabine?.afterPack(items);if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false;try{window.FooteraSound?.preload?.()}catch(_){}}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
@@ -7027,7 +7070,7 @@ function syncClubFilterOptions(rows=clubFilterItems()){
  const wantedLeague=leagueEl.value,wantedClub=clubEl.value,sourceSig=rows.map(x=>`${x.item.uid}:${x.a?.league||""}:${x.a?.team||""}`).join(";"),sig=`${AFFILIATION_CACHE_EPOCH}|${wantedLeague}|${sourceSig}`;
  if(sig===clubFilterOptionsSignature)return;
  clubFilterOptionsSignature=sig;
- const leagues=[...new Set(rows.map(x=>String(x.a?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+ const leagues=sortLeaguesTop5First(new Set(rows.map(x=>String(x.a?.league||"").trim()).filter(Boolean)));
  leagueEl.innerHTML='<option value="">Alle Ligen</option>'+leagues.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
  leagueEl.value=leagues.includes(wantedLeague)?wantedLeague:"";
  const activeLeague=leagueEl.value;
@@ -7570,7 +7613,7 @@ function qualityLabel(x){if(isMomentumItem(x))return"MOMENTUM";if(x.variant==="i
 function specialVariant(type=""){const eventName="Legacy Event",boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost,legacyEvent:true}}
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
-function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
+function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||canonicalLeagueName(p.league)===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
 function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="",promoEntry=null,extra=null;const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="Icon"}
@@ -7611,7 +7654,7 @@ const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(","),!!halloweenUpgradeFor({eventType:"halloween"})])}
-function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
+function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||canonicalLeagueName(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
  if(pool.length<=MARKET_SNAPSHOT_LIMIT)return pool.slice();
@@ -8407,7 +8450,7 @@ function sbcPickerCandidates(){
 function sbcPickerOptions(sbc){
  const nations=new Set(),leagues=new Set(),clubs=new Set(),league=String(sbcPickerState?.league||"");
  for(const x of sbcSourceItems()){const b=displayBase(x.item);if(!b||!sbc.filter(b))continue;const a=resolvedAffiliation(b)||{};if(b.nation)nations.add(String(b.nation));if(a.league)leagues.add(String(a.league));if(a.team&&(!league||a.league===league))clubs.add(String(a.team))}
- const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sort(leagues),clubs:sort(clubs)}
+ const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sortLeaguesTop5First(leagues),clubs:sort(clubs)}
 }
 function sbcPickerHTML(sbc){
  if(!sbcPickerState)return"";
@@ -8606,7 +8649,7 @@ function sbcQuickFill(opts=sbcAssistantDefaults()){
  const inserted=plan.draft.squad.filter(Boolean).length-manual.length;
  sbcAssistantState=null;sbcSetDraft(sbc.id,plan.draft);renderSBC();toast(`${inserted} günstige Spieler eingesetzt. Bereit zum Abgeben.`)
 }
-function sbcAssistantLeagues(sbc){return [...new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))}
+function sbcAssistantLeagues(sbc){return sortLeaguesTop5First(new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean)))}
 function sbcAssistantHTML(sbc){
  if(!sbcAssistantState)return"";const a=sbcAssistantState;
  const toggle=(id,title,hint,on)=>`<label class="sbc-assistant-toggle"><div><strong>${title}</strong><small>${hint}</small></div><span class="sbc-switch"><input id="${id}" type="checkbox" ${on?"checked":""}><span></span></span></label>`;
@@ -9916,6 +9959,8 @@ function finishMatch(){
  renderAll();
  // V21.226: the final-whistle scene first; the queue scrolls to the result after it.
  if(!(typeof queueMatchCeremony3D==="function"&&queueMatchCeremony3D("fulltime")))requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
+ // V21.444 Pokalübergabe: a won cup final is followed by the trophy presentation.
+ else if(typeof queueMatchTrophy3D==="function")queueMatchTrophy3D()
 }
 function closeFinishedMatch(){
  if(typeof hidePostMatchProgress==="function")hidePostMatchProgress();
@@ -10099,7 +10144,7 @@ function rebuildMarketFilterIndex(){const index=new Map();for(const p of PLAYERS
 function scheduleMarketFilterIndexRebuild(){if(!PLAYERS.length)return;clearTimeout(MARKET_FILTER_INDEX_TIMER);MARKET_FILTER_INDEX_TIMER=setTimeout(rebuildMarketFilterIndex,350)}
 function marketPlayersForLeague(league){if(!MARKET_FILTER_INDEX.size&&PLAYERS.length)rebuildMarketFilterIndex();return league?MARKET_FILTER_INDEX.get(String(league))||[]:PLAYERS}
 function totwFallbackFilterPlayers(){return (totwIsActive()?LIVE_TOTW.players:[]).map((info,i)=>mergeTotwBase(null,null,i)).filter(p=>p.team||p.league||p.nation)}
-function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].filter(Boolean))].sort((a,b)=>a.localeCompare(b));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
+function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].map(canonicalLeagueName).filter(Boolean))];leagues.splice(0,leagues.length,...sortLeaguesTop5First(leagues));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
 
 
 function maybePromptForUsername(){
@@ -10599,7 +10644,7 @@ $("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.clos
 
 const DIRECT_REWARDS=Object.freeze({
  "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_iconpicks_20261109",iconPick:{choices:4,count:3},label:"3× Icon Player Pick (1 aus 4)"},{id:"basti_iconpicks_restore_20261110",iconPick:{choices:4,count:5},label:"5× Icon Player Pick (1 aus 4)"}],
- "GF-35FADCCBA5AD4E15":[{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"}],
+ "GF-35FADCCBA5AD4E15":[{id:"max_tippspiel_points_20261114",pack:"tippspiel-max-20261114",qty:1,label:"Tippspiel-Pack"},{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 // Thank-you gifts for the tester clubs (Marco and Niklas), identified like their Founder cards.
@@ -10889,7 +10934,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.425";
+const GFUT_BUILD="V21.444";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10947,7 +10992,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21425",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21444",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

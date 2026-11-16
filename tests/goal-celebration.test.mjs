@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose} from '../3d-goal-celebration.mjs';
+import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose,
+ celebrationHold,celebrationRelease,celebrationWalkBack,MATE_ACTIONS,mateAction,mateAfter,mateCelebration,mateCloseness,celebrationCapture,
+ celebrationRoute,celebrationRouteDistance,CELEBRATION_SPOTS} from '../3d-goal-celebration.mjs';
 
 const joint=()=>({rotation:{x:0,y:0,z:0},position:{x:0,y:0,z:0}});
 const driver=()=>({rig:joint(),upper:joint(),arms:[joint(),joint()],elbows:[joint(),joint()],legs:[joint(),joint()],knees:[joint(),joint()],ankles:[joint(),joint()]});
@@ -82,4 +84,79 @@ test('Haaland sits down cross-legged and stays still', ()=>{
  assert.ok(Math.abs(sat.rootY-out.rootY)<.01,'no bobbing once seated');
  assert.ok(later.knees[0].rotation.x<-2&&later.legs[0].rotation.x>1.2,'knees folded, thighs forward');
  assert.ok(later.legs[0].rotation.z<-.6&&later.legs[1].rotation.z>.6,'knees out to the sides');
+});
+
+// V21.434 (Basti: "nicht so steril"): the scorer has his own short moment,
+// teammates come one by one for a short contact, then everyone jogs back.
+test('the scorer lets go of his pose and jogs back with the group', ()=>{
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS]){
+  const hold=celebrationHold(kind);
+  // The whole moment fits the 3.4 s the scene shows after the goal.
+  assert.ok(hold>=1.8&&hold<=2.9,kind+' hold '+hold);
+  assert.equal(celebrationRelease(kind,hold-.1),1);
+  assert.equal(celebrationRelease(kind,hold+.8),0);
+  assert.equal(celebrationWalkBack(kind,hold),0);
+  let last=0;
+  for(let s=hold;s<hold+3;s+=.05){const w=celebrationWalkBack(kind,s);assert.ok(w>=last);
+   // A jog, never a sprint: at most 1.2 m/s.
+   assert.ok(w-last<=1.2*.05+1e-9);last=w}
+ }
+});
+test('teammates vary their contact, then clap, and never hang on the scorer', ()=>{
+ const seen=new Set();
+ for(let g=0;g<60;g++)for(const slot of [0,1]){const a=mateAction('goal'+g,slot);assert.ok(MATE_ACTIONS.includes(a));seen.add(a)}
+ assert.deepEqual([...seen].sort(),[...MATE_ACTIONS].sort());
+ assert.notEqual(mateAction('x',0),mateAction('x',1),'two arriving mates do different things');
+ for(const a of MATE_ACTIONS){
+  assert.equal(mateCelebration(a,-.1),null);
+  assert.equal(mateCelebration(a,.5)[0],a);
+  assert.equal(mateCelebration(a,2.2)[0],'applause');
+  assert.equal(mateCelebration(a,3.5),null);
+  assert.equal(mateCloseness(a,0),1);assert.equal(mateCloseness(a,2),0);
+  for(const s of [.3,.9,1.4]){const out={};applyCelebrationPose(driver(),a,s,out,1);assert.ok(Number.isFinite(out.arms))}
+ }
+});
+
+// V21.435: captured Mixamo celebrations (Basti's uploads, baked; raw FBX never in the repo).
+test('captured celebrations: every clip exists, the feet join only after the run', async ()=>{
+ const {FOOTERA_MIXAMO_CELEBRATE:D}=await import('../3d-mocap-mixamo-celebrate-data.mjs');
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS,'excited','cheering','waving']){
+  const clip=celebrationCapture(kind);if(clip)assert.ok(D.clips[clip],kind+' -> '+clip);
+ }
+ for(const kind of ['fist_pump','open_arms','rally','dance','samba'])assert.ok(celebrationCapture(kind),kind);
+ // The scorer still running: upper body only.
+ const run={};applyCelebrationPose(driver(),'dance',1.2,run,1);
+ assert.ok(run.capture&&run.capture.legs<.01);
+ const stand={};applyCelebrationPose(driver(),'dance',2.2,stand,1);
+ assert.ok(stand.capture.legs>.9&&stand.capture.body>.9);
+ const none={};applyCelebrationPose(driver(),'knee_slide',1.5,none,1);assert.equal(none.capture,null);
+ // Teammates' captured cheer never moves their walking legs.
+ const mate={};applyCelebrationPose(driver(),'excited',.8,mate,1);assert.equal(mate.capture.legs,0);
+ const after=new Set();for(let g=0;g<40;g++)after.add(mateAfter('g'+g,0));
+ assert.ok(after.has('applause')&&after.size>=3);
+});
+
+// V21.439 (Basti: "Die Torjubel spielen sich alle auf der selben Stelle ab"):
+test('celebration spots: corner flags, fans behind the goal, touchline; always on the pitch', ()=>{
+ const seen=new Set();
+ for(let g=0;g<80;g++)for(const start of [[0,-38],[-12,-40],[14,-36],[-4,-44]])for(const d of [1,-1]){
+  const kind=pickCelebration({id:'r'+g,playerName:'A',minute:g});
+  const r=celebrationRoute(kind,'r'+g,start,d);seen.add(r.spot);
+  let last=0;
+  for(let s=0;s<=r.approachTime+3.5;s+=.05){
+   const m=celebrationRouteDistance(kind,r,s),x=start[0]+r.run[0]*m,z=start[1]+r.run[1]*m;
+   assert.ok(m>=last-1e-9,'never backwards');
+   // A sprint, never faster than a footballer, slowing into the celebration.
+   assert.ok((m-last)/.05<8.6,'speed '+((m-last)/.05));
+   assert.ok(Math.abs(x)<33.6&&z>-52.2&&z<0,`${r.spot} on the pitch ${x.toFixed(1)},${z.toFixed(1)}`);
+   last=m;
+  }
+  // The longest sprint adds at most ~3 s to the goal scene.
+  assert.ok(r.approachTime<=3.1,r.approachTime);
+  if(r.spot==='corner_near')assert.ok(r.run[0]*d>0&&r.run[1]<0,'towards the near corner flag');
+ }
+ for(const spot of CELEBRATION_SPOTS)assert.ok(seen.has(spot),spot);
+ // Stable per goal, and the spot can be forced for QA.
+ assert.deepEqual(celebrationRoute('badge','k',[0,-38],1),celebrationRoute('badge','k',[0,-38],1));
+ assert.equal(celebrationRoute('badge','k',[0,-38],1,'corner_near').spot,'corner_near');
 });

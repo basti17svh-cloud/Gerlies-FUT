@@ -81,3 +81,53 @@
 .kb-meme p{margin:0;padding:0!important;font:900 15px/1.25 Impact,"Arial Black",Inter,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.01em}
 .kb-foot.kb-wait .kb-chip{opacity:.5}
 .kb-chip:disabled{cursor:default}
+/* V21.438: meme cards in six layouts, six colour themes */
+.kb-bubble.kb-has-meme{width:min(82%,290px);max-width:min(82%,290px)}
+.kb-meme2{box-sizing:border-box}
+.kb-meme2{position:relative;width:min(260px,100%);max-width:none;padding:9px 10px 11px;text-align:left;background:#fff;color:#111;overflow:hidden}
+.kb-meme2>small{text-align:right}
+.kb-meme2 p{text-transform:none;font:800 13.5px/1.25 Inter,system-ui,sans-serif;letter-spacing:0}
+.kb-meme2 span{font-size:30px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.kb-mm-two{display:grid;gap:6px}
+.kb-mm-two>div{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:8px;padding:6px 8px;border-radius:8px}
+.kb-mm-two .no{background:#ffe5e0}.kb-mm-two .no p{color:#7a271a;opacity:.85}
+.kb-mm-two .yes{background:#dcfce7}.kb-mm-two .yes p{color:#14532d}
+.kb-mm-two span{font-size:26px;text-align:center}
+.kb-mm-nobody{display:grid;gap:4px}
+.kb-mm-nobody p{font-weight:600}
+.kb-mm-nobody p:last-child{margin-top:6px!important;font-weight:800}
+.kb-mm-expect{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.kb-mm-expect>div{display:grid;justify-items:center;gap:4px;padding:8px 6px;border-radius:8px;background:#eef6ff;text-align:center}
+.kb-mm-expect>div+div{background:#fff1e6}
+.kb-mm-expect small{color:#555;font:900 9px/1 Inter,system-ui,sans-serif;letter-spacing:.1em}
+.kb-mm-expect p{font-size:12px}
+.kb-mm-expect span{font-size:34px}
+.kb-mm-classic{display:grid;justify-items:center;gap:6px;padding:10px 8px;border-radius:8px;background:var(--kb-mm,#1f2937);text-align:center}
+.kb-mm-classic p{color:#fff;font:900 16px/1.15 Impact,"Arial Black",Inter,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.02em;text-shadow:0 2px 0 #000,0 0 3px #000}
+.kb-mm-classic span{font-size:44px}
+.kb-mm-brain{display:grid;gap:3px}
+.kb-mm-brain>div{display:grid;grid-template-columns:minmax(0,1fr) 46px;align-items:center;gap:6px;min-height:40px;padding:4px 8px;border-radius:6px;background:#f2f2f2}
+.kb-mm-brain span{text-align:center;transition:none}
+.kb-mm-brain .b0 span{font-size:16px;filter:grayscale(.6)}
+.kb-mm-brain .b1 span{font-size:22px}
+.kb-mm-brain .b2{background:#e0f2fe}.kb-mm-brain .b2 span{font-size:28px;filter:drop-shadow(0 0 4px #38bdf8)}
+.kb-mm-brain .b3{background:linear-gradient(90deg,#fef9c3,#fde68a)}.kb-mm-brain .b3 span{font-size:34px;filter:drop-shadow(0 0 8px #f59e0b)}
+.kb-mm-pov{display:grid;gap:8px;justify-items:center;padding:10px 8px;border-radius:8px;background:var(--kb-mm,#111827);text-align:center}
+.kb-mm-pov p{color:#fff;font-weight:800}
+.kb-mm-pov span{font-size:40px}
+.kb-mt0{--kb-mm:#1f2937}.kb-mt1{--kb-mm:#7c2d12}.kb-mt2{--kb-mm:#1e3a8a}.kb-mt3{--kb-mm:#14532d}.kb-mt4{--kb-mm:#581c87}.kb-mt5{--kb-mm:#7f1d1d}
+/* V21.443: Siegerfoto aus der Kabine (a 3D picture of your own squad) */
+.kb-bubble.kb-has-photo{width:min(84%,330px);max-width:min(84%,330px);padding:4px 4px 18px}
+.kb-has-photo>strong{display:block;padding:2px 5px 4px}
+.kb-has-photo>p{padding:4px 5px 0}
+.kb-photo{position:relative;width:100%;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:#111b21}
+.kb-photo img{display:block;width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.kb-photo-wait{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:6px;color:#8696a0;font:700 12px/1.2 Inter,system-ui,sans-serif;background:linear-gradient(110deg,#111b21 30%,#1f2c33 50%,#111b21 70%);background-size:220% 100%;animation:kbDevelop 1.6s linear infinite}
+.kb-photo-wait span{font-size:30px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+@keyframes kbDevelop{from{background-position:120% 0}to{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){.kb-photo-wait{animation:none}}
+.kb-photo-view{position:absolute;inset:0;z-index:5;display:grid;place-content:center;gap:12px;padding:16px;background:rgba(0,0,0,.92)}
+.kb-photo-view img{display:block;max-width:100%;max-height:72vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.kb-photo-actions{display:flex;justify-content:center;gap:10px}
+.kb-photo-btn{min-height:42px;padding:0 18px;border:0;border-radius:21px;background:#25d366;color:#06281b;font:800 14px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.kb-photo-btn.ghost{background:#2a3942;color:#e9edef}

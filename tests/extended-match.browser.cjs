@@ -26,7 +26,7 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
      return{kind,width,retired:true};
     }
     if(event?.sceneKind!==kind)throw Error('Wrong production event '+JSON.stringify({kind,event,shot}));
-    const M=await import('../3d-highlights-scene.mjs?v=21160'),T=await import('../vendor/three/three.module.min.js');
+    const M=await import('../3d-highlights-scene.mjs?v=21444'),T=await import('../vendor/three/three.module.min.js');
     await M.prepareFooteraPlayerModel();
     const host=document.getElementById('matchLiveStage'),canvas=document.createElement('canvas');canvas.id='extended-proof';host.append(canvas);
     const renderer=new T.WebGLRenderer({canvas,antialias:false,preserveDrawingBuffer:true});renderer.setPixelRatio(1);

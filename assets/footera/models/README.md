@@ -21,3 +21,12 @@ Asset: `footera-humans.glb`, built by `tools/build-footera-humans.py` from the M
 - The skeleton copies the bone frames of `footballer-prototype.glb`, so the Quaternius CC0 mocap and the existing retarget and foot IK drive it.
 - Kits, numbers, names and crests are painted per player at runtime from the saved club identity. No photos, no real likeness, no branded assets.
 - Rebuild: download `makehuman-data` 0.0.2, unpack it and run `python3 tools/build-footera-humans.py <package> assets/footera/models/footera-humans.glb` (needs numpy and Pillow).
+
+# Footera Realistic Players (CC BY 4.0), V21.433
+
+Asset: `footera-real.glb`, built by `tools/build-footera-real.py` from the Sketchfab model "Man Player".
+- Credit: This work is based on "Man Player" (https://sketchfab.com/3d-models/man-player-4c7133dbb06e4136891d59231372d818) by RiverofCreative (https://sketchfab.com/RiverofCreative) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- Changes: posed from T-pose to the A-pose of `footera-humans.glb`, re-rigged onto the same 52 Footera bones and Quaternius-matched frames, boots cut low, socks added, skin under the kit removed, textures re-packed (skin atlas, tint maps for hair, lashes and boots), kit painted per player at runtime.
+- The credit is also in the GLB (`extras.footera.credit`) and in the game (Extras, "Quellen").
+- Men's players use it; women's players keep the MakeHuman body. localStorage `footera-3d-real=0` turns it off.
+- Rebuild: download the model as glTF from Sketchfab, unzip, run `python3 tools/build-footera-real.py <folder>` (numpy, Pillow). The raw download is never committed.

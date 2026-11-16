@@ -1,0 +1,302 @@
+[
+{
+"name": "AlbinoLeffe",
+"group": "A",
+"city": "Albino"
+},
+{
+"name": "Alcione Milano",
+"group": "A",
+"city": "Milan"
+},
+{
+"name": "Arzignano Valchiampo",
+"group": "A",
+"city": "Arzignano"
+},
+{
+"name": "Carpi",
+"group": "A",
+"city": "Carpi"
+},
+{
+"name": "Cittadella",
+"group": "A",
+"city": "Cittadella"
+},
+{
+"name": "Desenzano",
+"group": "A",
+"city": "Desenzano del Garda"
+},
+{
+"name": "Dolomiti Bellunesi",
+"group": "A",
+"city": "Belluno"
+},
+{
+"name": "Folgore Caratese",
+"group": "A",
+"city": "Carate Brianza"
+},
+{
+"name": "Giana Erminio",
+"group": "A",
+"city": "Gorgonzola"
+},
+{
+"name": "Juventus Next Gen",
+"group": "A",
+"city": "Turin"
+},
+{
+"name": "Lecco",
+"group": "A",
+"city": "Lecco"
+},
+{
+"name": "Lumezzane",
+"group": "A",
+"city": "Lumezzane"
+},
+{
+"name": "Novara",
+"group": "A",
+"city": "Novara"
+},
+{
+"name": "Ospitaletto",
+"group": "A",
+"city": "Ospitaletto"
+},
+{
+"name": "Pergolettese",
+"group": "A",
+"city": "Crema"
+},
+{
+"name": "Pro Vercelli",
+"group": "A",
+"city": "Vercelli"
+},
+{
+"name": "Renate",
+"group": "A",
+"city": "Renate"
+},
+{
+"name": "Trento",
+"group": "A",
+"city": "Trento"
+},
+{
+"name": "Treviso",
+"group": "A",
+"city": "Treviso"
+},
+{
+"name": "Union Brescia",
+"group": "A",
+"city": "Brescia"
+},
+{
+"name": "Atalanta U23",
+"group": "B",
+"city": "Bergamo"
+},
+{
+"name": "Campobasso",
+"group": "B",
+"city": "Campobasso"
+},
+{
+"name": "Forlì",
+"group": "B",
+"city": "Forlì"
+},
+{
+"name": "Grosseto",
+"group": "B",
+"city": "Grosseto"
+},
+{
+"name": "Gubbio",
+"group": "B",
+"city": "Gubbio"
+},
+{
+"name": "Guidonia Montecelio",
+"group": "B",
+"city": "Guidonia Montecelio"
+},
+{
+"name": "Latina",
+"group": "B",
+"city": "Latina"
+},
+{
+"name": "Livorno",
+"group": "B",
+"city": "Livorno"
+},
+{
+"name": "Ostia Mare",
+"group": "B",
+"city": "Ostia"
+},
+{
+"name": "Pescara",
+"group": "B",
+"city": "Pescara"
+},
+{
+"name": "Perugia",
+"group": "B",
+"city": "Perugia"
+},
+{
+"name": "Pianese",
+"group": "B",
+"city": "Piancastagnaio"
+},
+{
+"name": "Pineto",
+"group": "B",
+"city": "Pineto"
+},
+{
+"name": "Ravenna",
+"group": "B",
+"city": "Ravenna"
+},
+{
+"name": "Reggiana",
+"group": "B",
+"city": "Reggio Emilia"
+},
+{
+"name": "Sambenedettese",
+"group": "B",
+"city": "San Benedetto del Tronto"
+},
+{
+"name": "Spezia",
+"group": "B",
+"city": "La Spezia"
+},
+{
+"name": "Torres",
+"group": "B",
+"city": "Sassari"
+},
+{
+"name": "Vado",
+"group": "B",
+"city": "Vado Ligure"
+},
+{
+"name": "Vis Pesaro",
+"group": "B",
+"city": "Pesaro"
+},
+{
+"name": "Altamura",
+"group": "C",
+"city": "Altamura"
+},
+{
+"name": "Audace Cerignola",
+"group": "C",
+"city": "Cerignola"
+},
+{
+"name": "Bari",
+"group": "C",
+"city": "Bari"
+},
+{
+"name": "Barletta",
+"group": "C",
+"city": "Barletta"
+},
+{
+"name": "Casarano",
+"group": "C",
+"city": "Casarano"
+},
+{
+"name": "Casertana",
+"group": "C",
+"city": "Caserta"
+},
+{
+"name": "Catania",
+"group": "C",
+"city": "Catania"
+},
+{
+"name": "Cavese",
+"group": "C",
+"city": "Cava de' Tirreni"
+},
+{
+"name": "Cosenza",
+"group": "C",
+"city": "Cosenza"
+},
+{
+"name": "Crotone",
+"group": "C",
+"city": "Crotone"
+},
+{
+"name": "Foggia",
+"group": "C",
+"city": "Foggia"
+},
+{
+"name": "Giugliano",
+"group": "C",
+"city": "Giugliano in Campania"
+},
+{
+"name": "Inter Milan U23",
+"group": "C",
+"city": "Milan"
+},
+{
+"name": "Monopoli",
+"group": "C",
+"city": "Monopoli"
+},
+{
+"name": "Picerno",
+"group": "C",
+"city": "Picerno"
+},
+{
+"name": "Potenza",
+"group": "C",
+"city": "Potenza"
+},
+{
+"name": "Salernitana",
+"group": "C",
+"city": "Salerno"
+},
+{
+"name": "Savoia",
+"group": "C",
+"city": "Torre Annunziata"
+},
+{
+"name": "Scafatese",
+"group": "C",
+"city": "Scafati"
+},
+{
+"name": "Sorrento",
+"group": "C",
+"city": "Sorrento"
+}
+]

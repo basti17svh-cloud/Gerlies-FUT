@@ -215,6 +215,9 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 #onlineMatch .fh3d .fh3d-hud.fh3d-hud-ceremony .fh3d-player-card,#match .fh3d .fh3d-hud.fh3d-hud-ceremony .fh3d-player-card,.fh3d-hud-ceremony .fh3d-mark{display:none!important}
 .fh3d-hud-ceremony .fh3d-headline{font-size:clamp(20px,6vw,30px)}
 .fh3d-hud-ceremony .fh3d-name{font-size:clamp(13px,3.9vw,18px)}
+/* V21.444 Pokalübergabe: the winners' card in gold. */
+.fh3d-hud-trophy .fh3d-headline{color:#ffd45a;text-shadow:0 0 22px #ffb3006b,0 2px 0 #7a4f0a}
+.fh3d .fh3d-hud.fh3d-hud-trophy{border-color:#ffd45a8c;box-shadow:0 0 34px #ffc4403d,inset 0 0 0 1px #ffe39a33}
 .fh3d-ceremony-crests{display:flex;align-items:center;gap:6px}
 .fh3d-ceremony-crests .fh3d-team-crest{width:40px;height:40px}
 .fh3d-ceremony-crests .fh3d-team-crest .club-crest{width:40px!important;height:40px!important;min-width:40px!important}

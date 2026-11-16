@@ -689,7 +689,9 @@ test('V21.69: in-game opt-in diagnostic reports actual imported GLB vs fallback'
  assert.match(scene,/footera-model-debug/);
  assert.match(scene,/data-footera-model-diagnostic/);
  assert.match(scene,/layer\.dataset\.playerModel=imported\?'glb':'legacy'/);
- assert.match(scene,/GLB AKTIV/);
+ // V21.441: the badge names the body on the pitch or why the classic squad runs.
+ assert.match(scene,/METAHUMAN/);
+ assert.match(scene,/KLASSISCH · LÄDT/);
  assert.match(scene,/ALTES MODELL/);
 });
 
@@ -698,7 +700,7 @@ test('V21.70: player model status visible in all live matches even when PWA drop
  const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8');
  assert.match(scene,/const modelStatus=document.createElement\('span'\)/);
  assert.match(scene,/top\.append\(brand,modelStatus,skip\)/);
- assert.match(scene,/modelStatus\.textContent=imported\?/);
+ assert.match(scene,/modelStatus\.textContent=!imported\?/);
  assert.match(scene,/layer\.dataset\.playerModel=imported\?'glb':'legacy'/);
  assert.match(css,/\.fh3d-model-status\[data-model-status="glb"\]/);
  assert.match(css,/\.fh3d-model-status\[data-model-status="legacy"\]/);

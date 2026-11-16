@@ -1,0 +1,69 @@
+/* V21.427 Fan-Choreo editor (Verein -> Vereinsidentität -> Choreo) */
+.identity-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+[data-identity-panel="choreo"],#identityChoreo{min-width:0;max-width:100%}
+#identityChoreo>*{max-width:100%}
+.choreo-stage{position:relative;height:clamp(170px,46vw,240px);margin:0 0 12px;border:1px solid #2f4038;border-radius:14px;overflow:hidden;background:linear-gradient(#0a1420,#13212c 42%,#0b1410);perspective:520px}
+.choreo-roof{position:absolute;left:-6%;right:-6%;top:0;height:16%;background:linear-gradient(#1c2a33,#0c151b);box-shadow:0 6px 18px #000a}
+.choreo-roof::after{content:"";position:absolute;left:8%;right:8%;bottom:4px;height:3px;background:repeating-linear-gradient(90deg,#fff9d8 0 14px,transparent 14px 40px);opacity:.75;filter:blur(.6px)}
+.choreo-stand{position:absolute;left:4%;right:4%;top:15%;height:58%;transform:rotateX(24deg);transform-origin:50% 100%}
+.choreo-stand canvas{display:block;width:100%;height:100%;border-radius:3px;box-shadow:0 10px 26px #000b;animation:choreo-rise 1.6s cubic-bezier(.2,.7,.2,1) both;transform-origin:50% 100%}
+.choreo-crowd{position:absolute;left:0;right:0;bottom:12%;height:13%;background:radial-gradient(circle at 6px 6px,#2b3a36 3px,transparent 3.6px) 0 0/12px 10px,linear-gradient(#18231f,#101914)}
+.choreo-pitch{position:absolute;left:0;right:0;bottom:0;height:12%;background:repeating-linear-gradient(90deg,#1f6a35 0 28px,#237a3c 28px 56px);box-shadow:inset 0 3px 0 #ffffff50}
+.choreo-stage.off canvas{filter:grayscale(1) brightness(.45)}
+.choreo-stage.off::after{content:"AUS";position:absolute;inset:auto 10px 10px auto;padding:4px 9px;border-radius:8px;background:#000c;color:#fff;font:900 11px system-ui;letter-spacing:.1em}
+@keyframes choreo-rise{from{transform:scaleY(.04);opacity:.4}to{transform:scaleY(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.choreo-stand canvas{animation:none}}
+.choreo-label,.choreo-color>span{display:block;margin:12px 0 6px;color:#91a199;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.choreo-motifs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.choreo-motifs button{display:grid;justify-items:center;gap:5px;min-height:62px;padding:7px 4px;border:1px solid #34483e;border-radius:10px;background:#101a16;color:#e9f2ed;font-size:11px;font-weight:800}
+.choreo-motifs button.active{border-color:#d8ff3e;background:#27351e;box-shadow:inset 0 0 0 1px #d8ff3e44}
+.choreo-motifs i{width:46px;height:22px;border-radius:4px;background:var(--a);border:1px solid #ffffff2a}
+.choreo-motifs i.m-stripes{background:repeating-linear-gradient(90deg,var(--a) 0 6px,var(--b) 6px 12px)}
+.choreo-motifs i.m-split{background:linear-gradient(105deg,var(--a) 50%,var(--b) 50%)}
+.choreo-motifs i.m-checker{background:conic-gradient(var(--a) 25%,var(--b) 0 50%,var(--a) 0 75%,var(--b) 0) 0 0/11px 11px}
+.choreo-motifs i.m-sun{background:repeating-conic-gradient(from 0deg at 50% 55%,var(--a) 0 15deg,var(--b) 15deg 30deg)}
+.choreo-motifs i.m-waves{background:repeating-linear-gradient(170deg,var(--a) 0 4px,var(--b) 4px 8px)}
+.choreo-motifs i.m-crest{background:linear-gradient(90deg,var(--b) 0 12%,var(--a) 12% 88%,var(--b) 88%);position:relative}
+.choreo-motifs i.m-crest::after{content:"";position:absolute;left:50%;top:3px;width:12px;height:15px;margin-left:-6px;background:var(--b);clip-path:polygon(0 0,100% 0,100% 55%,50% 100%,0 55%)}
+.choreo-swatches{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.choreo-swatches button{width:32px;height:32px;border-radius:50%;border:2px solid #ffffff30;background:var(--c);padding:0}
+.choreo-swatches button.active{border-color:#d8ff3e;box-shadow:0 0 0 2px #d8ff3e55}
+.choreo-swatches input[type=color]{width:38px;height:34px;padding:2px;border:1px solid #3a4c44;border-radius:9px;background:#0a120f}
+.choreo-text{margin-top:12px}
+.choreo-text input{text-transform:uppercase}
+.choreo-chips{display:flex;width:100%;min-width:0;gap:6px;overflow-x:auto;padding:7px 0 2px;scrollbar-width:none}
+.choreo-chips button{flex:0 0 auto;min-height:32px;padding:5px 10px;border:1px solid #34483e;border-radius:999px;background:#101a16;color:#dfe9e3;font-size:11px;font-weight:800;white-space:nowrap}
+.choreo-switch{display:flex;align-items:center;gap:9px;min-height:40px;color:#e9f2ed;font-size:13px;font-weight:800}
+.choreo-switch input{width:20px;height:20px;accent-color:#d8ff3e}
+.choreo-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.choreo-stars{display:flex;align-items:center;gap:8px;color:#91a199;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.choreo-stars select{min-height:38px;padding:5px 10px;border:1px solid #3a4c44;border-radius:9px;background:#0a120f;color:#fff}
+.choreo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.choreo-actions .primary{grid-column:1/-1;min-height:46px}
+.choreo-actions .secondary{min-height:42px}
+.choreo-note{margin:10px 0 0;color:#8fa099;font-size:11px;line-height:1.45}
+/* V21.438: 24 motifs, four per row, and the "different every home match" option */
+.choreo-motifs{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.choreo-motifs button{min-height:56px;padding:6px 3px;font-size:10.5px;line-height:1.15}
+.choreo-motifs i{width:42px;height:20px;overflow:hidden}
+.choreo-motifs.rotating button:not(.active){opacity:.78}
+.choreo-motifs i.m-hoops{background:repeating-linear-gradient(180deg,var(--a) 0 3px,var(--b) 3px 6px)}
+.choreo-motifs i.m-diagonal{background:repeating-linear-gradient(-55deg,var(--a) 0 4px,var(--b) 4px 8px)}
+.choreo-motifs i.m-sash{background:linear-gradient(60deg,var(--a) 0 38%,var(--b) 38% 62%,var(--a) 62%)}
+.choreo-motifs i.m-cross{background:linear-gradient(var(--b),var(--b)) 30% 0/4px 100% no-repeat,linear-gradient(var(--b),var(--b)) 0 50%/100% 4px no-repeat,var(--a)}
+.choreo-motifs i.m-rings{background:repeating-radial-gradient(circle at 50% 50%,var(--a) 0 3px,var(--b) 3px 6px)}
+.choreo-motifs i.m-diamonds{background:linear-gradient(135deg,var(--b) 25%,transparent 25%) -5px 0/10px 10px,linear-gradient(225deg,var(--b) 25%,transparent 25%) -5px 0/10px 10px,linear-gradient(315deg,var(--b) 25%,transparent 25%) 0 0/10px 10px,linear-gradient(45deg,var(--b) 25%,transparent 25%) 0 0/10px 10px,var(--a)}
+.choreo-motifs i.m-chevron{background:linear-gradient(135deg,var(--a) 25%,transparent 25%) -6px 0/12px 8px,linear-gradient(225deg,var(--a) 25%,transparent 25%) -6px 0/12px 8px,var(--b)}
+.choreo-motifs i.m-zigzag{background:linear-gradient(135deg,var(--b) 25%,transparent 25%) -4px 0/8px 8px,linear-gradient(225deg,var(--b) 25%,transparent 25%) -4px 0/8px 8px,linear-gradient(315deg,var(--b) 25%,transparent 25%) 0 0/8px 8px,linear-gradient(45deg,var(--b) 25%,transparent 25%) 0 0/8px 8px,var(--a)}
+.choreo-motifs i.m-flames{background:radial-gradient(ellipse 4px 9px at 20% 100%,var(--b) 98%,transparent) 0 0/9px 100%,var(--a)}
+.choreo-motifs i.m-starfield{background:radial-gradient(circle,var(--b) 1.2px,transparent 1.6px) 0 0/7px 7px,radial-gradient(circle,var(--b) 1px,transparent 1.4px) 3px 4px/9px 9px,var(--a)}
+.choreo-motifs i.m-dots{background:radial-gradient(circle,var(--b) 2px,transparent 2.5px) 0 0/8px 8px,radial-gradient(circle,var(--b) 1.5px,transparent 2px) 4px 4px/8px 8px,var(--a)}
+.choreo-motifs i.m-heart,.choreo-motifs i.m-crown,.choreo-motifs i.m-bolt{position:relative}
+.choreo-motifs i.m-heart::after,.choreo-motifs i.m-crown::after,.choreo-motifs i.m-bolt::after{content:"";position:absolute;left:50%;top:2px;width:16px;height:15px;margin-left:-8px;background:var(--b)}
+.choreo-motifs i.m-heart::after{clip-path:polygon(50% 100%,0 40%,10% 8%,30% 0,50% 22%,70% 0,90% 8%,100% 40%)}
+.choreo-motifs i.m-crown::after{clip-path:polygon(0 100%,0 20%,25% 55%,50% 0,75% 55%,100% 20%,100% 100%)}
+.choreo-motifs i.m-bolt::after{clip-path:polygon(60% 0,80% 0,58% 45%,75% 45%,35% 100%,48% 55%,30% 55%)}
+.choreo-motifs i.m-mosaic{background:conic-gradient(var(--a) 25%,var(--b) 0 50%,var(--a) 0 75%,var(--b) 0) 0 0/6px 6px;filter:contrast(1.1) saturate(1.2)}
+.choreo-motifs i.m-sunrise{background:radial-gradient(circle at 50% 100%,var(--b) 0 35%,transparent 36%),repeating-conic-gradient(from 270deg at 50% 100%,var(--b) 0 10deg,var(--a) 10deg 20deg)}
+.choreo-motifs i.m-gradient{background:linear-gradient(110deg,var(--a),var(--b))}
+.choreo-motifs i.m-frame{background:var(--a);box-shadow:inset 0 0 0 3px var(--b)}

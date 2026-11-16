@@ -64,7 +64,9 @@ function sampleBone(clip,phase,bone,out){
 // Shared shot/cut windows of the V21.75 layer: the authored strike owns the body.
 export function ualPoseWeight(time=0,info={}){
  const t=clamp(time,0,10.4);
- const action=clamp(1-ease(4.62,4.94,t)+ease(6.02,6.37,t));
+ // V21.437: the strike window belongs to the scorer only (striker:false =
+ // a teammate or opponent, who keeps running in the capture meanwhile).
+ const action=info.striker===false?1:clamp(1-ease(4.62,4.94,t)+ease(6.02,6.37,t));
  const cutting=/^(?:inside|cut_inside|double_feint|near_post_cut)_/.test(info.sequence||'')
   ?1-.80*pulse(t,2.73,2.96,3.23,3.64):1;
  const ballControl=1-.45*clamp(info.control||0);

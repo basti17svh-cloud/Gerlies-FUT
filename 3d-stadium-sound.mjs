@@ -67,6 +67,9 @@ export function outcomeCues(event,{impactTime,goalArrival,ceremonyCut}={}){
  }else if(type==='big_chance_missed'||type==='big_chance_saved'){
   cues.push({time:at+.12,cue:'groan',size:home?.8:.4});
   if(type==='big_chance_saved')cues.push({time:at+.9,cue:'applause',seconds:2.4,level:home?.3:.55});
+ }else if(type==='ceremony'&&event.ceremony==='trophy'){
+  // V21.444: applause for the guard of honour, the roar when the cup goes up.
+  cues.push({time:.2,cue:'applause',seconds:4,level:.42},{time:8.5,cue:'roar',size:1},{time:9.2,cue:'applause',seconds:4,level:.6});
  }else if(type==='ceremony'&&event.ceremony==='fulltime'){
   cues.push({time:Math.max(0,Number(ceremonyCut)||0)+.15,cue:'applause',seconds:3,level:.45});
  }

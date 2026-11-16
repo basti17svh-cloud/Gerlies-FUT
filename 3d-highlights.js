@@ -52,9 +52,14 @@
    keeperSkinTone:event.keeperSkinTone??null,
    playerLooks:Object.freeze(Array.from({length:16},(_,i)=>cleanLook((Array.isArray(event.playerLooks)?event.playerLooks:[])[i]))),
    keeperLook:cleanLook(event.keeperLook),
+   // V21.428 Kapitänsbinde: which actors (0-15) wear the captain's band; the keeper separately.
+   captainActors:Object.freeze((Array.isArray(event.captainActors)?event.captainActors:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<=15).slice(0,2)),
+   keeperCaptain:event.keeperCaptain===true,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
    // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
-   ceremony:['kickoff','fulltime'].includes(event.ceremony)?event.ceremony:'',result:['win','draw'].includes(event.result)?event.result:'',
+   ceremony:['kickoff','fulltime','trophy'].includes(event.ceremony)?event.ceremony:'',
+   // V21.444 Pokalübergabe: the cup's name and metal (bronze/silver/gold).
+   trophyName:String(event.trophyName||'').replace(/[<>]/g,'').slice(0,28),trophyTone:['bronze','silver','gold'].includes(event.trophyTone)?event.trophyTone:'gold',result:['win','draw'].includes(event.result)?event.result:'',
    homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
    homeScore:Number.isFinite(Number(event.homeScore))?Number(event.homeScore):null,awayScore:Number.isFinite(Number(event.awayScore))?Number(event.awayScore):null,
    defendCrestHTML:String(event.defendCrestHTML||''),squadNames:Object.freeze((Array.isArray(event.squadNames)?event.squadNames:[]).slice(0,16).map(n=>String(n||''))),
@@ -62,11 +67,19 @@
    venue:event.venue==='away'?'away':'home',
    stadium:event.stadium&&typeof event.stadium==='object'?Object.freeze({name:String(event.stadium.name||'').replace(/[<>]/g,'').slice(0,28),style:['arena','kessel','tradition'].includes(event.stadium.style)?event.stadium.style:'arena',
     seatPrimary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatPrimary||''))?String(event.stadium.seatPrimary):'#d8ff3e',seatSecondary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatSecondary||''))?String(event.stadium.seatSecondary):'#173627'}):null,
+   // V21.427 Fan-Choreo (walk-out tifo): plain values only.
+   choreo:cleanChoreo(event.choreo),
    replay:event.replay!==false});
+ }
+ function cleanChoreo(c){
+  if(!c||typeof c!=='object')return null;
+  const hex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f,txt=(v,n)=>String(v||'').replace(/[<>]/g,'').slice(0,n);
+  return Object.freeze({motif:(typeof FooteraChoreo!=='undefined'&&FooteraChoreo.MOTIFS?Object.keys(FooteraChoreo.MOTIFS):['stripes','split','checker','sun','waves','crest']).includes(c.motif)?c.motif:'stripes',a:hex(c.a,'#d8ff3e'),b:hex(c.b,'#173627'),ink:hex(c.ink,'#ffffff'),
+   text:txt(c.text,30),top:txt(c.top,30),crest:c.crest!==false,stars:[0,1,2,3].includes(Number(c.stars))?Number(c.stars):0});
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21424').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21444').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -81,7 +94,7 @@
   if(signal.aborted)return 'skipped';
   const host=stage();if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':event.ceremony==='trophy'?'SIEGEREHRUNG':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   // V21.252 (Basti): no skip button while loading; it appears with the running scene.
   loading.append(text,top);host.append(loading);
@@ -99,6 +112,8 @@
       if(model==='makehuman')root.localStorage?.removeItem('footera-3d-player-model');
     }catch(_){}
     if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
+    // V21.441: the human squad is ready as soon as its own body has loaded;
+    // the MetaHuman body follows in the background.
     if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
     if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
