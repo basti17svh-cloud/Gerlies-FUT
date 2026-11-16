@@ -27,8 +27,8 @@ jobs:
           while read SCRIPT NAME; do
             [ -n "$SCRIPT" ] || continue
             rm -rf /tmp/quiz
-            node "scripts/social/$SCRIPT" /tmp/quiz
-            ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart "marketing-quiz/$NAME-silent.mp4"
+            node "scripts/social/$SCRIPT" /tmp/quiz < /dev/null
+            ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart "marketing-quiz/$NAME-silent.mp4" < /dev/null
             cp /tmp/quiz/meta.json "marketing-quiz/$NAME-meta.json"
           done < marketing-quiz/request.txt
           ls -la marketing-quiz
