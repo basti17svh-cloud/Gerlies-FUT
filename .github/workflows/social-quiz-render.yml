@@ -2,7 +2,7 @@ name: Render social quiz video
 on:
   push:
     branches: ['claude/project-thread-m6q31x']
-    paths: ['.github/workflows/social-quiz-render.yml','scripts/social/render-higher-lower-quiz.cjs']
+    paths: ['marketing-quiz/request.txt']
   workflow_dispatch:
 permissions:
   contents: write
@@ -23,12 +23,14 @@ jobs:
       - name: Render frames
         env:
           NODE_PATH: /tmp/quiz-browser/node_modules
-        run: node scripts/social/render-higher-lower-quiz.cjs /tmp/quiz
+        run: |
+          read SCRIPT NAME < marketing-quiz/request.txt
+          echo "NAME=$NAME" >> "$GITHUB_ENV"
+          node "scripts/social/$SCRIPT" /tmp/quiz
       - name: Encode
         run: |
-          mkdir -p marketing-quiz
-          ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart marketing-quiz/hoeher-oder-tiefer-silent.mp4
-          cp /tmp/quiz/meta.json marketing-quiz/
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart marketing-quiz/$NAME-silent.mp4
+          cp /tmp/quiz/meta.json marketing-quiz/$NAME-meta.json
           ls -la marketing-quiz
       - name: Commit video
         run: |
