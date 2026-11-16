@@ -87,5 +87,8 @@ test('runtime: MetaHuman first, Man Player as fallback, own opt-out',()=>{
  const src=fs.readFileSync(path.join(root,'3d-player-human.mjs'),'utf8');
  assert.match(src,/footera-metahuman\.glb\?v=\d+/);
  assert.match(src,/footera-3d-metahuman'\)!=='0'/);
- assert.match(src,/load\(METAHUMAN_URL\.href\)\.catch\(\(\)=>load\(REAL_URL\.href\)\)/);
+ // V21.441: tries MetaHuman, then Man Player, after the MakeHuman squad is ready.
+ assert.match(src,/\[\[METAHUMAN_URL\.href,'metahuman'\],\[REAL_URL\.href,'real'\]\]/);
+ assert.ok(src.indexOf("source=human;status.state='ready'")<src.indexOf('realPending=(async'),'MakeHuman squad ready before the men\'s body loads');
+ assert.doesNotMatch(src,/Promise\.all\(\[load\(HUMAN_URL/);
 });
