@@ -15,7 +15,7 @@ const fs=require('node:fs'),path=require('node:path');
   await page.goto(url);
   const images=await page.evaluate(async()=>{
    const T=await import('./vendor/three/three.module.min.js');
-   const M=await import('./3d-highlights-scene.mjs?v=21442');
+   const M=await import('./3d-highlights-scene.mjs?v=21444');
    const canvas=document.createElement('canvas');
    const renderer=new T.WebGLRenderer({canvas,antialias:false,preserveDrawingBuffer:true});
    const event=FooteraHighlights.snapshot({id:'qa-still',type:'goal',minute:38,team:'home',period:1,

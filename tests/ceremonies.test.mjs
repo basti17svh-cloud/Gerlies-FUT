@@ -93,3 +93,41 @@ test('a sprint to the corner flag lengthens the goal scene at normal pace (playb
  b.presented(0);let r;for(let t=20;t<=(b.totalSeconds+.5)*1000;t+=20)r=b.tick(t);
  assert.ok(Math.abs(r.time-12.9)<1e-6&&r.done);
 });
+
+// V21.444 Pokalübergabe (cup presentation after a won tournament final).
+test('cup presentation: guard of honour, everyone in line before the lift, captain lifts the cup', async ()=>{
+ const C=await import('../3d-ceremony.mjs');
+ const T=C.TROPHY_TIMES;
+ assert.ok(C.CEREMONY_KINDS.includes('trophy'));
+ assert.equal(C.ceremonyEnd('trophy'),T.end);assert.equal(C.ceremonyEnd('fulltime'),10.4);
+ // All winners stand in their place before the captain takes the cup.
+ for(let i=1;i<8;i++)assert.ok(C.trophyArrival(i)<T.grab,`winner ${i} arrives at ${C.trophyArrival(i)}`);
+ assert.ok(C.trophyArrival(0)<T.grab+.05,'the captain reaches the cup');
+ const cap=C.ceremonyActor('trophy',0,T.grab+.1);
+ assert.ok(Math.hypot(cap.x-C.TROPHY_CAPTAIN_SPOT[0],cap.z-C.TROPHY_CAPTAIN_SPOT[1])<.05);
+ assert.equal(cap.pose,'trophy_lift');
+ // Then he turns to the cameras (main stand, +x).
+ const up=C.ceremonyActor('trophy',0,T.lift+1);
+ assert.ok(Math.abs(Math.atan2(Math.sin(up.heading-FACE_CAMERA),Math.cos(up.heading-FACE_CAMERA)))<.02);
+ assert.equal(C.trophyGrip(T.grab-.1),0);assert.equal(C.trophyGrip(T.lift),1);
+ // Teammates face the cameras and jump with real captured clips when the cup goes up.
+ for(let i=1;i<8;i++){const a=C.ceremonyActor('trophy',i,T.lift+1);
+  assert.ok(Math.abs(Math.atan2(Math.sin(a.heading-FACE_CAMERA),Math.cos(a.heading-FACE_CAMERA)))<.02);
+  assert.ok(celebrationCapture(a.pose),'captured joy '+a.pose)}
+ // The beaten side applauds in two rows either side of the lane.
+ for(let i=8;i<=16;i++){const a=C.ceremonyActor('trophy',i,3);assert.equal(a.pose,'applause');assert.ok(Math.abs(Math.abs(a.x-C.TROPHY_LANE)-1.6)<.01)}
+ // Nobody runs faster than a jog, nobody walks through another player.
+ for(const i of actors)for(let t=0;t<T.end;t+=.05){const a=C.ceremonyActor('trophy',i,t),b=C.ceremonyActor('trophy',i,t+.05);assert.ok(Math.hypot(b.x-a.x,b.z-a.z)/.05<3.3,i+' t'+t)}
+ for(let t=0;t<=T.end;t+=.1){const ps=actors.map(i=>C.ceremonyActor('trophy',i,t));
+  for(let a=0;a<ps.length;a++)for(let b=a+1;b<ps.length;b++)assert.ok(Math.hypot(ps[a].x-ps[b].x,ps[a].z-ps[b].z)>.8,`t=${t.toFixed(1)} ${a}/${b}`)}
+ // Camera: guard of honour, the stage, then the lift.
+ assert.equal(C.ceremonyCamera('trophy',1).phase,'guard-of-honour');
+ assert.equal(C.ceremonyCamera('trophy',6).phase,'winners-stage');
+ assert.equal(C.ceremonyCamera('trophy',T.lift+.5).phase,'trophy-lift');
+ // The lift pose raises both arms high above the head.
+ const p=driver(),out={};applyCelebrationPose(p,'trophy_lift',3,out,1);
+ assert.ok(p.arms[0].rotation.x>2.5&&p.arms[1].rotation.x>2.5,'arms up');
+ const snap=H.snapshot({id:'x',type:'ceremony',ceremony:'trophy',trophyName:'Silber Cup<b>',trophyTone:'silver',team:'home'});
+ assert.equal(snap.ceremony,'trophy');assert.equal(snap.trophyTone,'silver');assert.equal(snap.trophyName,'Silber Cupb');
+ assert.equal(H.snapshot({id:'y',type:'ceremony',ceremony:'trophy',trophyTone:'platin'}).trophyTone,'gold');
+});

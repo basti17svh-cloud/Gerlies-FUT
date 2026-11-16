@@ -57,7 +57,9 @@
    keeperCaptain:event.keeperCaptain===true,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
    // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
-   ceremony:['kickoff','fulltime'].includes(event.ceremony)?event.ceremony:'',result:['win','draw'].includes(event.result)?event.result:'',
+   ceremony:['kickoff','fulltime','trophy'].includes(event.ceremony)?event.ceremony:'',
+   // V21.444 Pokalübergabe: the cup's name and metal (bronze/silver/gold).
+   trophyName:String(event.trophyName||'').replace(/[<>]/g,'').slice(0,28),trophyTone:['bronze','silver','gold'].includes(event.trophyTone)?event.trophyTone:'gold',result:['win','draw'].includes(event.result)?event.result:'',
    homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
    homeScore:Number.isFinite(Number(event.homeScore))?Number(event.homeScore):null,awayScore:Number.isFinite(Number(event.awayScore))?Number(event.awayScore):null,
    defendCrestHTML:String(event.defendCrestHTML||''),squadNames:Object.freeze((Array.isArray(event.squadNames)?event.squadNames:[]).slice(0,16).map(n=>String(n||''))),
@@ -77,7 +79,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21442').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21444').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -92,7 +94,7 @@
   if(signal.aborted)return 'skipped';
   const host=stage();if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':event.ceremony==='trophy'?'SIEGEREHRUNG':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   // V21.252 (Basti): no skip button while loading; it appears with the running scene.
   loading.append(text,top);host.append(loading);

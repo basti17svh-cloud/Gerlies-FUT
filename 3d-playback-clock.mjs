@@ -10,6 +10,8 @@ export const SHOT_RATE=1.5;
 export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100,tail=0}={}){
  // V21.226 walk-out / final whistle: plain real time, no shot segments.
  if(event.type==='ceremony'){
+  // V21.444: the cup presentation runs longer (tail).
+  duration+=Math.max(0,Number(tail)||0);
   let elapsed=0,last;
   return{totalSeconds:duration,buildupSeconds:duration,presented(now){last=now},
    tick(now){if(last!==undefined)elapsed+=Math.max(0,Math.min(maxFrameMs,now-last))/1000;last=now;return{time:Math.min(duration,elapsed),done:elapsed>=duration}}};
