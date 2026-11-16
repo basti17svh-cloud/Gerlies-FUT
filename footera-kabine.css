@@ -116,3 +116,18 @@
 .kb-mm-pov p{color:#fff;font-weight:800}
 .kb-mm-pov span{font-size:40px}
 .kb-mt0{--kb-mm:#1f2937}.kb-mt1{--kb-mm:#7c2d12}.kb-mt2{--kb-mm:#1e3a8a}.kb-mt3{--kb-mm:#14532d}.kb-mt4{--kb-mm:#581c87}.kb-mt5{--kb-mm:#7f1d1d}
+/* V21.443: Siegerfoto aus der Kabine (a 3D picture of your own squad) */
+.kb-bubble.kb-has-photo{width:min(84%,330px);max-width:min(84%,330px);padding:4px 4px 18px}
+.kb-has-photo>strong{display:block;padding:2px 5px 4px}
+.kb-has-photo>p{padding:4px 5px 0}
+.kb-photo{position:relative;width:100%;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:#111b21}
+.kb-photo img{display:block;width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.kb-photo-wait{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:6px;color:#8696a0;font:700 12px/1.2 Inter,system-ui,sans-serif;background:linear-gradient(110deg,#111b21 30%,#1f2c33 50%,#111b21 70%);background-size:220% 100%;animation:kbDevelop 1.6s linear infinite}
+.kb-photo-wait span{font-size:30px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+@keyframes kbDevelop{from{background-position:120% 0}to{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){.kb-photo-wait{animation:none}}
+.kb-photo-view{position:absolute;inset:0;z-index:5;display:grid;place-content:center;gap:12px;padding:16px;background:rgba(0,0,0,.92)}
+.kb-photo-view img{display:block;max-width:100%;max-height:72vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.kb-photo-actions{display:flex;justify-content:center;gap:10px}
+.kb-photo-btn{min-height:42px;padding:0 18px;border:0;border-radius:21px;background:#25d366;color:#06281b;font:800 14px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.kb-photo-btn.ghost{background:#2a3942;color:#e9edef}
