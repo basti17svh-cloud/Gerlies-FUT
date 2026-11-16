@@ -1,1 +1,1 @@
-render-card-pngs.cjs tdw-cards "Harry Kane" "Martin Ødegaard" "Erling Haaland" "Jude Bellingham" "Jamal Musiala" "Michael Olise" "Vini Jr." "Lamine Yamal" "Bruno Fernandes" "Kylian Mbappé"
+render-card-pngs.cjs tdw-cards-v2 "Jude Bellingham" "Harry Kane" "Bruno Fernandes" "Dominik Szoboszlai" "Erling Haaland" "Declan Rice" "Rafael Leão" "Bradley Barcola" "Lamine Yamal" "Lautaro Martínez"
