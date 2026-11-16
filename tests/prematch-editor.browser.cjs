@@ -72,7 +72,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   const renderedKits=await page.evaluate(async()=>{
    let handedOff=null;match3DQueue={history:[],enqueue(event){handedOff=event;return true},cancel(){}};
    const accepted=queueMatch3D({id:'kit-regression',type:'big_chance_saved',minute:15,team:'home',playerId:'pre-9',playerName:'Preview 9',keeperName:'Test Keeper'});
-   const renderer=await import('./3d-highlights-scene.mjs?v=21439');
+   const renderer=await import('./3d-highlights-scene.mjs?v=21441');
    const result={accepted,kits:renderer.kitColors(handedOff)};match3DQueue=null;return result;
   });
   check("3D receives selected fade kit with exact shirt, secondary, shorts and socks",renderedKits.accepted&&renderedKits.kits.home.pattern==='fade'&&renderedKits.kits.home.shirt==='#000000'&&renderedKits.kits.home.shirtSecondary==='#ffffff'&&renderedKits.kits.home.shorts==='#ffffff'&&renderedKits.kits.home.socks==='#ffffff');

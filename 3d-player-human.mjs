@@ -23,7 +23,13 @@ const REAL_URL=new URL('./assets/footera/models/footera-real.glb?v=21433',import
 // the realistic body above, which stays the fallback.
 // localStorage footera-3d-metahuman=0 goes back to the Man Player body.
 const METAHUMAN_URL=new URL('./assets/footera/models/footera-metahuman.glb?v=21436',import.meta.url);
-let source=null,sourceReal=null,pending=null;
+let source=null,sourceReal=null,pending=null,realPending=null;
+const REAL_TIMEOUT_MS=45000;
+// V21.441: what the 3D badge shows about the human squad.
+const status={state:'idle',body:null,error:''};
+export function footeraHumanModelStatus(){return{...status}}
+// Resolves once the men's body has loaded (or was given up).
+export function footeraRealBodyLoaded(){return realPending||Promise.resolve(!!sourceReal)}
 export function footeraRealPlayersWanted(){
  try{return globalThis.localStorage?.getItem('footera-3d-real')!=='0'}catch(_){return true}
 }
@@ -54,14 +60,28 @@ export async function prepareFooteraHumanModel(){
    }
    return{scene:gltf.scene,clone,info,skins,vertexCount:vertices,boneCount:bones.size};
   };
-  // The realistic body is optional: if it fails, every player keeps the
-  // MakeHuman body.
-  const [human,real]=await Promise.all([load(HUMAN_URL.href),
-   footeraRealPlayersWanted()?(footeraMetaHumanWanted()?load(METAHUMAN_URL.href).catch(()=>load(REAL_URL.href)):load(REAL_URL.href))
-    .catch(()=>null):Promise.resolve(null)]);
-  source=human;sourceReal=real?{...real,real:true}:null;
+  // V21.441 (Basti: "plötzlich sehen alle gleich aus", the phone showed the
+  // old squad): the MakeHuman body no longer waits for the men's body. It
+  // loads first and makes the human squad ready on its own; the MetaHuman (or
+  // Man Player) body follows afterwards, never in parallel, so a phone never
+  // decodes two big models at once. A body that hangs is given up after a
+  // while and the next one is tried; until then men keep the MakeHuman body.
+  status.state='loading';status.error='';
+  const human=await load(HUMAN_URL.href);
+  source=human;status.state='ready';status.body='makehuman';
+  if(footeraRealPlayersWanted()){
+   const timed=url=>Promise.race([load(url),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout '+url.split('/').pop().split('?')[0])),REAL_TIMEOUT_MS))]);
+   const tries=footeraMetaHumanWanted()?[[METAHUMAN_URL.href,'metahuman'],[REAL_URL.href,'real']]:[[REAL_URL.href,'real']];
+   realPending=(async()=>{
+    for(const [url,body] of tries){
+     try{const real=await timed(url);sourceReal={...real,real:true};status.body=body;return true}
+     catch(error){status.error=String(error?.message||error).slice(0,120)}
+    }
+    return false;
+   })();
+  }
   return true;
- })().catch(error=>{pending=null;throw error});
+ })().catch(error=>{pending=null;status.state='failed';status.error=String(error?.message||error).slice(0,120);throw error});
  return pending;
 }
 export function isFooteraHumanModelReady(){return !!source}
