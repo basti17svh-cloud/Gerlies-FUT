@@ -60,6 +60,7 @@
 
  /* ---------- texts ---------- */
  const T={
+  titlePhoto:["🏆📸 POKALSIEGER! Unser Siegerfoto aus der Kabine","Das Foto kommt über jedes Bett 🏆📸","Pokal in der Kabine. Foto für die Ewigkeit 🏆📸","Wer hat den Pokal als Erster angefasst? Egal, Foto! 🏆📸","Siegerfoto mit Pokal. Rahmen ist schon bestellt 🖼️🏆","Ich schick das Foto an jeden, den ich kenne. Auch an meinen Zahnarzt 🏆📸😂"],
   hattrick:["Hattrick-Ball nehm ich mit nach Hause 😎⚽⚽⚽","{n} Tore. Einfach {n} Tore. 🥵","Heute hatte ich einfach Bock 😮‍💨🔥","Jemand Autogramme? ✍️⚽⚽⚽","Ich hab aufgehört zu zählen. Ach nee, waren {n} 😏","Ball unterschreiben lassen, Rahmen kaufen, fertig 🖼️⚽"],
   lateWinner:["{min}. MINUTE!!! ICH KANN NICHT MEHR 😭🔥","WER HAT DIE {min}. MINUTE BESTELLT?! 😤⚽","Mein Puls ist immer noch auf 200 😮‍💨","Bis zum Schluss! Genau dafür spielen wir 🙌🔥","Hab in der {min}. noch kurz an meine Oma gedacht und dann draufgehauen 😭⚽","Hat jemand meinen Herzschrittmacher gesehen? {min}. Minute 🫀🔥"],
   lateEqualizer:["Nie aufhören zu laufen. {min}. Minute 🙌","Punkt gerettet, Leute! 😤","Ich wusste, da geht noch was 👀⚽","{min}. Minute! Lieber spät als nie 😅⚽"],
@@ -482,7 +483,10 @@
    if(meme){const m=memeMsg("msg",meme,who);m.react={e:"😂",n:reactN("meme",3,10)};spoke.set(keyOf(who),(spoke.get(keyOf(who))||0)+1);out.push(m)}
   }
 
-  const ctx={type:"match",result,gh,ga,away:vars.away,mode,best:ctxP(best),worst:ctxP(worst&&num(worst.rating)<6.6?worst:null),
+  // 9) V21.443: after a cup final the captain posts the victory photo from the dressing room, with the trophy
+  if(result==="win"&&d.final&&captain)out.push({kind:"msg",who:whoOf(captain),text:pick(T.titlePhoto,s,"tp"),photo:{seed:s+"|title",title:true,gh,ga},react:{e:"🏆",n:reactN("tp",8,14)}});
+
+  const ctx={type:"match",result,gh,ga,away:vars.away,mode,final:!!d.final,best:ctxP(best),worst:ctxP(worst&&num(worst.rating)<6.6?worst:null),
    red:ctxP(sent),yellow:ctxP(booked),joker:ctxP(jokerT?.p),keeper:keeper?{...ctxP(keeper),clean:ga===0&&num(keeper.minutes)>=60,saves:num(keeper.saves)}:null,
    captain:ctxP(captain),injured:ctxP(injured),gags:usedGags,players:P.slice(0,18).map(p=>({...whoOf(p),pos:String(p.pos||"")}))};
   out[0].ctx=ctx;
@@ -517,13 +521,38 @@
   const hist=history(v),t=berlinTime(at);
   return{
    seed:matchRef(m),home:typeof matchHomeTeamName==="function"?matchHomeTeamName():"Footera Club",away:typeof matchAwayTeamName==="function"?matchAwayTeamName():"Gegner",
-   gh:m.home,ga:m.away,pensWinner:m.penaltyWinner,pensHome:m.pensHome,pensAway:m.pensAway,extraTime:!!m.extraTimeStarted,mode:m.mode,tournament:!!m.tournament,
+   gh:m.home,ga:m.away,pensWinner:m.penaltyWinner,pensHome:m.pensHome,pensAway:m.pensAway,extraTime:!!m.extraTimeStarted,mode:m.mode,tournament:!!m.tournament,final:!!(m.tournament&&num(m.tournament.stage)===3),
    opp:num(m.opp),power:num(m.power),captainUid:String(m.assignments?.captain||""),weather:String(m.weather?.kind||""),injuredUid:m.injuryTriggered&&m.forcedOut?String(m.forcedOut):"",
    hour:t.hour,minute:t.minute,prev:hist.results,recentGags:hist.gags,recentLines:Array.isArray(v.lines)?v.lines:[],recentMemes:recentMemes(v),memo:v.memo,mood:v.mood,
    goals:(m.goalEvents||[]).map(g=>({side:g.side,minute:num(g.minute),scorer:String(g.scorer||""),scorerUid:String(g.scorerUid||""),assist:String(g.assist||""),assistUid:String(g.assistUid||""),type:g.type})),
    players,potm:potm?{name:String(potm.base?.name||potm.name||""),uid:String(potm.uid||""),side:potm.side,rating:num(potm.rating)}:null
   };
  }
+ // V21.443 Siegerfoto: who is on the photo and how they look, from the live club (names, squad numbers,
+ // skin/hair from the player looks, club kit and crest). Only copies; nothing in the save changes.
+ function photoSquad(c){
+  const out={players:[],club:clubName(),crestHTML:"",kit:null,keeperKit:null};
+  try{
+   const capUid=String(c?.captain?.uid||""),capName=String(c?.captain?.name||"");
+   out.players=(Array.isArray(c?.players)?c.players:[]).slice(0,16).map(p=>{
+    const b=baseFor(p),looks=typeof FooteraPlayerLooks!=="undefined"?FooteraPlayerLooks:null;
+    let number=null;try{number=typeof FooteraShirtNumbers!=="undefined"&&p.uid?FooteraShirtNumbers.get(p.uid):null}catch(e){}
+    return{name:String(p.name||""),uid:String(p.uid||""),number:Number.isInteger(number)?number:null,keeper:p.pos==="GK",captain:capUid?String(p.uid)===capUid:!!capName&&p.name===capName,
+     skin:b&&looks?looks.sceneSkin(b):null,look:b&&looks?looks.sceneLook(b):null};
+   });
+   const used=new Set(out.players.map(p=>p.number).filter(Boolean));let n=2;
+   out.players.forEach(p=>{if(!p.number){if(p.keeper&&!used.has(1)){p.number=1;used.add(1);return}while(used.has(n))n++;p.number=n;used.add(n)}});
+   const id=typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null,k=id?.kits?.home;
+   if(k)out.kit={shirt:k.shirtPrimary,shirtSecondary:k.shirtSecondary,pattern:k.pattern,shorts:k.shorts,socks:k.socks};
+   const shirt=/^#[0-9a-f]{6}$/i.test(String(k?.shirtPrimary||""))?String(k.shirtPrimary):"#971d42";
+   const far=hex=>{const a=parseInt(hex.slice(1),16),b=parseInt(shirt.slice(1),16);return Math.hypot((a>>16&255)-(b>>16&255),(a>>8&255)-(b>>8&255),(a&255)-(b&255))>140};
+   const gk=["#f4b52b","#10bda7","#bc63e8","#42e2ee"].find(far)||"#42e2ee";
+   out.keeperKit={shirt:gk,shirtSecondary:"#16191d",pattern:"solid",shorts:"#16191d",socks:gk};
+   if(id&&typeof crestHTML==="function")out.crestHTML=String(crestHTML(id,true)||"");
+  }catch(e){}
+  return out;
+ }
+ const withPhotoSquad=(list,c)=>list.map(m=>m.photo?{...m,photo:{...m.photo,...photoSquad(c)}}:m);
  // After a match the coach's last words are used up and the mood moves with the result.
  const MOOD_RESULT={win:4,draw:0,loss:-5};
  function afterMatch(m){
@@ -532,8 +561,8 @@
    if(!live?.finished||live.kabineRecorded)return 0;
    const d=fromMatch(live);if(!d||!d.players.length)return 0;
    live.kabineRecorded=true;
-   const {result,messages,lines}=matchMessages(d);
-   return append(d.seed,messages.map(x=>({...x,result})),{update:v=>{v.memo={};v.mood=clamp(v.mood+(MOOD_RESULT[result]||0),0,100);keepLines(v,lines||[])}});
+   const {result,messages,lines,ctx}=matchMessages(d);
+   return append(d.seed,withPhotoSquad(messages,ctx).map(x=>({...x,result})),{update:v=>{v.memo={};v.mood=clamp(v.mood+(MOOD_RESULT[result]||0),0,100);keepLines(v,lines||[])}});
   }catch(e){console.warn("Kabinen-Chat:",e);return 0}
  }
  function squadVoices(exclude=new Set()){
@@ -643,7 +672,8 @@
   song:{label:()=>"🎶 Kabinenlied anstimmen",when:W,mood:6,
    say:["Kabinenlied! Alle mitsingen, auch die, die keinen Ton treffen 🎶","Ich fang an: 'Wir sind die Besten…' 🎶 Jetzt ihr!","🎶 Lalala, drei Punkte sind da 🎶 Hab ich selbst gedichtet 😌"],
    re:[["dj",["Ich mach den Beat 🥁🎧","Remix kommt heute Nacht 🎧🔥"]],["x",["Trainer, bitte nicht singen 🙉😂","Ich hab's aufgenommen. Für die Weihnachtsfeier 📹😏","Das war schief. Aber mit Herz ❤️😂"]],["captain",["Alle mitsingen, das ist ein Befehl 🎶🫡","Lauter! Die Nachbarkabine soll's hören 🔊"]]]},
-  photo:{label:()=>"📸 Mannschaftsfoto",when:c=>c.type==="match"&&c.result!=="loss",mood:4,
+  // V21.443: a real victory photo from the dressing room (only after wins), see 3d-kabine-photo.mjs
+  photo:{label:()=>"📸 Siegerfoto aus der Kabine",when:c=>c.type==="match"&&c.result==="win",mood:4,photo:true,
    say:["Mannschaftsfoto! Alle in die Mitte, und keiner macht Hasenohren 📸🐰","Lächeln, Leute! Das kommt in die Vereinszeitung 📸","Siegerfoto! Wer die Augen zu hat, zahlt in die Kasse 📸💶"],
    re:[["style",["Moment, Haare richten 💇‍♂️","Nur von meiner guten Seite. Also allen 😎"]],["late",["Wartet, ich bin gleich da!!! 🏃‍♂️📸","Hab ich's verpasst? 😭"]],["x",["Wer hat Hasenohren gemacht?! 🐰😂","Ich hatte die Augen zu. Nochmal 😭","Ich steh hinten, da sieht man mein Doppelkinn nicht 🙈"]]]},
   dayOff:{label:()=>"😴 Morgen frei",when:c=>c.type==="match"&&c.result!=="loss",mood:8,memo:()=>({dayoff:true}),
@@ -844,6 +874,10 @@
    out.push(memeMsg("me",memeFor(kind,"coach",seed,recentM,mv))||{kind:"me",text:"[Meme] Ich nach 90 Minuten an der Seitenlinie: 💀",meme:true});
   }
   else{const pool=typeof o.say==="function"?o.say(c):o.say;out.push({kind:"me",text:fill(pick(pool,seed,"say"),vars)})}
+  if(o.photo){
+   const who=cast.style||captain;
+   if(who){spoken.add(keyOf(who));out.push({kind:"msg",who:whoOf(who),text:pick(["📸 Hier ist es! Siegerfoto aus der Kabine","Foto ist im Kasten 📸🔥","📸 Für die Vereinszeitung! Wer die Augen zu hat, zahlt","Siegerfoto! Kommt sofort ins Profilbild 📸😎"],seed,"ph"),photo:{seed:ref+"|"+prior.length+"|photo",title:!!c.final,gh:num(c.gh),ga:num(c.ga)},react:{e:"🔥",n:4+hash(seed+"phn")%8}})}
+  }
   const speakerFor=sel=>{
    for(const part of String(sel).split("|")){
     if(["x","y","z"].includes(part)){const p=free();if(p)return p;continue}
@@ -868,7 +902,7 @@
  }
  function answer(ref,key){
   const v=read(),opts=replyOptions(v,ref),o=typeof key==="number"?opts[key]:opts.find(x=>x.id===key);if(!o)return[];
-  const c=blockCtx(v,ref),prior=used(v,ref)||[],r=fresh(v.lines,()=>coachRaw(o.id,c,ref,prior,recentMemes(v))),out=r.value;if(!out.length)return[];
+  const c=blockCtx(v,ref),prior=used(v,ref)||[],r=fresh(v.lines,()=>coachRaw(o.id,c,ref,prior,recentMemes(v))),out=withPhotoSquad(r.value,c);if(!out.length)return[];
   keepLines(v,r.used);
   const last=num(v.msgs[v.msgs.length-1]?.ts);let ts=Math.max(Date.now(),last+1);
   out.forEach((m,i)=>v.msgs.push({...m,ref,id:ref+"#r"+prior.length+"-"+i,ts:ts+i*1000}));
@@ -913,12 +947,69 @@
   else body=`<div class="kb-mm-pov"><p>${e(c.pov)}</p><span aria-hidden="true">${e(c.art)}</span></div>`;
   return`<div class="kb-meme kb-meme2 kb-mt${theme}"><small>MEME</small>${body}</div><span class="kb-sr">${escText(plain(m.text).replace(/^\[Meme\]\s*/,""))}</span>`;
  }
+ /* ---------- V21.443 Siegerfoto ---------- */
+ // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
+ // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
+ const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21443";
+ const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
+ const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
+ function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}
+ function photoUrl(id){if(photoMem.has(id))return photoMem.get(id);const c=photoCache()[id];return c&&typeof c.url==="string"&&c.url.startsWith("data:image/")?c.url:""}
+ function keepPhoto(id,url){
+  try{const c=photoCache();c[id]={url,at:Date.now()};const ids=Object.keys(c).sort((a,b)=>num(c[b].at)-num(c[a].at));ids.slice(PHOTO_KEEP).forEach(k=>delete c[k]);localStorage.setItem(PHOTO_KEY,JSON.stringify(c))}
+  catch(e){try{localStorage.setItem(PHOTO_KEY,JSON.stringify({[id]:{url,at:Date.now()}}))}catch(_){}}
+ }
+ function photoHTML(m){
+  const url=photoUrl(m.id),alt="Siegerfoto aus der Kabine";
+  return`<div class="kb-photo${url?" ready":""}" data-kb-photo="${escText(m.id)}">${url?`<img src="${escText(url)}" alt="${alt}">`:`<div class="kb-photo-wait"><span aria-hidden="true">📸</span><small>${photoFailed.has(m.id)?"Foto konnte nicht entwickelt werden":"Foto wird entwickelt …"}</small></div>`}</div>`;
+ }
+ function shrink(url,w=800,q=.82){
+  return new Promise(res=>{const img=new Image();img.onload=()=>{try{const c=document.createElement("canvas"),h=Math.round(img.height*w/img.width);c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q))}catch(e){res(url)}};img.onerror=()=>res(url);img.src=url});
+ }
+ function hydratePhotos(){
+  if(typeof document==="undefined"||!document.querySelectorAll)return;
+  let v=null;
+  document.querySelectorAll("#kabineList .kb-photo:not(.ready)").forEach(el=>{
+   const id=el.dataset.kbPhoto,url=photoUrl(id);
+   if(url){showPhoto(id,url);return}
+   if(photoBusy.has(id)||photoFailed.has(id))return;
+   v=v||read();const m=v.msgs.find(x=>x.id===id);if(!m||!m.photo)return;
+   photoBusy.add(id);
+   photoQueue=photoQueue.then(async()=>{
+    try{
+     const mod=await import(PHOTO_MODULE);
+     const r=await mod.renderKabinePhoto(m.photo,{width:1080,height:810});
+     photoMem.set(id,r.url);showPhoto(id,r.url);keepPhoto(id,await shrink(r.url));
+    }catch(e){console.warn("Siegerfoto:",e);photoFailed.add(id);document.querySelectorAll(`[data-kb-photo="${cssId(id)}"] small`).forEach(s=>s.textContent="Foto konnte nicht entwickelt werden")}
+    finally{photoBusy.delete(id)}
+   });
+  });
+ }
+ function showPhoto(id,url){
+  document.querySelectorAll(`[data-kb-photo="${cssId(id)}"]`).forEach(el=>{if(el.classList.contains("ready"))return;el.classList.add("ready");el.innerHTML=`<img src="${escText(url)}" alt="Siegerfoto aus der Kabine">`});
+ }
+ function openPhoto(id){
+  const url=photoUrl(id);if(!url)return;
+  const box=document.createElement("div");box.className="kb-photo-view";box.setAttribute("role","dialog");box.setAttribute("aria-label","Siegerfoto");
+  box.innerHTML=`<img src="${escText(url)}" alt="Siegerfoto aus der Kabine"><div class="kb-photo-actions"><button type="button" class="kb-photo-btn" data-kb-photo-share>Teilen</button><button type="button" class="kb-photo-btn ghost" data-kb-photo-close>Schließen</button></div>`;
+  box.addEventListener("click",async e=>{
+   e.stopPropagation();
+   if(e.target.closest("[data-kb-photo-share]")){
+    try{const blob=await (await fetch(url)).blob(),file=new File([blob],"footera-siegerfoto.jpg",{type:"image/jpeg"});
+     if(navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:"Footera Siegerfoto",text:"📸 Siegerfoto aus der Kabine ⚽"});
+     else{const a=document.createElement("a");a.href=url;a.download="footera-siegerfoto.jpg";a.click()}}catch(err){}
+    return;
+   }
+   if(e.target.closest("[data-kb-photo-close]")||e.target===box)box.remove();
+  });
+  ($("#"+MODAL_ID)||document.body).appendChild(box);
+ }
  function msgHTML(m,prev){
   if(m.kind==="sys")return`<div class="kb-sys" data-kb-id="${escText(m.id)}"><span>${escText(m.text)}</span></div>`;
   const time=`<time>${escText(timeLabel(m.ts))}</time>`;
   if(m.kind==="me"){const body=m.voice?voiceHTML(m):m.meme?memeHTML(m):`<p>${textHTML(m.text)}</p>`;return`<div class="kb-row me" data-kb-id="${escText(m.id)}"><div class="kb-bubble${m.voice?" kb-has-voice":""}${m.meme?" kb-has-meme":""}">${body}${time}<i class="kb-ticks" aria-hidden="true">✓✓</i></div></div>`}
   const first=!prev||prev.kind!=="msg"||prev.who?.name!==m.who?.name;
-  return`<div class="kb-row${first?" first":""}" data-kb-id="${escText(m.id)}">${first?avatarHTML(m.who):'<span class="kb-ava-space"></span>'}<div class="kb-bubble${m.meme?" kb-has-meme":""}">${first?`<strong style="color:${colorFor(m.who.name)}">${escText(m.who.name)}</strong>`:""}${m.meme?memeHTML(m):`<p>${textHTML(m.text)}</p>`}${time}${m.react?`<span class="kb-react">${escText(m.react.e)} ${num(m.react.n)}</span>`:""}</div></div>`;
+  return`<div class="kb-row${first?" first":""}" data-kb-id="${escText(m.id)}">${first?avatarHTML(m.who):'<span class="kb-ava-space"></span>'}<div class="kb-bubble${m.meme?" kb-has-meme":""}${m.photo?" kb-has-photo":""}">${first?`<strong style="color:${colorFor(m.who.name)}">${escText(m.who.name)}</strong>`:""}${m.photo?photoHTML(m):""}${m.meme?memeHTML(m):`<p>${textHTML(m.text)}</p>`}${time}${m.react?`<span class="kb-react">${escText(m.react.e)} ${num(m.react.n)}</span>`:""}</div></div>`;
  }
  function listHTML(msgs,now=Date.now()){
   let html="",day="";
@@ -949,6 +1040,7 @@
    if(e.target.closest("[data-kb-close]")||e.target===el){close();return}
    const chip=e.target.closest("[data-kb-reply]");
    if(chip){finishPlay();const added=answer(chip.dataset.kbRef,chip.dataset.kbReply);renderFoot(true);if(added.length)play(added.map(()=>0),true);return}
+   const ph=e.target.closest(".kb-photo.ready");if(ph&&!playing){openPhoto(ph.dataset.kbPhoto);return}
    if(e.target.closest("#kabineList")&&playing){finishPlay();return}
    const share=e.target.closest("[data-kb-share]");if(share){share.disabled=true;try{await sharePicture()}catch(err){console.warn("Kabinen-Chat teilen:",err)}finally{share.disabled=false}}
   });
@@ -974,7 +1066,7 @@
   foot.innerHTML=`<span class="kb-foot-label">${escText(label)}</span><div class="kb-chips${opts.length>4?" many":""}">${opts.map(o=>`<button type="button" class="kb-chip" data-kb-ref="${escText(ref)}" data-kb-reply="${escText(o.id)}"${waiting?" disabled":""}>${escText(o.t)}</button>`).join("")}</div>`;
   if(waiting)foot.classList.add("kb-wait");else foot.classList.remove("kb-wait");
  }
- function scrollEnd(){const list=$("#kabineList");if(list)list.scrollTop=list.scrollHeight}
+ function scrollEnd(){const list=$("#kabineList");if(list)list.scrollTop=list.scrollHeight;hydratePhotos()}
  // New messages appear one after another with a "schreibt ..." line, like a real chat. Tap skips.
  function play(_,appendOnly=false){
   if(playing){clearTimeout(playing.timer);playing=null}
@@ -1085,6 +1177,6 @@
   refreshBadges();
  }
 
- root.FooteraKabine={KEY,matchMessages,joinMessages,leaveMessages,coachMessages,castRoles,afterMatch,afterPack,afterSbc,answer,replyOptions,answersLeft,openRef,read,unread,open,close,buttonHTML,picture,shareBlock,visibleMessages,listHTML,short,moodInfo,_T:T,_GAGS:GAGS,_COACH:COACH,_MEMES:MEME_CARDS,memeFor};
+ root.FooteraKabine={KEY,matchMessages,joinMessages,leaveMessages,coachMessages,castRoles,afterMatch,afterPack,afterSbc,answer,replyOptions,answersLeft,openRef,read,unread,open,close,buttonHTML,picture,shareBlock,visibleMessages,listHTML,short,moodInfo,photoSquad,_T:T,_GAGS:GAGS,_COACH:COACH,_MEMES:MEME_CARDS,memeFor};
  if(typeof document!=="undefined"&&document.addEventListener){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start()}
 })(window);
