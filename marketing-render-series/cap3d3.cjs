@@ -12,7 +12,7 @@ const [out,from,to,fps='30',width='432',team='home',minute='22',seq='',scorer=''
  await page.route('**/*',r=>{const u=r.request().url();if(u.startsWith(url)||process.env.NET_LIVE==='1'&&!/supabase\.co\/(rest|auth|realtime|functions)|googletag/.test(u))return r.continue();const e=NI[u];if(e){hits++;return r.fulfill({status:200,contentType:e.type,body:fs.readFileSync(NETD+'/'+e.f),headers:{'access-control-allow-origin':'*'}})}miss.add(u.slice(0,90));return r.abort()});await page.goto(url);
  await page.evaluate(()=>{const original=requestAnimationFrame;window.qaPresent=()=>new Promise(resolve=>original(()=>original(resolve)));window.qaDraw=t=>new Promise(resolve=>original(()=>{if(t===0){qaStep(performance.now());window.qaVirtualNow=performance.now()}else{for(let i=0;i<600&&document.querySelector(".fh3d")&&Number(document.querySelector(".fh3d").dataset.playbackTime)<t/1000;i++){window.qaVirtualNow+=1000/30;qaStep(window.qaVirtualNow)}}resolve()}));window.qaFrames=new Map();let id=1000000;window.qaHold=false;window.requestAnimationFrame=cb=>qaHold?(qaFrames.set(++id,cb),id):original(cb);const cancel=cancelAnimationFrame;window.cancelAnimationFrame=i=>qaFrames.delete(i)||cancel(i);const timeout=setTimeout,clear=clearTimeout;window.qaTimers=new Map();window.setTimeout=(cb,ms,...args)=>qaHold&&ms>=12000?(qaTimers.set(++id,cb),id):timeout(cb,ms,...args);window.clearTimeout=i=>qaTimers.delete(i)||clear(i);window.qaStep=t=>{const callbacks=[...qaFrames.values()];qaFrames.clear();callbacks.forEach(cb=>cb(t))}});
 
- const fsx=require('fs');const xi=JSON.parse(fsx.readFileSync(__dirname+'/xi-full.json','utf8'));
+ const fsx=require('fs');const xi=JSON.parse(fsx.readFileSync(__dirname+'/'+(process.env.XI||'xi-full.json'),'utf8'));
  await fixture(page);
  await page.evaluate(({xi,minute})=>{
   cancelMatch3D();stopMatchTimer();dismissMatchGoalMoment(false);
@@ -45,13 +45,14 @@ await page.waitForSelector('.fh3d canvas',{state:'attached'});
  const box=await page.locator('#matchLiveStage').boundingBox();const clip={x:box.x,y:box.y+66,width:box.width,height:box.height-66};console.log('clip',JSON.stringify(clip));
  if(PROBE){let last='';for(let i=0;i<400;i++){const st=await page.evaluate(()=>{window.qaVirtualNow+=100;qaStep(window.qaVirtualNow);const l=document.querySelector('.fh3d');if(!l)return null;const h=document.querySelector('.fh3d-hud');return l.dataset.playbackTime+' hud='+(h?.classList.contains('visible')?1:0)+' '+(document.querySelector('.fh3d-name')?.textContent||'')+' img='+[...document.querySelectorAll('.fh3d-player-card img')].map(i=>i.naturalWidth).join(',')});if(st===null){console.log('end at step',i);break}if(i%5===0)console.log(st)}console.log('hits',hits,'miss',[...miss].slice(0,8));await page.screenshot({path:out+'/probe.jpg',clip});await browser.close();server.close();return}
  const t0=Date.now();let n=0;const count=Math.round(+to);
- let pt=0;while(pt<+from){pt=await page.evaluate(async()=>{window.qaVirtualNow+=200;qaStep(window.qaVirtualNow);const l=document.querySelector('.fh3d');return l?Number(l.dataset.playbackTime):99});}
+ let hudAt=-1;let pt=0;while(pt<+from){pt=await page.evaluate(async()=>{window.qaVirtualNow+=200;qaStep(window.qaVirtualNow);const l=document.querySelector('.fh3d');return l?Number(l.dataset.playbackTime):99});}
  console.log('start at playback',pt);
  for(let f=0;f<count;f++){
-  const st=await page.evaluate(async dt=>{window.qaVirtualNow+=dt;qaStep(window.qaVirtualNow);await qaPresent();const l=document.querySelector('.fh3d');return l?l.dataset.playbackTime:null},1000/(+fps));
+  const st=await page.evaluate(async dt=>{window.qaVirtualNow+=dt;qaStep(window.qaVirtualNow);await qaPresent();const l=document.querySelector('.fh3d');return l?l.dataset.playbackTime+(document.querySelector('.fh3d-hud')?.classList.contains('visible')?'|H':''):null},1000/(+fps));
+  if(st&&st.endsWith('|H')&&hudAt<0)hudAt=n;
   if(st===null){console.log('scene ended at frame',f);break}
   await page.screenshot({path:path.join(out,`f${String(n++).padStart(4,'0')}.jpg`),clip,type:'jpeg',quality:90,timeout:180000});
   if(n%30===0)console.log(n,(Date.now()-t0)/n|0,'ms/frame','pt',st)}
- console.log('frames',n,'total s',(Date.now()-t0)/1000);
+ console.log('frames',n,'total s',(Date.now()-t0)/1000);fs.writeFileSync(path.join(out,'meta.json'),JSON.stringify({frames:n,hudAt,from:+from,fps:+fps}));
  await browser.close();server.close();
 })().catch(e=>{console.error(e);process.exit(1)});

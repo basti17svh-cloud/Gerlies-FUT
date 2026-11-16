@@ -1,0 +1,72 @@
+name: Social Tor der Woche 3D captures (temporary)
+on:
+  push:
+    branches: ['claude/project-thread-hrz0aj']
+    paths:
+      - 'marketing-render-series/tdw-request.txt'
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: T10, xi: xi-tdw-b.json, seq: near_post_flick_header_left, who: 'Harry Kane', minute: '12'}
+          - {name: T09, xi: xi-tdw-b.json, seq: recycle_curler_right, who: 'Martin Ødegaard', minute: '27'}
+          - {name: T08, xi: xi-tdw-b.json, seq: counter_sprint_left, who: 'Erling Haaland', minute: '38'}
+          - {name: T07, xi: xi-tdw-a.json, seq: halfvolley_drive, who: 'Jude Bellingham', minute: '44'}
+          - {name: T06, xi: xi-tdw-a.json, seq: slalom_left, who: 'Jamal Musiala', minute: '51'}
+          - {name: T05, xi: xi-tdw-b.json, seq: winger_takeon_right, who: 'Michael Olise', minute: '58'}
+          - {name: T04, xi: xi-tdw-a.json, seq: chip_one_on_one, who: 'Vini Jr.', minute: '66'}
+          - {name: T03, xi: xi-tdw-a.json, seq: finesse_halfspace, who: 'Lamine Yamal', minute: '73'}
+          - {name: T02, xi: xi-tdw-a.json, seq: edge_rocket, who: 'Bruno Fernandes', minute: '81'}
+          - {name: T01, xi: xi-tdw-a.json, seq: bicycle, who: 'Kylian Mbappé', minute: '89'}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter ffmpeg
+      - name: Capture
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+          NET_LIVE: '1'
+          TYPE: goal
+          SCORE: '0:0'
+          XI: ${{ matrix.xi }}
+        run: |
+          node marketing-render-series/cap3d3.cjs /tmp/cap/${{ matrix.name }} 0.2 480 30 432 home ${{ matrix.minute }} '${{ matrix.seq }}' '${{ matrix.who }}'
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
+          cp /tmp/cap/${{ matrix.name }}/meta.json out/${{ matrix.name }}.json
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tdw-${{ matrix.name }}
+          path: out/
+  commit:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/arts
+      - name: Commit
+        run: |
+          mkdir -p marketing-render-series/tdw
+          find /tmp/arts -name 'T*' -type f -exec cp {} marketing-render-series/tdw/ \;
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add marketing-render-series/tdw
+          git diff --cached --quiet && exit 0
+          git commit -m 'marketing: Tor der Woche 3D captures [skip ci]'
+          for i in 1 2 3; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push origin HEAD:"${GITHUB_REF_NAME}" && break; sleep 5; done
