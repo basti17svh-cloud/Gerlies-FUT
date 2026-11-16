@@ -1,0 +1,82 @@
+{
+ "Harry Kane": {
+  "id": "202126",
+  "name": "Harry Kane",
+  "ovr": 90,
+  "team": "FC Bayern München",
+  "position": "ST",
+  "file": "harry-kane.png"
+ },
+ "Martin Ødegaard": {
+  "id": "222665",
+  "name": "Martin Ødegaard",
+  "ovr": 86,
+  "team": "Arsenal",
+  "position": "CM",
+  "file": "martin-degaard.png"
+ },
+ "Erling Haaland": {
+  "id": "239085",
+  "name": "Erling Haaland",
+  "ovr": 91,
+  "team": "Manchester City",
+  "position": "ST",
+  "file": "erling-haaland.png"
+ },
+ "Jude Bellingham": {
+  "id": "252371",
+  "name": "Jude Bellingham",
+  "ovr": 90,
+  "team": "Real Madrid",
+  "position": "CAM",
+  "file": "jude-bellingham.png"
+ },
+ "Jamal Musiala": {
+  "id": "256790",
+  "name": "Jamal Musiala",
+  "ovr": 87,
+  "team": "FC Bayern München",
+  "position": "CAM",
+  "file": "jamal-musiala.png"
+ },
+ "Michael Olise": {
+  "id": "247827",
+  "name": "Michael Olise",
+  "ovr": 90,
+  "team": "FC Bayern München",
+  "position": "RM",
+  "file": "michael-olise.png"
+ },
+ "Vini Jr.": {
+  "id": "238794",
+  "name": "Vini Jr.",
+  "ovr": 89,
+  "team": "Real Madrid",
+  "position": "LW",
+  "file": "vini-jr-.png"
+ },
+ "Lamine Yamal": {
+  "id": "277643",
+  "name": "Lamine Yamal",
+  "ovr": 90,
+  "team": "FC Barcelona",
+  "position": "RW",
+  "file": "lamine-yamal.png"
+ },
+ "Bruno Fernandes": {
+  "id": "212198",
+  "name": "Bruno Fernandes",
+  "ovr": 89,
+  "team": "Man Utd",
+  "position": "CAM",
+  "file": "bruno-fernandes.png"
+ },
+ "Kylian Mbappé": {
+  "id": "231747",
+  "name": "Kylian Mbappé",
+  "ovr": 91,
+  "team": "Real Madrid",
+  "position": "ST",
+  "file": "kylian-mbappe.png"
+ }
+}
