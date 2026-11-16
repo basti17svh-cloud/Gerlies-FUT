@@ -1,1 +1,1 @@
-render-duel-teaser.cjs wer-gewinnt-totw-icons-v2
+render-card-pngs.cjs tdw-cards "Harry Kane" "Martin Ødegaard" "Erling Haaland" "Jude Bellingham" "Jamal Musiala" "Michael Olise" "Vini Jr." "Lamine Yamal" "Bruno Fernandes" "Kylian Mbappé"

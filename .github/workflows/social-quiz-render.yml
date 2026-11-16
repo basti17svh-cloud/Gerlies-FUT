@@ -24,12 +24,16 @@ jobs:
         env:
           NODE_PATH: /tmp/quiz-browser/node_modules
         run: |
-          while read SCRIPT NAME; do
+          while read -r SCRIPT NAME ARGS; do
             [ -n "$SCRIPT" ] || continue
             rm -rf /tmp/quiz
-            node "scripts/social/$SCRIPT" /tmp/quiz < /dev/null
-            ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart "marketing-quiz/$NAME-silent.mp4" < /dev/null
-            cp /tmp/quiz/meta.json "marketing-quiz/$NAME-meta.json"
+            eval "node scripts/social/$SCRIPT /tmp/quiz $ARGS" < /dev/null
+            if [ -d /tmp/quiz/frames ]; then
+              ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart "marketing-quiz/$NAME-silent.mp4" < /dev/null
+              cp /tmp/quiz/meta.json "marketing-quiz/$NAME-meta.json"
+            else
+              rm -rf "marketing-quiz/$NAME" && cp -r /tmp/quiz "marketing-quiz/$NAME"
+            fi
           done < marketing-quiz/request.txt
           ls -la marketing-quiz
       - name: Commit video
