@@ -20,17 +20,17 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
           npm install --prefix /tmp/quiz-browser playwright@1.51.1
           /tmp/quiz-browser/node_modules/.bin/playwright install --with-deps chromium
-      - name: Render frames
+      - name: Render and encode
         env:
           NODE_PATH: /tmp/quiz-browser/node_modules
         run: |
-          read SCRIPT NAME < marketing-quiz/request.txt
-          echo "NAME=$NAME" >> "$GITHUB_ENV"
-          node "scripts/social/$SCRIPT" /tmp/quiz
-      - name: Encode
-        run: |
-          ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart marketing-quiz/$NAME-silent.mp4
-          cp /tmp/quiz/meta.json marketing-quiz/$NAME-meta.json
+          while read SCRIPT NAME; do
+            [ -n "$SCRIPT" ] || continue
+            rm -rf /tmp/quiz
+            node "scripts/social/$SCRIPT" /tmp/quiz
+            ffmpeg -y -loglevel error -framerate 30 -i /tmp/quiz/frames/%05d.jpg -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart "marketing-quiz/$NAME-silent.mp4"
+            cp /tmp/quiz/meta.json "marketing-quiz/$NAME-meta.json"
+          done < marketing-quiz/request.txt
           ls -la marketing-quiz
       - name: Commit video
         run: |

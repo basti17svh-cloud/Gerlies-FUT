@@ -1,1 +1,2 @@
-render-duel-teaser.cjs wer-gewinnt-totw-icons
+render-higher-lower-quiz.cjs hoeher-oder-tiefer-v2
+render-duel-teaser.cjs wer-gewinnt-totw-icons-v2

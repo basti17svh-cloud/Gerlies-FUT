@@ -22,41 +22,43 @@ const INTRO=3,ROUND=6,OUTRO=4.5,TOTAL=INTRO+ROUNDS.length*ROUND+OUTRO;
   const styles=await page.evaluate(()=>[...document.querySelectorAll('style,link[rel="stylesheet"]')].map(e=>e.outerHTML).join('\n'));
   const q=await ctx.newPage();
   await q.setContent(`<!doctype html><html><head><meta charset="utf-8"><base href="${base}/">${styles}<style>
-  html,body{margin:0!important;width:1080px!important;min-width:1080px!important;height:1920px!important;overflow:hidden!important;background:#070906!important;font-family:Arial,sans-serif;color:#f9eabe}
-  .stage{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#8a6a2a40,transparent 62%),radial-gradient(ellipse at 50% 100%,#c8102e38,transparent 55%),linear-gradient(165deg,#1d2118,#090c0a 50%,#252012)}
-  .frame{position:absolute;inset:26px;border:1px solid #b3924f66;pointer-events:none}
-  .brand{position:absolute;top:120px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px;font-size:30px;font-weight:900;letter-spacing:9px}.brand img{width:48px;height:48px}
-  .scene{position:absolute;inset:0;opacity:0}
-  .big{position:absolute;left:60px;right:60px;text-align:center;font-weight:900}
-  .t1{top:560px;font-size:132px;line-height:.92;letter-spacing:-4px;color:#ffe5a0;text-shadow:0 4px 40px #dba33955}.t1 b{color:#fff;display:block}
-  .t2{top:1040px;font-size:40px;line-height:1.25;letter-spacing:2px;color:#efe1b8;font-weight:800}
-  .t3{top:1180px;font-size:34px;color:#d1bd83;font-weight:700;letter-spacing:4px}
-  .round{position:absolute;top:240px;left:0;right:0;text-align:center;font-size:30px;letter-spacing:8px;color:#d1bd83;font-weight:800}
-  .q{position:absolute;top:300px;left:40px;right:40px;text-align:center;font-size:62px;font-weight:900;color:#fff;letter-spacing:-1px}
+  html,body{margin:0!important;width:1080px!important;min-width:1080px!important;height:1920px!important;overflow:hidden!important;background:#07070a!important;font-family:Inter,"Inter Display",Arial,sans-serif;color:#fff}
+  body:before,body:after,html:before,html:after{display:none!important;content:none!important}
+  .qstage{position:absolute;inset:0;z-index:0;background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(227,32,43,.42),transparent 70%),linear-gradient(180deg,#160709 0%,#0b0b0e 60%,#070709 100%)!important;background-color:#07070a!important}
+  .qframe{position:absolute;z-index:5;inset:22px;border:1.5px solid rgba(255,70,80,.35);border-radius:4px;pointer-events:none}
+  .qbrand{position:absolute;z-index:5;top:96px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px;font:800 30px Inter,Arial;letter-spacing:.32em;color:#fff}.qbrand img{width:60px;height:60px;object-fit:contain}
+  .scene{position:absolute;inset:0;opacity:0;background:transparent!important;border:0!important;box-shadow:none!important}
+  .big{position:absolute;left:50px;right:50px;text-align:center}
+  .kick{font:700 26px Inter,Arial;letter-spacing:.34em;color:#ffb3b8;text-transform:uppercase}
+  .t1{top:560px;font:900 150px/.95 "Inter Display",Inter,Arial;letter-spacing:-.02em;text-transform:uppercase;text-shadow:0 0 40px rgba(255,40,50,.45)}.t1 em,.q em{font-style:normal;color:#ff3341}
+  .t2{top:1060px;font:800 38px/1.3 Inter,Arial;letter-spacing:.04em;text-transform:uppercase}
+  .t3{top:1200px}
+  .round{position:absolute;top:220px;left:0;right:0;display:flex;justify-content:center}.round span{font:800 26px Inter,Arial;letter-spacing:.3em;padding:12px 26px;border:2px solid rgba(255,51,65,.75);border-radius:8px;background:rgba(20,6,8,.8)}
+  .q{position:absolute;top:310px;left:40px;right:40px;text-align:center;font:900 64px/1.02 "Inter Display",Inter,Arial;text-transform:uppercase;text-shadow:0 0 40px rgba(255,40,50,.35)}
   .cards{position:absolute;top:520px;left:0;right:0;display:flex;justify-content:center;gap:36px;z-index:1}
   .slot{position:relative;width:470px;transition:none}.slot .card-shell{width:100%!important;max-width:none!important;margin:0!important}
   .slot .card-alt-positions{display:none!important}
   .slot.hide .ovr{color:transparent!important;text-shadow:none!important}
-  .slot.hide .ovr:after{content:"?";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ffe5a0}
+  .slot.hide .ovr:after{content:"?";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff}
   .slot .ovr{position:relative}
   .slot.hide [data-hide-stat]{visibility:hidden}
-  .tag{position:absolute;left:50%;bottom:-86px;transform:translateX(-50%) scale(var(--s,0));font-size:40px;font-weight:900;padding:12px 30px;border-radius:40px;white-space:nowrap}
-  .win .tag{background:#1fa64a;color:#fff;box-shadow:0 0 40px #1fa64a99}
-  .lose .tag{background:#40403a;color:#ddd}
-  .win{filter:drop-shadow(0 0 34px #3fdc6fcc)}
-  .vs{position:absolute;top:880px;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:#c8102e;color:#fff;font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px #070906,0 0 40px #c8102e88;z-index:10}
+  .tag{position:absolute;left:50%;bottom:-86px;transform:translateX(-50%) scale(var(--s,0));font:900 38px Inter,Arial;letter-spacing:.06em;padding:12px 30px;border-radius:10px;white-space:nowrap}
+  .win .tag{background:#ff3341;color:#fff;box-shadow:0 0 40px rgba(255,51,65,.6)}
+  .lose .tag{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);color:#bbb}
+  .win{filter:drop-shadow(0 0 36px rgba(255,51,65,.75))}
+  .vs{position:absolute;top:880px;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:#e3202b;color:#fff;font:900 44px Inter,Arial;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px #0b0b0e,0 0 50px rgba(255,40,50,.6);z-index:10}
   .timer{position:absolute;top:1360px;left:50%;transform:translateX(-50%);width:210px;height:210px}
-  .timer svg{position:absolute;inset:0;transform:rotate(-90deg)}.timer .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:110px;font-weight:900;color:#fff}
-  .dots{position:absolute;top:1720px;left:0;right:0;display:flex;justify-content:center;gap:18px}.dots i{width:22px;height:22px;border-radius:50%;background:#ffffff26;display:block}.dots i.on{background:#ffe5a0}
-  .foot{position:absolute;bottom:130px;left:0;right:0;text-align:center;font-size:30px;font-weight:900;letter-spacing:7px;color:#efe1b8}
-  </style></head><body><div class="stage"></div><div class="frame"></div><div class="brand"><img src="assets/footera/emblem.png">FOOTERA</div>
-  <div class="scene" id="intro"><div class="big t1">HÖHER<br>ODER<b>TIEFER?</b></div><div class="big t2">WELCHE KARTE HAT<br>DAS HÖHERE RATING?</div><div class="big t3">6 RUNDEN · ZÄHL MIT 👇</div></div>
-  <div class="scene" id="game"><div class="round" id="rlabel"></div><div class="q">Wer hat das höhere Rating?</div>
+  .timer svg{position:absolute;inset:0;transform:rotate(-90deg)}.timer .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 110px Inter,Arial;color:#fff}
+  .dots{position:absolute;top:1700px;left:0;right:0;display:flex;justify-content:center;gap:18px}.dots i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.15);display:block}.dots i.on{background:#ff3341;box-shadow:0 0 14px rgba(255,51,65,.7)}
+  .foot{position:absolute;bottom:96px;left:0;right:0;text-align:center;font:800 26px Inter,Arial;letter-spacing:.32em;color:#ffb3b8}
+  </style></head><body><div class="qstage"></div><div class="qframe"></div><div class="qbrand"><img src="assets/footera/emblem.png">FOOTERA</div>
+  <div class="scene" id="intro"><div class="big kick" style="top:470px">Quiz · 6 Runden</div><div class="big t1">Höher<br>oder<br><em>tiefer?</em></div><div class="big t2">Welche Karte hat<br>das höhere Rating?</div><div class="big kick t3">Zähl mit 👇</div></div>
+  <div class="scene" id="game"><div class="round" id="rlabel"></div><div class="q">Wer hat das<br><em>höhere</em> Rating?</div>
    <div class="cards"><div class="slot hide" id="L"></div><div class="slot hide" id="R"></div></div><div class="vs">VS</div>
-   <div class="timer" id="timer"><svg viewBox="0 0 210 210"><circle cx="105" cy="105" r="92" fill="#0008" stroke="#ffffff22" stroke-width="14"/><circle id="arc" cx="105" cy="105" r="92" fill="none" stroke="#ffe5a0" stroke-width="14" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="0"/></svg><div class="num" id="num">3</div></div>
+   <div class="timer" id="timer"><svg viewBox="0 0 210 210"><circle cx="105" cy="105" r="92" fill="#0008" stroke="#ffffff22" stroke-width="14"/><circle id="arc" cx="105" cy="105" r="92" fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="0"/></svg><div class="num" id="num">3</div></div>
    <div class="dots" id="dots">${ROUNDS.map(()=>'<i></i>').join('')}</div></div>
-  <div class="scene" id="outro"><div class="big t1" style="top:600px;font-size:118px">WIE VIELE<b>HATTEST DU?</b></div><div class="big t2" style="top:950px">SCHREIB'S IN DIE KOMMENTARE 👇</div><div class="big t3" style="top:1080px;font-size:110px;color:#ffe5a0;letter-spacing:6px">? / 6</div></div>
-  <div class="foot">FOOTERA – BUILD YOUR ERA</div>
+  <div class="scene" id="outro"><div class="big t1" style="top:560px;font-size:120px">Wie viele<br><em>hattest du?</em></div><div class="big" style="top:880px;font:900 170px Inter,Arial;letter-spacing:.04em;text-shadow:0 0 50px rgba(255,40,50,.5)">? / 6</div><div class="big t2" style="top:1120px">Schreib's in<br>die Kommentare 👇</div></div>
+  <div class="foot">BUILD YOUR ERA</div>
   <script>
   const ROUNDS=${JSON.stringify(rounds.map(r=>({L:r.L,R:r.R})))};const INTRO=${INTRO},ROUND=${ROUND},OUTRO=${OUTRO};let cur=-1;
   const ease=x=>1-Math.pow(1-Math.min(1,Math.max(0,x)),3);
@@ -64,7 +66,7 @@ const INTRO=3,ROUND=6,OUTRO=4.5,TOTAL=INTRO+ROUNDS.length*ROUND+OUTRO;
   function mark(slot){slot.querySelectorAll('*').forEach(el=>{if(el.children.length===0&&/^\\d{1,2}$/.test(el.textContent.trim())&&!el.classList.contains('ovr'))el.setAttribute('data-hide-stat','')})}
   function load(i){const r=ROUNDS[i];for(const k of ['L','R']){const s=document.getElementById(k);s.innerHTML=r[k].html+'<div class="tag"></div>';mark(s)}
    const win=r.L.rating>r.R.rating?'L':'R';document.getElementById(win).querySelector('.tag').textContent='✓ HÖHER';document.getElementById(win==='L'?'R':'L').querySelector('.tag').textContent='TIEFER';
-   document.getElementById('rlabel').textContent='RUNDE '+(i+1)+' / '+ROUNDS.length;cur=i}
+   document.getElementById('rlabel').innerHTML='<span>RUNDE '+(i+1)+' / '+ROUNDS.length+'</span>';cur=i}
   window.render=t=>{const show=(id,o)=>document.getElementById(id).style.opacity=o;
    if(t<INTRO){show('intro',Math.min(1,t/0.35)*(t>INTRO-0.35?(INTRO-t)/0.35:1));show('game',0);show('outro',0);const s=0.92+0.08*ease(t/0.6);document.querySelector('#intro .t1').style.transform='scale('+s+')';return}
    const g=t-INTRO,i=Math.floor(g/ROUND);
@@ -77,7 +79,7 @@ const INTRO=3,ROUND=6,OUTRO=4.5,TOTAL=INTRO+ROUNDS.length*ROUND+OUTRO;
    tm.style.opacity=u<tStart?ease(u/tStart):u<rev?1:Math.max(0,1-(u-rev)/0.25);
    document.getElementById('num').textContent=u<rev?String(Math.max(1,Math.ceil(left))):'';
    const frac=u<tStart?0:Math.min(1,(u-tStart)/tLen);document.getElementById('arc').setAttribute('stroke-dashoffset',String(578*frac));
-   document.getElementById('arc').setAttribute('stroke',left<1.0?'#ff4d5e':'#ffe5a0');
+   document.getElementById('arc').setAttribute('stroke',left<1.0?'#ff3341':'#ffffff');
    const tick=(u-tStart)%1;document.getElementById('num').style.transform='scale('+(u>tStart&&u<rev?1+0.18*Math.max(0,1-tick/0.25):1)+')';
    const revealed=u>=rev;for(const s of [L,R])s.classList.remove('win','lose');for(const s of [L,R]){s.classList.toggle('hide',!revealed)}
    const r=ROUNDS[i],win=r.L.rating>r.R.rating?L:R,lose=win===L?R:L;

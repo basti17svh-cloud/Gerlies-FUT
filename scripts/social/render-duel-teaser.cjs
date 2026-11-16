@@ -30,46 +30,47 @@ const TOTAL=31;
   const q=await ctx.newPage();
   const f1=x=>x.toFixed(1).replace('.',',');
   await q.setContent(`<!doctype html><html><head><meta charset="utf-8"><base href="${base}/">${styles}<style>
-  html,body{margin:0!important;width:1080px!important;min-width:1080px!important;height:1920px!important;overflow:hidden!important;background:#070906!important;font-family:Arial,sans-serif;color:#f9eabe}
-  .stage{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#c8102e55,transparent 45%),radial-gradient(ellipse at 50% 100%,#8a6a2a33,transparent 50%),linear-gradient(180deg,#160a0b,#0a0909 45%,#0d0c08)}
-  .frame{position:absolute;inset:26px;border:1px solid #b3924f55;pointer-events:none}
+  html,body{margin:0!important;width:1080px!important;min-width:1080px!important;height:1920px!important;overflow:hidden!important;background:#070906!important;font-family:Inter,"Inter Display",Arial,sans-serif;color:#fff}
+  body:before,body:after{display:none!important;content:none!important}
+  .dstage{position:absolute;inset:0;z-index:0;background-color:#0a0909!important;background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(227,32,43,.42),transparent 70%),linear-gradient(180deg,#160709 0%,#0b0b0e 60%,#070709 100%)!important}
+  .dframe{position:absolute;z-index:5;inset:22px;border:1.5px solid rgba(255,70,80,.35);border-radius:4px;pointer-events:none}
   .dpitch{position:absolute;left:70px;right:70px;top:330px;height:1330px;border:3px solid #ffffff14;border-radius:8px;opacity:0}
   .dpitch:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:3px solid #ffffff14}.dpitch:after{content:"";position:absolute;left:50%;top:50%;width:220px;height:220px;margin:-110px;border:3px solid #ffffff14;border-radius:50%}
-  .brand{position:absolute;top:110px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px;font-size:30px;font-weight:900;letter-spacing:9px}.brand img{width:48px;height:48px}
-  .txt{position:absolute;left:60px;right:60px;text-align:center;font-weight:900;opacity:0}
-  .type{top:880px;font-size:66px;color:#fff}.type i{display:inline-block;width:6px;height:70px;background:#ff3347;vertical-align:-10px;margin-left:6px}
-  .slam{top:720px;font-size:170px;line-height:.95;color:#fff;letter-spacing:-3px}.slam b{display:block;color:#ff3347;text-shadow:0 0 60px #ff334799}
-  .head{font-size:54px;color:#fff;letter-spacing:1px}.head small{display:block;font-size:30px;color:#ffb3ba;letter-spacing:5px;margin-top:6px}
-  .card{position:absolute;left:0;top:0;width:200px;transform-origin:50% 50%;opacity:0;will-change:transform}
-  .card .card-shell{width:100%!important;max-width:none!important;margin:0!important}.card .card-alt-positions{display:none!important}
-  .vs{position:absolute;left:50%;top:990px;width:150px;height:150px;margin:-75px;border-radius:50%;background:#c8102e;color:#fff;font-size:58px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px #0a0909,0 0 70px #ff334799;z-index:20;opacity:0}
-  .score{top:700px;font-size:150px;color:#fff;letter-spacing:-2px}.score span{color:#ff3347;font-size:90px;margin:0 26px}
-  .lbls{top:880px;display:flex;justify-content:center;gap:250px;font-size:28px;letter-spacing:4px;color:#ffb3ba}
-  .sub{top:990px;font-size:44px;color:#efe1b8;line-height:1.3}
-  .cta{top:760px;font-size:120px;line-height:1;color:#fff}.cta b{display:block;color:#ff3347}
-  .cta2{top:1020px;font-size:40px;color:#efe1b8;font-weight:800}.cta3{top:1100px;font-size:38px;color:#ffb3ba;font-weight:800}
-  .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40}
-  .foot{position:absolute;bottom:110px;left:0;right:0;text-align:center;font-size:30px;font-weight:900;letter-spacing:7px;color:#efe1b8}
-  </style></head><body><div class="stage"></div><div class="frame"></div><div class="dpitch" id="pitch"></div><div class="brand"><img src="assets/footera/emblem.png">FOOTERA</div>
-  <div class="txt type" id="t1"></div><div class="txt type" id="t2"></div>
-  <div class="txt slam" id="slam">WER<b>GEWINNT?</b></div>
-  <div class="txt head" id="hH">${home.title}<small>Ø ${f1(home.avg)}</small></div><div class="txt head" id="hA">${away.title}<small>Ø ${f1(away.avg)}</small></div>
-  <div id="cards"></div><div class="vs" id="vs">VS</div>
-  <div class="txt score" id="score">${f1(home.avg)}<span>vs</span>${f1(away.avg)}</div><div class="txt lbls" id="lbls"><div>BEST OF TOTW</div><div>ICONS</div></div>
-  <div class="txt sub" id="sub">${f1(away.avg-home.avg)} Punkte weniger.<br>Schafft die Jubiläums-Elf die Sensation?</div>
-  <div class="txt cta" id="cta">TIPP DAS<b>ERGEBNIS</b></div><div class="txt cta2" id="cta2">Auflösung am Montag · simuliert in Footera</div><div class="txt cta3" id="cta3">Schreib deinen Tipp in die Kommentare 👇</div>
-  <div class="flash" id="flash"></div><div class="foot">FOOTERA – BUILD YOUR ERA</div>
+  .dbrand{position:absolute;z-index:5;top:96px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px;font-size:30px;font-weight:900;letter-spacing:9px}.dbrand img{width:60px;height:60px;object-fit:contain}
+  .d-txt{position:absolute;left:60px;right:60px;text-align:center;font-weight:900;opacity:0}
+  .d-type{top:880px;font-size:66px;color:#fff}.d-type i{display:inline-block;width:6px;height:70px;background:#ff3347;vertical-align:-10px;margin-left:6px}
+  .d-slam{top:720px;font:900 170px/.95 "Inter Display",Inter,Arial;color:#fff;letter-spacing:-.02em}.d-slam b{display:block;color:#ff3347;text-shadow:0 0 60px #ff334799}
+  .d-head{font-size:54px;color:#fff;letter-spacing:1px}.d-head small{display:block;font-size:30px;color:#ffb3ba;letter-spacing:5px;margin-top:6px}
+  .d-card{position:absolute;left:0;top:0;width:200px;transform-origin:50% 50%;opacity:0;will-change:transform}
+  .d-card .card-shell{width:100%!important;max-width:none!important;margin:0!important}.d-card .card-alt-positions{display:none!important}
+  .d-vs{position:absolute;left:50%;top:990px;width:150px;height:150px;margin:-75px;border-radius:50%;background:#c8102e;color:#fff;font-size:58px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px #0a0909,0 0 70px #ff334799;z-index:20;opacity:0}
+  .d-score{top:700px;font-size:150px;color:#fff;letter-spacing:-2px}.d-score span{color:#ff3347;font-size:90px;margin:0 26px}
+  .d-lbls{top:880px;display:flex;justify-content:center;gap:250px;font-size:28px;letter-spacing:4px;color:#ffb3ba}
+  .d-sub{top:990px;font-size:44px;color:#efe1b8;line-height:1.3}
+  .d-cta{top:760px;font-size:120px;line-height:1;color:#fff}.d-cta b{display:block;color:#ff3347}
+  .d-cta2{top:1020px;font-size:40px;color:#efe1b8;font-weight:800}.d-cta3{top:1100px;font-size:38px;color:#ffb3ba;font-weight:800}
+  .d-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40}
+  .d-foot{position:absolute;bottom:96px;left:0;right:0;text-align:center;font:800 26px Inter,Arial;letter-spacing:.32em;color:#ffb3b8}
+  </style></head><body><div class="dstage"></div><div class="dframe"></div><div class="dpitch" id="pitch"></div><div class="dbrand"><img src="assets/footera/emblem.png">FOOTERA</div>
+  <div class="d-txt d-type" id="t1"></div><div class="d-txt d-type" id="t2"></div>
+  <div class="d-txt d-slam" id="slam">WER<b>GEWINNT?</b></div>
+  <div class="d-txt d-head" id="hH">${home.title}<small>Ø ${f1(home.avg)}</small></div><div class="d-txt d-head" id="hA">${away.title}<small>Ø ${f1(away.avg)}</small></div>
+  <div id="cards"></div><div class="d-vs" id="vs">VS</div>
+  <div class="d-txt d-score" id="score">${f1(home.avg)}<span>vs</span>${f1(away.avg)}</div><div class="d-txt d-lbls" id="lbls"><div>BEST OF TOTW</div><div>ICONS</div></div>
+  <div class="d-txt d-sub" id="sub">${f1(away.avg-home.avg)} Punkte weniger.<br>Schafft die Jubiläums-Elf die Sensation?</div>
+  <div class="d-txt d-cta" id="cta">TIPP DAS<b>ERGEBNIS</b></div><div class="d-txt d-cta2" id="cta2">Auflösung am Montag · simuliert in Footera</div><div class="d-txt d-cta3" id="cta3">Schreib deinen Tipp in die Kommentare 👇</div>
+  <div class="d-flash" id="flash"></div><div class="d-foot">BUILD YOUR ERA</div>
   <script>
   const HOME=${JSON.stringify(home.rows.map(r=>r.map(c=>c.html)))},AWAY=${JSON.stringify(away.rows.map(r=>r.map(c=>c.html)))};
   const cl=x=>Math.min(1,Math.max(0,x)),ease=x=>1-Math.pow(1-cl(x),3),io=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
   const back=x=>{x=cl(x);const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
   const T1='Die Besten aus 9 Wochen TOTW …',T2='… gegen die größten Legenden.';
   const box=document.getElementById('cards'),cards=[];
-  function add(rows,side){rows.forEach((row,ri)=>row.forEach((h,ci)=>{const d=document.createElement('div');d.className='card';d.innerHTML=h;box.appendChild(d);cards.push({d,side,ri,ci,n:row.length})}))}
+  function add(rows,side){rows.forEach((row,ri)=>row.forEach((h,ci)=>{const d=document.createElement('div');d.className='d-card';d.innerHTML=h;box.appendChild(d);cards.push({d,side,ri,ci,n:row.length})}))}
   add(HOME,'H');add(AWAY,'A');
   // layout A: home alone, big, GK bottom. layout B: home top (GK top), away bottom (GK bottom)
   const ROWA=[1500,1190,880,570],GAPA=228,W=200;
-  const ROWH=[400,565,730,890],ROWW=[1580,1415,1250,1090],GAPB=150,SB=.6;
+  const ROWH=[415,575,735,893],ROWW=[1580,1415,1250,1090],GAPB=150,SB=.6;
   function posA(c){return{x:540+(c.ci-(c.n-1)/2)*GAPA,y:ROWA[c.ri],s:1}}
   function posB(c){const y=c.side==='H'?ROWH[c.ri]:ROWW[c.ri];return{x:540+(c.ci-(c.n-1)/2)*GAPB*(c.n===4?1.12:1.25),y,s:SB}}
   const order=c=>c.ri*4+c.ci; // GK first
@@ -82,7 +83,7 @@ const TOTAL=31;
    op('pitch',t<7.6?0:t<15?.6*cl((t-7.6)/.6):Math.max(.6*cl((t-7.6)/.6),cl((t-15)/.8))*(t>23.3?1-cl((t-23.3)/.5):1));
    const mv=io((t-15)/.9);
    // headers
-   const hHo=t<7.6?0:t<23.3?cl((t-7.6)/.4):1-cl((t-23.3)/.4);op('hH',hHo);document.getElementById('hH').style.top=(250-0*mv)+'px';document.getElementById('hH').style.transform='scale('+(1-.3*mv)+')';
+   const hHo=t<7.6?0:t<23.3?cl((t-7.6)/.4):1-cl((t-23.3)/.4);op('hH',hHo);document.getElementById('hH').style.top=(250-45*mv)+'px';document.getElementById('hH').style.transform='scale('+(1-.3*mv)+')';
    op('hA',t<16.2?0:t<23.3?cl((t-16.2)/.4):1-cl((t-23.3)/.4));document.getElementById('hA').style.top='1660px';document.getElementById('hA').style.transform='scale(.7)';
    const vs=t-15.9;op('vs',vs<0?0:t<23.3?1:1-cl((t-23.3)/.4),'scale('+(vs<0?0:back(vs/.4))+')');
    for(const c of cards){const o=order(c);let p,a;
