@@ -383,7 +383,51 @@ export function caughtBallPosition(time,impact,sequence='central',finish='normal
  const sign=Math.sign(impact[0])||1,u=time-KEEPER_RELEASE;
  return[held[0]+sign*3.6*u,Math.max(.12,1.95+4.6*u-4.9*u*u),held[2]+.35+13.8*u];
 }
+// V21.456: a goal must visibly cross the line between the posts and under the
+// bar. Some authored paths (wide angles into a target behind the line, dream
+// curves, chips) crossed outside the post or over the bar and still counted.
+// We sample the authored flight once, find where it crosses the goal line and,
+// if that point is outside the goal mouth, bend the flight in smoothly.
+const GOAL_MOUTH_X=3.48,GOAL_MOUTH_Y=2.31,GOAL_LINE_Z=-52.5,goalMouthFixes=new Map();
+function goalMouthFix(seq,finish,keeperAction,placement){
+ const key=seq+'|'+finish+'|'+keeperAction+'|'+(placement?JSON.stringify(placement):'');
+ if(goalMouthFixes.has(key))return goalMouthFixes.get(key);
+ // In off the post / the bar touch the frame on purpose and end on the line.
+ if((placement?.style==='post_in'||placement?.style==='crossbar_in')&&shotImpact('goal',seq,finish,placement)[2]>-52.65)return null;
+ let fix=null,prev=rawBallPosition('goal',SHOT_TIME,seq,finish,keeperAction,placement);
+ for(let n=1;n<=320;n++){
+  const t=SHOT_TIME+n/100,b=rawBallPosition('goal',t,seq,finish,keeperAction,placement);
+  if(prev[2]>GOAL_LINE_Z&&b[2]<=GOAL_LINE_Z){
+   const u=(prev[2]-GOAL_LINE_Z)/(prev[2]-b[2]),x=mix(prev[0],b[0],u),y=mix(prev[1],b[1],u),at=t-.01+u*.01;
+   const dx=Math.abs(x)>GOAL_MOUTH_X?Math.sign(x)*GOAL_MOUTH_X-x:0,dy=y>GOAL_MOUTH_Y?GOAL_MOUTH_Y-y:0;
+   // The authored end point (in the net) stays; the bend fades out behind the line.
+   if(dx||dy)fix={dx,dy,at,end:Math.max(at+.01,shotArrival('goal',seq,finish,placement))};
+   break;
+  }
+  prev=b;
+ }
+ if(goalMouthFixes.size>4000)goalMouthFixes.clear();
+ goalMouthFixes.set(key,fix);return fix;
+}
+export function goalLineCrossing(sequence='central',finish='normal',placement=null,keeperAction='classic'){
+ const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
+ let prev=ballPosition('goal',SHOT_TIME,seq,style,keeperAction,placement);
+ for(let n=1;n<=320;n++){
+  const t=SHOT_TIME+n/100,b=ballPosition('goal',t,seq,style,keeperAction,placement);
+  if(prev[2]>GOAL_LINE_Z&&b[2]<=GOAL_LINE_Z){const u=(prev[2]-GOAL_LINE_Z)/(prev[2]-b[2]);return[mix(prev[0],b[0],u),mix(prev[1],b[1],u),GOAL_LINE_Z]}
+  prev=b;
+ }
+ return null;
+}
 export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic',placement=null){
+ const p=rawBallPosition(type,time,sequence,finish,keeperAction,placement);
+ if(type!=='goal'||time<=SHOT_TIME)return p;
+ const seq=normalizeSequence(sequence),style=normalizeFinish(finish),fix=goalMouthFix(seq,style,keeperAction,placement);
+ if(!fix)return p;
+ const w=time<=fix.at?smooth(clamp((time-SHOT_TIME)/Math.max(.05,fix.at-SHOT_TIME))):1-smooth(clamp((time-fix.at)/(fix.end-fix.at)));
+ return[p[0]+fix.dx*w,Math.max(.11,p[1]+fix.dy*w),p[2]];
+}
+function rawBallPosition(type,time,sequence='central',finish='normal',keeperAction='classic',placement=null){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
  if(extendedKind(seq)&&time<SHOT_TIME)return extendedBall(time,seq,shotContact(seq,style,placement));
  if(DEFENSIVE_SCENES.includes(seq))return defenseBall(time,seq);
