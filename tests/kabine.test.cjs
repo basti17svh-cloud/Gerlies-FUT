@@ -264,7 +264,7 @@ test('broken legacy chat entries do not crash or erase valid messages',()=>{
 });
 
 test('opening a long post-match history only mounts the last 60 messages',()=>{
- const store=new Map(),nodes={};
+ const nodes={};
  const makeNode=()=>({
   innerHTML:'',textContent:'',scrollHeight:100,scrollTop:0,hidden:false,style:{width:'',setProperty(){}},
   classList:{active:false,add(){this.active=true},remove(){this.active=false},contains(){return this.active}},
@@ -279,13 +279,9 @@ test('opening a long post-match history only mounts the last 60 messages',()=>{
    if(sel.startsWith('#kabineModal'))return modal;return null},
   querySelectorAll(){return[]}
  };
- const {api:k}=load({document,matchMedia:()=>({matches:true})});
  const messages=Array.from({length:220},(_,i)=>({kind:'sys',text:'Chat Zeile '+i,ref:'m:history',id:'h'+i,ts:i+1}));
  // The device holds the full bounded history. Showing it must not build 220 DOM entries at once.
- const key='footera-kabine-v1';k.read();
- const storage=k.read();storage.msgs=messages;storage.refs=['m:history'];
- // load()'s private storage is captured in k.read/write; populate through the test's store.
- // (The fixture is assigned through the shared loader in the small test below.)
+ const key='footera-kabine-v1';
  const {api:kb,store:db}=load({document,matchMedia:()=>({matches:true})});
  db.set(key,JSON.stringify({msgs:messages,refs:['m:history'],seen:220,mood:60}));
  assert.doesNotThrow(()=>kb.open(),'opening after a match must never throw');
