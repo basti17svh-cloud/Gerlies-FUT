@@ -1,0 +1,42 @@
+/* V21.462 Manager als Person */
+.card-shell .custom-card.coach-card .coach-face>img.coach-manager-face{width:100%!important;height:100%!important;max-width:none;margin:0;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px #0008)}
+#coachCardModal .modalhead{flex-wrap:wrap}
+#coachCardModal .modalhead>div:first-child{flex:1 1 180px;min-width:0}
+.cc-tabs{flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 0;padding:4px;border-radius:12px;background:#ffffff0d}
+.cc-tabs button{min-height:38px;border:0;border-radius:9px;background:none;color:#b9c9c3;font:800 13px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
+.cc-tabs button.on{background:#d8ff3e;color:#10200a}
+.mg-editor{display:grid;gap:12px}
+@media(min-width:720px){.mg-editor{grid-template-columns:minmax(200px,260px) minmax(0,1fr);align-items:start}.mg-preview{position:sticky;top:0}}
+.mg-preview{display:grid;gap:6px}
+.mg-stage{position:relative;display:grid;place-items:center;aspect-ratio:3/5;margin:0 auto;width:min(100%,calc(46vh * .6));border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 32%,#2c4c40 0,#0d1915 62%,#070c0b 100%)}
+.mg-stage:after{content:"";position:absolute;left:18%;right:18%;bottom:5%;height:5%;border-radius:50%;background:#0009;filter:blur(6px);z-index:0}
+.mg-stage img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:contain}
+.mg-stage.busy img{opacity:.55;transition:opacity .2s}
+.mg-stage.busy:before{content:"";position:absolute;z-index:2;top:12px;right:12px;width:18px;height:18px;border-radius:50%;border:3px solid #d8ff3e44;border-top-color:#d8ff3e;animation:mg-spin .8s linear infinite}
+@keyframes mg-spin{to{transform:rotate(360deg)}}
+.mg-wait{padding:16px;text-align:center;font-size:12px;color:#9fb0aa}
+.mg-hint{font-size:11px;line-height:1.35;color:#7f918b;text-align:center}
+.mg-controls{display:grid;gap:10px}
+.mg-row{display:grid;gap:6px}
+.mg-row>span{font:900 10px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#9fc7b3}
+.mg-row input[type=text]{min-height:40px;padding:0 12px;border:1px solid #ffffff26;border-radius:10px;background:#0b1411;color:#fff;font:700 15px/1 Inter,system-ui,sans-serif}
+.mg-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mg-chip{min-height:34px;padding:0 12px;border:1px solid #ffffff22;border-radius:999px;background:#ffffff0a;color:#dfe9e4;font:800 12px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.mg-chip.on{border-color:#d8ff3e;background:#d8ff3e22;color:#efffb0}
+.mg-swatches{display:flex;flex-wrap:wrap;gap:7px}
+.mg-swatch{position:relative;width:32px;height:32px;padding:0;border:2px solid #ffffff2a;border-radius:50%;background:var(--sw);cursor:pointer;box-shadow:inset 0 0 0 2px #0005}
+.mg-swatch.on{border-color:#d8ff3e;box-shadow:0 0 0 2px #d8ff3e55,inset 0 0 0 2px #0005}
+.mg-custom{display:grid;place-items:center;overflow:hidden;background:conic-gradient(#f44,#fd4,#4f6,#4df,#46f,#f4d,#f44)}
+.mg-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.mg-club{justify-self:start;margin-top:2px;min-height:32px;padding:0 12px;border:1px dashed #d8ff3e88;border-radius:999px;background:none;color:#d8ff3e;font:800 12px/1 Inter,system-ui,sans-serif;cursor:pointer}
+/* before kick-off */
+.mg-intro{position:fixed;left:12px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:9500;display:flex;align-items:center;gap:12px;max-width:min(420px,calc(100vw - 24px));padding:10px 16px 10px 10px;border:1px solid #d8ff3e66;border-radius:16px;background:linear-gradient(100deg,#0b1712f2,#0d1b16e6);box-shadow:0 14px 34px #000b,0 0 22px #d8ff3e22;color:#fff;transform:translateX(calc(-100% - 24px));opacity:0;transition:transform .55s cubic-bezier(.2,.9,.25,1.1),opacity .4s;cursor:pointer}
+.mg-intro.on{transform:none;opacity:1}
+.mg-intro-card{flex:0 0 auto;width:92px}
+.mg-intro-card .card-shell{width:100%;filter:drop-shadow(0 8px 12px #000a)}
+.mg-intro-text{display:grid;gap:2px;min-width:0}
+.mg-intro-text small{font:900 10px/1.2 Inter,system-ui,sans-serif;letter-spacing:.14em;color:#d8ff3e}
+.mg-intro-text strong{font:900 20px/1.15 Inter,system-ui,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mg-intro-text span{font:700 12px/1.3 Inter,system-ui,sans-serif;color:#cfe0d8}
+.mg-intro-text em{font:700 11px/1.3 Inter,system-ui,sans-serif;font-style:normal;color:#8fa59c}
+@media(prefers-reduced-motion:reduce){.mg-intro{transition:opacity .3s}.mg-stage.busy:before{animation:none}}

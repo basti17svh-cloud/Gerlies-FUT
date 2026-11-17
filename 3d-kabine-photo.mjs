@@ -14,8 +14,9 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
  footeraShirtName,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21441';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
+import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21462';
 
-export const KABINE_PHOTO_VERSION='21.443-kabine-photo';
+export const KABINE_PHOTO_VERSION='21.462-kabine-photo';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 export function photoHash(text){
  let h=2166136261;for(const ch of String(text)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}
@@ -112,6 +113,14 @@ export function photoLayout(spec={}){
  return{variant,rows,actors:out};
 }
 
+// V21.462: where the manager stands on the Siegerfoto: on the floor at the end of the middle row (or the
+// front row), on the right, turned a little towards the team. Pure.
+export function managerSpot(actors=[]){
+ const floor=actors.filter(a=>!a.back);const row=floor.length?floor:actors;
+ const z=row.length?row.reduce((s,a)=>s+a.z,0)/row.length:-1.3;
+ const edge=row.length?Math.max(...row.map(a=>a.x)):0;
+ return{x:Math.min(2.3,edge+.74),z:Math.max(-1.45,Math.min(-.9,z-.12)),yaw:-.32};
+}
 /* ---------- textures ---------- */
 function canvasTexture(w,h,paint,srgb=true){
  const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(ctx)paint(ctx,w,h);
@@ -500,6 +509,12 @@ export async function renderKabinePhoto(spec={},opts={}){
    if(actor.outfit==='towel')addTowel(m,owned,photoHash(seed+'tc'+actor.index)%3?'#f3f1ea':kit.shirtSecondary);
    actor.arms?.forEach((a,i)=>{if(a==='bottle')addBottle(m,i?'r':'l',owned,seed+actor.index)});
    mounted.push({m,actor});
+  }
+  // V21.462: the manager the user designed stands at the side of the team, one fist up (the cup after a title).
+  if(spec.manager&&mounted.length){
+   const at=managerSpot(layout.actors);
+   const mg=mountManager(scene,spec.manager,{detail:true,crest:crestImg});
+   if(mg){mg.owned.forEach(o=>owned.push(o));measureManagerHead(mg);poseManager(mg,{pose:layout.variant==='title'?'fist':'clap',x:at.x,y:0,z:at.z,yaw:at.yaw,camera})}
   }
   // the trophy, held up between the captain's hands
   if(layout.variant==='title'){

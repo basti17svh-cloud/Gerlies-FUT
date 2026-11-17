@@ -963,7 +963,7 @@
  /* ---------- V21.443 Siegerfoto ---------- */
  // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
  // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
- const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21447";
+ const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21462";
  const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}
@@ -991,7 +991,9 @@
    photoQueue=photoQueue.then(async()=>{
     try{
      const mod=await import(PHOTO_MODULE);
-     const r=m.photo.signing?await mod.renderSigningPhoto(m.photo,{width:1080,height:1350}):await mod.renderKabinePhoto(m.photo,{width:1080,height:810});
+     // V21.462: the user's manager stands next to the team on the Siegerfoto (his look at the time the photo is developed).
+     let manager=null;try{manager=root.FooteraManager?.forPhoto?.()||null}catch(e){}
+     const r=m.photo.signing?await mod.renderSigningPhoto(m.photo,{width:1080,height:1350}):await mod.renderKabinePhoto({...m.photo,manager},{width:1080,height:810});
      photoMem.set(id,r.url);showPhoto(id,r.url);keepPhoto(id,await shrink(r.url));
     }catch(e){console.warn("Siegerfoto:",e);photoFailed.add(id);document.querySelectorAll(`[data-kb-photo="${cssId(id)}"] small`).forEach(s=>s.textContent="Foto konnte nicht entwickelt werden")}
     finally{photoBusy.delete(id)}

@@ -54,8 +54,8 @@
   let type;
   if(matches<5)type={key:"NEU",title:"Neu an der Seitenlinie",line:"Die ersten Spiele entscheiden, was für ein Trainer du wirst."};
   else{const score=x=>x.value-(x.key==="ERF"?12:0);const top=[...stats].sort((a,b)=>score(b)-score(a)||a.key.localeCompare(b.key))[0];type={key:top.key,title:TYPES[top.key][0],line:TYPES[top.key][1]}}
-  const profile=s.profile||{};
-  return{name:String(profile.username||"").trim()||"Trainer",club:String(profile.clubName||"Footera Club"),ovr,cls:tier[1],tierLabel:tier[2],stats,type,matches,wins,cups,division};
+  const profile=s.profile||{},manager=profile.manager&&typeof profile.manager==="object"?String(profile.manager.name||"").trim():"";
+  return{name:manager||String(profile.username||"").trim()||"Trainer",club:String(profile.clubName||"Footera Club"),ovr,cls:tier[1],tierLabel:tier[2],stats,type,matches,wins,cups,division};
  }
  // How many wins (2:1) until the rating goes up, and until the next design. null when out of reach in 80 wins.
  function next(s){
@@ -78,10 +78,12 @@
   try{if(typeof crestHTML==="function"&&typeof clubIdentitySnapshot==="function")return crestHTML(clubIdentitySnapshot(),true)}catch(e){}
   return"";
  }
+ // V21.462: the manager the user designed is the card's portrait (rendered on the device, see footera-manager.js).
+ function managerFace(){try{return root.FooteraManager?.cardFace?.()||""}catch(e){return""}}
  const WHISTLE=`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.5 7H20a1 1 0 0 1 1 1v2.2a1 1 0 0 1-.7.95L15 12.8A5.5 5.5 0 1 1 9.5 7Zm0 3a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM10 3h2v3h-2z"/></svg>`;
  function cardHTMLFor(d){
   const name=d.name.length>15?d.name.slice(0,14)+"…":d.name,scale=name.length>12?.82:1;
-  return`<div class="card-shell coach-card-shell"><div class="custom-card ${d.cls} coach-card" data-coach-tier="${d.cls}"><div class="card-top"><div class="ovr">${d.ovr}</div><div class="pos">TRN</div></div><div class="card-icons"><div class="card-flag coach-whistle" title="Trainer">${WHISTLE}</div><div class="card-club coach-mini-crest" title="${escText(d.club)}">${miniCrest()}</div><div class="card-league" title="Footera"><img src="./assets/footera/emblem.png" alt=""></div></div><div class="face coach-face">${crest()}</div><div class="card-bottom"><div class="pname" title="${escText(d.name)}" style="--card-name-scale:${scale}">${escText(name)}</div><div class="stats">${d.stats.map(x=>`<span><small>${x.key}</small><b>${x.value}</b></span>`).join("")}</div></div></div></div>`;
+  return`<div class="card-shell coach-card-shell"><div class="custom-card ${d.cls} coach-card" data-coach-tier="${d.cls}"><div class="card-top"><div class="ovr">${d.ovr}</div><div class="pos">TRN</div></div><div class="card-icons"><div class="card-flag coach-whistle" title="Trainer">${WHISTLE}</div><div class="card-club coach-mini-crest" title="${escText(d.club)}">${miniCrest()}</div><div class="card-league" title="Footera"><img src="./assets/footera/emblem.png" alt=""></div></div><div class="face coach-face">${managerFace()||crest()}</div><div class="card-bottom"><div class="pname" title="${escText(d.name)}" style="--card-name-scale:${scale}">${escText(name)}</div><div class="stats">${d.stats.map(x=>`<span><small>${x.key}</small><b>${x.value}</b></span>`).join("")}</div></div></div></div>`;
  }
 
  /* ---------- modal ---------- */
@@ -90,11 +92,12 @@
  function ensureModal(){
   if(document.getElementById(MODAL_ID))return;
   const el=document.createElement("div");el.id=MODAL_ID;el.className="modal";
-  el.innerHTML=`<div class="modalinner"><div class="modalhead"><div><h3>Deine Trainerkarte</h3><div class="cc-sub">Jeder Sieg zählt. Deine Karte wächst mit deinem Verein.</div></div><button type="button" class="secondary" data-cc-close>Schließen</button></div><div id="coachCardBody"></div><div class="cc-actions"><button type="button" class="primary" data-cc-share>Karte teilen</button></div></div>`;
+  el.innerHTML=`<div class="modalinner"><div class="modalhead"><div><h3>Deine Trainerkarte</h3><div class="cc-sub">Jeder Sieg zählt. Deine Karte wächst mit deinem Verein.</div></div><button type="button" class="secondary" data-cc-close>Schließen</button><div class="cc-tabs" role="tablist"><button type="button" class="on" role="tab" data-cc-tab="card" aria-selected="true">Karte</button><button type="button" role="tab" data-cc-tab="manager" aria-selected="false">Manager gestalten</button></div></div><div id="coachCardBody"></div><div id="managerEditorBody" hidden></div><div class="cc-actions"><button type="button" class="primary" data-cc-share>Karte teilen</button></div></div>`;
   document.body.appendChild(el);
   el.addEventListener("click",e=>{
    if(e.target.closest("[data-cc-close]")||e.target===el){close();return}
    if(e.target.closest("[data-cc-share]"))shareCard(e.target.closest("[data-cc-share]"));
+   const t=e.target.closest("[data-cc-tab]");if(t)showTab(t.dataset.ccTab);
   });
  }
  function bodyHTML(d,n,upgrade){
@@ -106,20 +109,33 @@
   <ul class="cc-stats">${d.stats.map(x=>`<li><span class="cc-key">${x.key}</span><span class="cc-bar"><i style="width:${x.value}%"></i></span><b>${x.value}</b><small>${escText(x.label)} · ${escText(x.detail)}</small></li>`).join("")}</ul>
   <p class="cc-note">Die Gesamtwertung kommt aus Spielen, Siegquote, Titeln und deiner Rivals-Division. Die Karte ist nur zum Anschauen und Teilen, sie spielt nicht mit.</p>`;
  }
- function open(){
+ function open(opts){
   if(typeof document==="undefined")return null;
   ensureModal();
   const s=typeof state!=="undefined"?state:{},d=data(s),n=next(s),log=read();
   const upgrade=num(log.seen)&&d.ovr>num(log.seen)?{from:num(log.seen)}:null;
   shown=d;
   document.getElementById("coachCardBody").innerHTML=bodyHTML(d,n,upgrade);
+  showTab(opts?.tab==="manager"?"manager":"card");
   write({...log,seen:d.ovr,best:Math.max(num(log.best),d.ovr),introduced:true});
   hidePill();
   if(typeof showUiLayer==="function")showUiLayer(MODAL_ID,KIND);else document.getElementById(MODAL_ID).classList.add("active");
   decorateHub();
   return d;
  }
- function close(){typeof closeUiLayer==="function"?closeUiLayer(MODAL_ID,KIND):document.getElementById(MODAL_ID)?.classList.remove("active")}
+ // V21.462: second tab, the manager as a person (editor in footera-manager.js).
+ let tab="card";
+ function showTab(name){
+  const el=document.getElementById(MODAL_ID);if(!el)return;
+  const want=name==="manager"&&root.FooteraManager?"manager":"card";
+  el.querySelectorAll("[data-cc-tab]").forEach(b=>{const on=b.dataset.ccTab===want;b.classList.toggle("on",on);b.setAttribute("aria-selected",String(on))});
+  document.getElementById("coachCardBody").hidden=want!=="card";document.getElementById("managerEditorBody").hidden=want!=="manager";
+  const share=el.querySelector(".cc-actions");if(share)share.hidden=want!=="card";
+  if(want==="manager")root.FooteraManager.openEditor();
+  else if(tab==="manager"){root.FooteraManager?.closeEditor?.();const s=typeof state!=="undefined"?state:{},d=data(s);shown=d;document.getElementById("coachCardBody").innerHTML=bodyHTML(d,next(s),null)}
+  tab=want;
+ }
+ function close(){if(tab==="manager")showTab("card");typeof closeUiLayer==="function"?closeUiLayer(MODAL_ID,KIND):document.getElementById(MODAL_ID)?.classList.remove("active")}
 
  /* ---------- share picture ---------- */
  function loadImage(src){return new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.onerror=()=>r(null);img.src=src;setTimeout(()=>r(null),4000)})}
@@ -182,7 +198,7 @@
  /* ---------- entry in the Verein hub ---------- */
  function hubCardHTML(){
   let d=null;try{d=data(typeof state!=="undefined"?state:{})}catch(e){}
-  return`<button type="button" class="club-hub-card club-hub-coach" data-coach-card-open><span class="club-hub-kicker">NEU · DEINE KARTE</span><strong>Trainerkarte</strong><small data-coach-card-summary>${d?`GES ${d.ovr} · ${escText(d.type.title)}`:"Deine eigene Footera-Karte"}</small><i>›</i></button>`;
+  return`<button type="button" class="club-hub-card club-hub-coach" data-coach-card-open><span class="club-hub-kicker">NEU · KARTE & MANAGER</span><strong>Trainerkarte & Manager</strong><small data-coach-card-summary>${d?`GES ${d.ovr} · ${escText(d.type.title)}`:"Deine eigene Footera-Karte"}</small><i>›</i></button>`;
  }
  function decorateHub(){
   const hub=document.getElementById("clubStatsHub");if(!hub)return;
@@ -193,7 +209,7 @@
   if(small&&fresh!=null&&small.innerHTML!==fresh)small.innerHTML=fresh;
  }
  function start(){
-  document.addEventListener("click",e=>{if(e.target.closest("[data-coach-card-open]")){e.preventDefault();open()}});
+  document.addEventListener("click",e=>{const o=e.target.closest("[data-coach-card-open]");if(o){e.preventDefault();open({tab:o.dataset.coachCardOpen==="manager"?"manager":"card"})}});
   decorateHub();
   if(typeof MutationObserver!=="undefined"){let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorateHub()})}).observe(document.body,{childList:true,subtree:true})}
  }
