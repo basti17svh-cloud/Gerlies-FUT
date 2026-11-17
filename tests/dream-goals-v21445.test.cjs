@@ -8,7 +8,7 @@ const dist=(a,b)=>Math.hypot(...a.map((n,i)=>n-b[i]));
 
 test('V21.445: thirteen dream goals registered in both selectors with their own technique',async()=>{
  const D=await import('../3d-dream-goals.mjs'),P=await import('../3d-playbook.mjs');
- assert.equal(D.DREAM_GOAL_IDS.length,13);
+ assert.equal(D.DREAM_GOAL_IDS.length,34);// V21.449: +21 new scenes
  assert.deepEqual([...P.DREAM_GOAL_IDS],[...D.DREAM_GOAL_IDS]);
  const styles=new Set();
  for(const id of D.DREAM_GOAL_IDS){
@@ -77,9 +77,9 @@ test('V21.445: playback runs a heel flick faster, the same for every outcome',as
 });
 
 test('V21.445: dream goals show up in real matches, only for a fitting chance',()=>{
- const want={dribble:['normal','finesse'],cutback:['normal','low_driven'],distance:['power','normal'],cross:['header','volley'],combination:['normal']};
+ const want={dribble:['normal','finesse','low_driven','power'],cutback:['normal','low_driven'],distance:['power','normal'],cross:['header','volley'],combination:['normal','finesse','volley'],through:['normal','chip','finesse','power'],switch:['normal','finesse']};
  const seen=new Set();
- for(const [kind,finishes] of Object.entries(want))for(let i=0;i<1500;i++){
+ for(const [kind,finishes] of Object.entries(want))for(let i=0;i<2500;i++){
   const finish=finishes[i%finishes.length];
   const v=H.choosePresentation({id:'dream'+i,matchId:'m'+(i%40),type:outcomes[i%4],minute:i%90,actionKind:kind,finish,creatorName:'Kimmich',playerName:'P'+i,shotFoot:i%3?'Right':'Left',scorerSlot:['ST','RW','LW','CAM'][i%4]});
   const rule=H.DREAM_RULES[v.sequence];if(!rule)continue;
@@ -87,7 +87,7 @@ test('V21.445: dream goals show up in real matches, only for a fitting chance',(
   assert.ok(rule.kinds.includes(kind)&&rule.sims.includes(finish),v.sequence+' for '+kind+'/'+finish);
   assert.equal(v.finish,rule.finish);
  }
- assert.equal(seen.size,13,'every dream goal reachable: '+[...seen].join(','));
+ assert.equal(seen.size,34,'every dream goal reachable: '+[...seen].join(','));
  // Never a header scene for a flat ball, never a heel flick for a cross.
  for(let i=0;i<600;i++){
   const v=H.choosePresentation({id:'c'+i,type:'goal',actionKind:'cutback',finish:'normal',creatorName:'K'});
