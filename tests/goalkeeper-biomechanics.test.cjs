@@ -72,5 +72,5 @@ test('scene delegates to one keeper controller; saved ball gets short contact-on
   assert.ok(!scene.includes(obsolete),obsolete);
  assert.ok(scene.includes('if(saved&&toContact>.001)'));
  const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- assert.ok(sw.includes('./3d-goalkeeper-biomechanics.mjs?v=21114'));
+ assert.ok(sw.includes('./3d-goalkeeper-biomechanics.mjs?v=21452'));
 });

@@ -1,5 +1,5 @@
 import {extendedTiming} from './3d-extended-match.mjs?v=21160';
-import {isDreamGoal,dreamShotRate} from './3d-dream-goals.mjs?v=21451';
+import {isDreamGoal,dreamShotRate} from './3d-dream-goals.mjs?v=21452';
 // Presentation time advances only through visible frames, never through loading.
 // Preserve the authored paths and the speed of the shot/aftermath; give the
 // supply pass, reception and approach at least seven seconds on screen.
