@@ -32,7 +32,9 @@ const server=http.createServer((req,res)=>{
     ['triangle_left','goal',2.2],['split_defenders','big_chance_saved',4.3],
     ['overlap_left_low','goal',3.8],['overlap_right_high','big_chance_missed',4.5],
     ['switch_overlap_low','goal',2.7],['defense_interception','ball_won',4.4],
-    ['defense_slide_tackle','ball_won',4.4]
+    ['defense_slide_tackle','ball_won',4.4],
+    // V21.455 Abwehraktionen
+    ['defense_standing_tackle_duel','ball_won',4.4],['defense_slide_tackle_chase_wide','ball_won',4.4],['defense_interception_lane','ball_won',4.4]
    ];
    for(const [sceneIndex,[sequence,type,frame]] of scenes.entries()){
     const plan=P.getPlay(sequence);
@@ -79,7 +81,7 @@ const server=http.createServer((req,res)=>{
    renderer.dispose();renderer.forceContextLoss();
    return{checks,screenshots};
   },{newAttacks,cameraFix,receiving});
-  assert.deepEqual(errors,[]);assert.equal(data.screenshots.length,receiving?6:cameraFix?6:newAttacks?12:7);
+  assert.deepEqual(errors,[]);assert.equal(data.screenshots.length,receiving?6:cameraFix?6:newAttacks?12:10);
   for(const item of data.screenshots)fs.writeFileSync(path.join(out,item.name+'.png'),Buffer.from(item.data,'base64'));
   fs.writeFileSync(path.join(out,'proof.json'),JSON.stringify({checks:data.checks},null,2));
   console.log('PASS REAL WEBGL PLAYBOOK: '+data.checks.length+' field samples / '+data.screenshots.length+' screenshots');

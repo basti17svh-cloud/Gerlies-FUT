@@ -14,7 +14,7 @@ test('free runners check short and support reacts only after the outcome is visi
 });
 test('defensive roles stay assigned, respect running limits and preserve attacking routes',async()=>{
  const M=await import('../3d-highlights-scene.mjs'),{createDefensiveUnit}=await import('../3d-defensive-unit.mjs');
- for(const sequence of ['central','wing_left','wing_right','six_yard_square_left','near_post_header_right','layoff_distance','defense_interception','defense_standing_tackle','defense_slide_tackle']){
+ for(const sequence of ['central','wing_left','wing_right','six_yard_square_left','near_post_header_right','layoff_distance','defense_interception','defense_standing_tackle','defense_slide_tackle','defense_standing_tackle_duel','defense_slide_tackle_chase_wide','defense_interception_lane']){
   const ballWon=sequence.startsWith('defense'),type=ballWon?'ball_won':'goal';
   const at=(i,t)=>M.playerPosition(i,t,type,sequence);
   const unit=createDefensiveUnit({positionAt:at,ballAt:t=>M.ballPosition(type,t,sequence),ballWon});
@@ -55,5 +55,8 @@ test('interception visibly interrupts a pass; tackles start in opposition posses
  assert.equal(M.controlCarrier(5.3,'defense_slide_tackle').weight,0);
  const bridge=require('node:fs').readFileSync(require('node:path').join(__dirname,'../3d-highlights-match.js'),'utf8');
  // Since 16.10.2026 every second interception alternates with the active press recovery instead of repeating one scene.
- assert.match(bridge,/action\.kind==='interception'\?\(alternate\?'defense_press_recovery':'defense_interception'\)/);
+ // V21.455: interceptions rotate through four authored scenes, tackles through six; no direct repeat.
+ assert.match(bridge,/\['defense_interception','defense_press_recovery','defense_interception_lane','defense_interception_lane_wide'\]/);
+ assert.match(bridge,/\['','_wide','_duel','_duel_wide','_chase','_chase_wide'\]\.map\(v=>base\+v\)/);
+ assert.match(bridge,/if\(pool\[pick\]===match\.lastDefenseSequence\)/);
 });

@@ -354,13 +354,18 @@ function queueMatchDefensive3D(action,attackingSide,attacker){
  const sliding=action.kind==='tackle'&&styles.some(style=>style.id==='slide-tackle');
  // Alternate left/right pressure and recovering passes rather than replaying
  // the identical passive midfield turnover throughout a match.
+ // V21.455: several authored ball wins per kind (wing duel, chase from behind,
+ // read pass lane), chosen from the match minute; never the same one twice in a row.
  const alternate=(shown%2)===1;
- const sequence=action.kind==='interception'?(alternate?'defense_press_recovery':'defense_interception'):
-  sliding?(alternate?'defense_slide_tackle_wide':'defense_slide_tackle'):
-  (alternate?'defense_standing_tackle_wide':'defense_standing_tackle');
+ const base=action.kind==='interception'?'defense_interception':sliding?'defense_slide_tackle':'defense_standing_tackle';
+ const pool=action.kind==='interception'?['defense_interception','defense_press_recovery','defense_interception_lane','defense_interception_lane_wide']:
+  ['','_wide','_duel','_duel_wide','_chase','_chase_wide'].map(v=>base+v);
+ let pick=(Math.round(minute)*7+shown*3+(alternate?1:0))%pool.length;
+ if(pool[pick]===match.lastDefenseSequence)pick=(pick+1)%pool.length;
+ const sequence=pool[pick];
  const queued=queueMatch3D({id:'defense:'+match.defensiveEvents.length,type:'ball_won',minute,team:attackingSide,playerId:attacker.uid??attacker.index,
   playerName:attacker.name||'Angreifer',defenderUid:action.uid,defenderSourceIndex:action.index,defenseKind:action.kind,defensePhase:action.phase,sequence,finish:'normal'});
- if(queued){match.defenseHighlightsShown=shown+1;match.lastDefenseHighlightMinute=minute}
+ if(queued){match.defenseHighlightsShown=shown+1;match.lastDefenseHighlightMinute=minute;match.lastDefenseSequence=sequence}
  return queued;
 }
 function queueMatchGoal3D(event){

@@ -306,8 +306,9 @@ test('visual, playbook, defensive and extended scenes correspond to actual rende
   'extended_corner_near','extended_corner_far','extended_corner_short','extended_corner_edge','extended_free_kick_side','extended_free_kick_far','extended_free_kick_edge','extended_penalty_stutter','extended_penalty_angled',
   'extended_corner_near_right','extended_corner_far_right','extended_corner_short_right','extended_corner_edge_right','extended_free_kick_side_right','extended_free_kick_far_right','extended_free_kick_edge_right','extended_penalty_angled_right','extended_throw_in_right'];
  assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,247);
- assert.equal(M.PLAY_SEQUENCES.length,320);
- assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',...extended]),new Set(M.PLAY_SEQUENCES));
+ assert.equal(M.PLAY_SEQUENCES.length,330);
+ assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',
+  'defense_standing_tackle_duel','defense_standing_tackle_duel_wide','defense_slide_tackle_duel','defense_slide_tackle_duel_wide','defense_standing_tackle_chase','defense_standing_tackle_chase_wide','defense_slide_tackle_chase','defense_slide_tackle_chase_wide','defense_interception_lane','defense_interception_lane_wide',...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
   assert.ok(finishes.has(v.finish),v.id);
