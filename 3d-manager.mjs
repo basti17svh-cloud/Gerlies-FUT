@@ -21,7 +21,7 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 
-export const MANAGER_3D_VERSION='21.462-manager';
+export const MANAGER_3D_VERSION='21.463-manager-bench';
 const hexOr=(v,fb)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v).toLowerCase():fb;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const luminance=hex=>{const c=new THREE.Color(hex);return .2126*c.r+.7152*c.g+.0722*c.b};
@@ -293,6 +293,26 @@ export function dressManager(model,look,m,opts={}){
   if(m.glasses&&m.glasses!=='none')addGlasses(model,body,m.glasses,owned);
  }
  return{owned};
+}
+
+/* ---------- the bench (V21.463) ---------- */
+// Basti 2026-11-17: after the walk-out the manager is shown at the substitutes' bench.
+// A covered dugout along the touchline (the perimeter boards are its back): floor, perspex roof and side
+// panels, eight bucket seats in the club colour. Its front faces -x (the pitch).
+// Pure presentation; every geometry and material goes through track() for disposal.
+export function mountDugout(parent,{x=36.1,z=-7.2,length=6.4,seat='#971d42',track=o=>o}={}){
+ const g=new THREE.Group();g.name='FooteraDugout';g.position.set(x,0,z);
+ const mat=(c,o={})=>track(new THREE.MeshStandardMaterial({color:c,roughness:.6,metalness:.1,...o}));
+ const box=(w,h,d,m,px,py,pz)=>{const b=new THREE.Mesh(track(new THREE.BoxGeometry(w,h,d)),m);b.position.set(px,py,pz);b.castShadow=true;b.receiveShadow=true;g.add(b);return b};
+ const frame=mat('#2a3138',{metalness:.6,roughness:.35}),glass=mat('#bcd6e6',{transparent:true,opacity:.28,roughness:.08,metalness:.2,depthWrite:false});
+ box(1.7,.1,length,mat('#3a4048'),.1,.05,0);
+ const roof=box(1.9,.04,length+.1,glass,.05,1.86,0);roof.rotation.z=-.12;roof.castShadow=false;
+ for(const sz of [-1,1]){const side=box(1.7,1.7,.04,glass,.1,.95,sz*length/2);side.castShadow=false;box(1.8,.06,.06,frame,.06,1.84,sz*length/2)}
+ box(.06,.06,length,frame,-.82,1.75,0);
+ const seatMat=mat(/^#[0-9a-f]{6}$/i.test(seat)?seat:'#971d42',{roughness:.45});
+ const n=8,step=(length-.6)/n;
+ for(let i=0;i<n;i++){const sz=-length/2+.3+step*(i+.5);box(.46,.08,.46,seatMat,.5,.5,sz);const back=box(.08,.5,.46,seatMat,.74,.74,sz);back.rotation.z=.12;box(.06,.45,.06,frame,.5,.24,sz)}
+ parent.add(g);return g;
 }
 
 /* ---------- mounting and posing ---------- */

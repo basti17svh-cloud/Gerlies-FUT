@@ -1,5 +1,5 @@
 // V21.462 Manager als Person: the user designs his manager next to the Trainerkarte (footera-manager.js),
-// rendered as one of our own 3D humans (3d-manager.mjs), on his card, on the Siegerfoto and before kick-off.
+// rendered as one of our own 3D humans (3d-manager.mjs), on his card, on the Siegerfoto and (V21.463) at the bench after the walk-out.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
 const {pathToFileURL}=require('url');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
@@ -70,11 +70,21 @@ test('Siegerfoto: the manager stands on the floor beside the team, inside the pi
  assert.match(read('footera-kabine.js'),/renderKabinePhoto\(\{\.\.\.m\.photo,manager\}/);
 });
 
-test('kick-off shows the manager with his card; files are pinned and cached',()=>{
- const app=read('footera-app.js');
- assert.match(app,/queueMatchCeremony3D\("kickoff"\);\n \/\/ V21\.462[^\n]*\n try\{window\.FooteraManager\?\.kickoff\(match\)\}catch\(e\)\{\}/);
+test('after the walk-out the manager stands at the bench, his card comes up in the action frame; files are pinned and cached',async()=>{
+ // V21.463: the old pop-up before kick-off is gone
+ const app=read('footera-app.js');assert.doesNotMatch(app,/FooteraManager\?\.kickoff/);assert.doesNotMatch(read('footera-manager.css'),/mg-intro/);
+ assert.match(read('3d-highlights-match.js'),/coach:kind==='kickoff'\?/);assert.match(read('3d-highlights.js'),/coach:event\.ceremony==='kickoff'\?cleanCoach\(event\.coach\):null/);
+ const C=await import(pathToFileURL(path.join(root,'3d-ceremony.mjs')).href);
+ assert.equal(C.ceremonyEnd('kickoff'),10.4);assert.equal(C.ceremonyEnd('kickoff',{coach:true}),C.COACH_SHOT.end);
+ assert.ok(C.COACH_SHOT.start>=10.4&&C.COACH_SHOT.card>C.COACH_SHOT.start&&C.COACH_SHOT.end-C.COACH_SHOT.card>=3.5);
+ assert.ok(C.COACH_SPOT[0]>34&&C.COACH_SPOT[0]<C.DUGOUT_SPOT[0]&&C.DUGOUT_SPOT[0]<37,'between touchline and boards');
+ for(const t of [C.COACH_SHOT.start,C.COACH_SHOT.end]){const cam=C.coachCamera(t);assert.equal(cam.phase,'coach');assert.ok(cam.position[0]<C.COACH_SPOT[0]-3,'from the pitch')}
+ const scene=read('3d-highlights-scene.mjs');assert.match(scene,/coachShot&&time>=COACH_SHOT\.start\?coachCamera\(time\)/);assert.match(scene,/hud\.classList\.add\('fh3d-hud-coach'\)/);
+ const ctx=load({profile:{username:'Basti'},stats:{}}),k=ctx.FooteraManager.forKickoff();
+ assert.equal(k.manager.name,'Basti');assert.equal(k.label,'DEIN TRAINER');assert.match(k.cardHTML,/coach-card/);assert.match(k.detail,/GES \d+/);
  const index=read('index.html'),sw=read('service-worker.js'),v=(read('footera-manager.js').match(/3d-manager\.mjs\?v=(\d+)/)||[])[1];
  assert.ok(v);
+ assert.ok(read('3d-highlights-scene.mjs').includes(`./3d-manager.mjs?v=${v}`),'one module URL in the match scene too');
  for(const f of ['footera-manager.js','footera-manager.css'])assert.ok(index.includes(`./${f}?v=${v}`)&&sw.includes(`"./${f}?v=${v}"`),f);
  assert.ok(sw.includes(`"./3d-manager.mjs?v=${v}"`));
  assert.ok(read('3d-kabine-photo.mjs').includes(`./3d-manager.mjs?v=${v}`),'one module URL');

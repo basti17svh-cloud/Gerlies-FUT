@@ -163,26 +163,18 @@
  // Leaving the editor: the card picks up the new face.
  function closeEditor(){clearTimeout(previewTimer);previewSeq++;if(designed())ensurePortrait().then(()=>refreshCards())}
 
- /* ---------- before kick-off: the manager with his card ---------- */
- let introTimer=0;
- function kickoff(m){
-  if(typeof document==="undefined")return null;
+ /* ---------- after the walk-out: the manager at the bench, his card in the action frame ---------- */
+ // V21.463 (Basti 2026-11-17): replaces the old pop-up before kick-off. Plain copies for the 3D scene;
+ // the default manager stands there too when the user never designed one.
+ function forKickoff(){
   try{
-   const s=live();if(!s||!root.FooteraCoachCard)return null;
-   const mgr=get(s),d=root.FooteraCoachCard.data(s);
-   document.getElementById("managerIntro")?.remove();clearTimeout(introTimer);
-   const el=document.createElement("div");el.id="managerIntro";el.className="mg-intro";el.setAttribute("role","status");
-   const comp=typeof document.getElementById==="function"?document.getElementById("matchCompetition")?.textContent||"":"";
-   el.innerHTML=`<div class="mg-intro-card">${root.FooteraCoachCard.cardHTML(d)}</div><div class="mg-intro-text"><small>${mgr.gender==="female"?"DEINE TRAINERIN":"DEIN TRAINER"}</small><strong>${escText(mgr.name)}</strong><span>${escText(d.type.title)} · GES ${d.ovr}</span>${comp?`<em>${escText(comp)}</em>`:""}</div>`;
-   document.body.appendChild(el);
-   void el.offsetWidth;el.classList.add("on");
-   el.addEventListener("click",()=>hideIntro());
-   introTimer=setTimeout(hideIntro,5200);
-   if(designed())ensurePortrait();
-   return el;
+   const s=live();if(!s)return null;
+   const mgr=get(s),C=root.FooteraCoachCard,d=C?.data?.(s);
+   if(designed(s))ensurePortrait();
+   return{manager:{...mgr},cardHTML:d&&C.cardHTML?C.cardHTML(d):"",label:mgr.gender==="female"?"DEINE TRAINERIN":"DEIN TRAINER",name:mgr.name,
+    detail:d?`${d.type?.title||"Trainer"} · GES ${d.ovr}`:""};
   }catch(e){return null}
  }
- function hideIntro(){const el=document.getElementById("managerIntro");clearTimeout(introTimer);if(!el)return;el.classList.remove("on");setTimeout(()=>el.remove(),450)}
 
  /* ---------- Siegerfoto ---------- */
  // What the photo needs about the manager (a copy); null when the user never designed one.
@@ -193,6 +185,6 @@
   document.addEventListener("input",e=>{if(e.target.closest("#managerEditorBody"))onInput(e)});
   document.addEventListener("change",e=>{if(e.target.closest("#managerEditorBody"))onColor(e)});
  }
- root.FooteraManager={OPTIONS,COLORS,COLOR_FIELDS,DEFAULT,clean,get,set,designed,clubColors,editorHTML,openEditor,closeEditor,cardFace,portraitUrl,ensurePortrait,kickoff,hideIntro,forPhoto,MODULE,PORTRAIT_KEY};
+ root.FooteraManager={OPTIONS,COLORS,COLOR_FIELDS,DEFAULT,clean,get,set,designed,clubColors,editorHTML,openEditor,closeEditor,cardFace,portraitUrl,ensurePortrait,forKickoff,forPhoto,MODULE,PORTRAIT_KEY};
  if(typeof document!=="undefined"){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start()}
 })(typeof window!=="undefined"?window:globalThis);

@@ -9026,8 +9026,6 @@ function startMatch(mode,opponent=null,kitSelection=null){
  updateMatchUI();setMatchPill(false);startMatchTimer();
  // V21.226: the teams walk out in 3D first (Wichtige/Alle Highlights).
  if(typeof queueMatchCeremony3D==="function")queueMatchCeremony3D("kickoff");
- // V21.462: before kick-off the user's manager is shown with his Trainerkarte.
- try{window.FooteraManager?.kickoff(match)}catch(e){}
 }
 function addLog(t,side=""){
  if(!match)return;

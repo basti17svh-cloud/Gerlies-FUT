@@ -14,7 +14,9 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21444';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera} from './3d-ceremony.mjs?v=21463';
+// V21.463: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
+import {mountManager,poseManager,measureManagerHead,mountDugout,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21463';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
 import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21461';
@@ -1213,7 +1215,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // scorer sprints there first; his own celebration starts at GESTURE_START and
  // the scene runs that much longer (SCENE_END), so nothing of it is cut.
  const celebrationPlan=celebrationActive?celebrationRoute(celebrationKind,celebrationKey,stagedPlayerPosition(0,CELEBRATION_START),direction,globalThis.__FOOTERA_QA_CELEBRATION_SPOT||null):null;
- const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=ceremony==='trophy'?ceremonyEnd('trophy'):DURATION+CELEBRATION_APPROACH;
+ // V21.463: the walk-out ends at the bench with the user's manager and his Trainerkarte.
+ const coachShot=ceremony==='kickoff'&&!!event.coach?.manager;
+ const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=ceremony==='trophy'?ceremonyEnd('trophy'):coachShot?ceremonyEnd('kickoff',{coach:true}):DURATION+CELEBRATION_APPROACH;
  const celebrationRun=celebrationPlan?celebrationPlan.run:(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
   if(!celebrationActive||time<=CELEBRATION_START)return 0;
@@ -1651,6 +1655,26 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(crowdLife)crowdLife.build(crowdSpecs,{choreo:customChoreo,drawChoreo:globalThis.FooteraChoreo?.draw,crestImage:customChoreo?.crest?footeraCrestImageNow(event.teamCrestHTML):null});
   // V21.444 Pokalübergabe: winners' stage, pedestal, the cup, confetti and fountains.
   const trophyStage=trophyNight?createTrophyStage({scene,parent:field,renderer,event,weak,track,hash}):null;
+  // V21.463 the bench: a covered dugout on the main-stand touchline and the user's manager in front of it,
+  // arms crossed, looking at the camera's end position. Without a ready human body the bench shot still runs.
+  const coachBench=coachShot?{figure:null,next:0}:null;
+  if(coachBench)try{mountDugout(field,{x:DUGOUT_SPOT[0],z:DUGOUT_SPOT[1],seat:event.homeColor,track})}catch(_){}
+  // The body may still be loading when the walk-out starts (first scene of the match):
+  // try now and again while the camera is elsewhere, until shortly before the cut.
+  function mountCoach(time){
+   if(!coachBench||coachBench.figure||time<coachBench.next||time>COACH_SHOT.start-.2)return;
+   coachBench.next=time+.6;let figure=null;
+   try{
+    figure=mountManager(field,event.coach.manager,{detail:!weak,crest:footeraCrestImageNow(event.teamCrestHTML)});
+    if(figure){
+     const end=coachCamera(COACH_SHOT.end);
+     measureManagerHead(figure);
+     poseManager(figure,{pose:'crossed',x:COACH_SPOT[0],z:COACH_SPOT[1],camera:{position:new THREE.Vector3(...end.position)},yaw:-.12,body:''});
+     coachBench.figure=figure;
+    }
+   }catch(_){if(figure){try{field.remove(figure.root);disposeManagerParts(figure.owned)}catch(__){}}}
+  }
+  mountCoach(0);
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
    if(crowdDetailReduced)return;
@@ -2150,6 +2174,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
   }
   function updateCeremony(time){
+   // V21.463: a calm breath for the manager at the bench (the pose itself is fixed).
+   mountCoach(time);const coachFigure=coachBench?.figure;if(coachFigure&&time>=COACH_SHOT.start-.5){coachFigure.holder.position.y=.004*Math.sin(time*2.1);coachFigure.holder.rotation.y=.025*Math.sin(time*.7)}
    players.forEach((p,i)=>poseCeremonyActor(p,i,time,i===0?importedMotionFrame:squadMotionFrames[i]));
    poseCeremonyActor(keeper,16,time,keeperMotionFrame);
    ball.visible=ceremony==='kickoff';ballRing.visible=false;ballShadow.visible=ball.visible;
@@ -2158,7 +2184,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);crowdLife?.update(time);pyro?.update(time);fireworks?.update(time);tifo?.update(time);
-   const cam=ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
+   const cam=coachShot&&time>=COACH_SHOT.start?coachCamera(time):ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
    camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
    // V21.406 stadium shot: fog and far plane move out with the high camera.
    if(scene.fog){ceremonyFog??={near:scene.fog.near,far:scene.fog.far,camera:camera.far};const d=Math.max(0,camera.position.length()-60);scene.fog.near=ceremonyFog.near+d;scene.fog.far=ceremonyFog.far+d;camera.far=ceremonyFog.camera+d}
@@ -2806,6 +2832,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){
    boardLogo.onload=null;
+   if(coachBench?.figure)try{disposeManagerParts(coachBench.figure.owned)}catch(_){}
    for(const glb of importedPlayers)glb?.dispose();
    importedKeeper?.dispose();
    for(const actor of [...players,keeper])if(actor.skeletonMotion){
@@ -2918,7 +2945,7 @@ export function play(event,signal){
   if(soundBtn){soundBtn.type='button';soundBtn.className='fh3d-sound';}
   top.append(brand,modelStatus,skip);layer.append(top);if(soundBtn)layer.append(soundBtn);
   const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}${ceremony?' fh3d-hud-'+ceremony:''}`;hud.setAttribute('aria-live','polite');
-  const card=document.createElement('div');card.className='fh3d-player-card';
+  const card=document.createElement('div');card.className='fh3d-player-card';const coachEvent=ceremony==='kickoff'&&!!event.coach?.manager;
   if(event.playerCardHTML)card.innerHTML=event.playerCardHTML;
   else{
    const placeholder=document.createElement('div');placeholder.className='fh3d-identity-fallback';
@@ -3096,7 +3123,12 @@ export function play(event,signal){
        detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
-     hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<(world.duration||DURATION)-.2);
+     // V21.463: at the cut to the bench the line-up card goes; the manager's Trainerkarte comes up in the action frame.
+     const coachHud=coachEvent&&world.duration>DURATION,inCoach=coachHud&&displayTime>=COACH_SHOT.start-.25;
+     if(inCoach&&displayTime>=COACH_SHOT.start+.2&&!hud.dataset.coach){hud.dataset.coach='1';hud.classList.remove('fh3d-hud-ceremony');hud.classList.add('fh3d-hud-coach');
+      if(event.coach.cardHTML)card.innerHTML=event.coach.cardHTML;headline.textContent=event.coach.label||'DEIN TRAINER';name.textContent=event.coach.name||'Trainer';detail.textContent=event.coach.detail||'';
+      meta.textContent='';const own=document.createElement('div');own.className='fh3d-team-crest';own.innerHTML=event.teamCrestHTML||'';meta.append(own)}
+     hud.classList.toggle('visible',inCoach?displayTime>=COACH_SHOT.card&&displayTime<world.duration-.2:displayTime>=revealAt&&displayTime<(coachHud?COACH_SHOT.start-.25:(world.duration||DURATION)-.2));
      stadiumTitle?.classList.toggle('visible',displayTime>=.45&&displayTime<CEREMONY_ARENA_SHOT-.2);
      if(sample.done){
       if(!replayEligible){finish('played');return}
