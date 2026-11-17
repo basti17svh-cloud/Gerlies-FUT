@@ -67,7 +67,7 @@ test('Siegerfoto: the manager stands on the floor beside the team, inside the pi
   assert.ok(at.z>=-1.45&&at.z<=-.9);
  }
  const src=read('3d-kabine-photo.mjs');assert.match(src,/if\(spec\.manager&&mounted\.length\)/);
- assert.match(read('footera-kabine.js'),/renderKabinePhoto\(\{\.\.\.m\.photo,manager\}/);
+ assert.match(read('footera-kabine.js'),/const spec=m\.photo\.signing\?m\.photo:\{\.\.\.m\.photo,manager\}/);
 });
 
 test('kick-off shows the manager with his card; files are pinned and cached',()=>{
