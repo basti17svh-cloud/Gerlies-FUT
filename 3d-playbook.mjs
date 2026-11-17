@@ -2,7 +2,7 @@ import {sampleSkill} from './3d-skill-actions.mjs?v=21303';
 import {SCENARIO_CATALOG,SCENARIO_STORIES,CINEMATIC_SCENE_IDS} from './3d-cinematic-scenarios.mjs?v=21341';
 export {CINEMATIC_SCENE_IDS};
 import {sampleFlowRun} from './3d-attack-flow.mjs?v=2160';
-import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21454';
+import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21455';
 export {DREAM_GOAL_IDS};
 /* Footera V21.86 — football playbook. Pure, deterministic visual choreography.
    All turnovers are AUTHORED by the match simulator, never by this module. */
@@ -1603,7 +1603,12 @@ export const getPlay=id=>plans.get(id)||null;
 export const PLAYBOOK_IDS=Object.freeze(PLAYBOOK.map(p=>p.id));
 export const DEFENSIVE_SCENES=Object.freeze([
  'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery',
- 'defense_standing_tackle_wide','defense_slide_tackle_wide'
+ 'defense_standing_tackle_wide','defense_slide_tackle_wide',
+ // V21.455 Abwehraktionen: shoulder duel on the wing, chasing recovery tackle
+ // from behind, and a read pass lane; every one also mirrored ('_wide').
+ 'defense_standing_tackle_duel','defense_standing_tackle_duel_wide','defense_slide_tackle_duel','defense_slide_tackle_duel_wide',
+ 'defense_standing_tackle_chase','defense_standing_tackle_chase_wide','defense_slide_tackle_chase','defense_slide_tackle_chase_wide',
+ 'defense_interception_lane','defense_interception_lane_wide'
 ]);
 // Match Engine 2.0: deterministic, result-neutral multi-phase highlight plans.
 // These plans describe possession and camera beats; they never award a goal.
@@ -1808,43 +1813,57 @@ export function playPassWindows(plan){
   actor:pass.passer,start:pass.release-.21,end:pass.release+.31
  }));
 }
-const isInterception=sequence=>sequence==='defense_interception'||sequence==='defense_press_recovery';
-function interceptedPass(){
- const passer=interpolate([-14,-26],[-7.25,-34.35],3.2/4.4);
- const from=[passer[0]+.27,.14,passer[1]-.42],to=[3.27,.14,-39.42];
+const isInterception=sequence=>String(sequence).startsWith('defense_interception')||sequence==='defense_press_recovery';
+export const isDefenseInterception=isInterception;
+// Authored defensive lanes (left side; '_wide' mirrors). base = the original scenes.
+const DEFENSE_SHAPES={
+ base:{pass:[[-18,-21],[-12,-29]],carry:[[-14,-26],[-7.25,-34.35]],from:[-3.2,-42],tackle:[-6.05,-34.35],slide:[-6.45,-34.45],exit:[5.8,-14.5],slideExit:[5.8,-15.5],recv:[[7,-30],[3,-39]],to:[3.27,-39.42]},
+ // Winger runs down the touchline, the full-back runs alongside and wins it shoulder to shoulder.
+ duel:{pass:[[-25,-12],[-24.5,-17.5]],carry:[[-26,-18.5],[-25.2,-33.4]],from:[-20.5,-23.5],tackle:[-24.05,-33.25],slide:[-24.35,-33.1],exit:[-14,-15],slideExit:[-14.5,-16]},
+ // A striker breaks through the middle; a covering centre-back sprints across and wins it.
+ chase:{pass:[[-8.5,-17],[-7.5,-21.5]],carry:[[-5.5,-21.5],[-2.6,-37.4]],from:[8.5,-25],tackle:[-1.55,-36.9],slide:[-1.9,-36.75],exit:[7,-17],slideExit:[7,-18]},
+ // The carrier looks for the far runner; a midfielder reads the lane and steps in.
+ lane:{pass:[[-24,-16],[-21,-21]],carry:[[-21,-22],[-15.5,-31]],from:[2.2,-40.5],recv:[[10,-27],[5,-36]],to:[5.27,-36.42],exit:[9,-15]}
+};
+const defenseShape=sequence=>DEFENSE_SHAPES[/_duel/.test(sequence)?'duel':/_chase/.test(sequence)?'chase':/_lane/.test(sequence)?'lane':'base'];
+function interceptedPass(sequence='defense_interception'){
+ const shape=defenseShape(sequence),passer=interpolate(shape.carry[0],shape.carry[1],3.2/4.4);
+ const from=[passer[0]+.27,.14,passer[1]-.42],to=[shape.to[0],.14,shape.to[1]];
  const contact=from.map((v,i)=>mix(v,to[i],(4.4-3.2)/(4.95-3.2)));
  return{from,to,contact};
 }
 export function defensePosition(index,time,sequence){
  if(!DEFENSIVE_SCENES.includes(sequence))return null;
  const t=clamp(time,0,10.4),slide=sequence.startsWith('defense_slide_tackle');
- const mirrored=sequence==='defense_press_recovery'||sequence.endsWith('_wide');
+ const mirrored=sequence==='defense_press_recovery'||sequence.endsWith('_wide'),shape=defenseShape(sequence);
  const orient=point=>mirrored?[-point[0],point[1]]:point;
  if(index===1){
   // The opposition's midfielder starts in possession and supplies a visible pass.
-  return orient(interpolate([-18,-21],[-12,-29],t/3.15));
+  return orient(interpolate(shape.pass[0],shape.pass[1],t/3.15));
  }
- if(index===2&&isInterception(sequence))return orient(interpolate([7,-30],[3,-39],t/4.95));
+ if(index===2&&isInterception(sequence))return orient(interpolate(shape.recv[0],shape.recv[1],t/4.95));
  if(index===0){
-  const a=interpolate([-14,-26],[-7.25,-34.35],t/4.4);
+  const a=interpolate(shape.carry[0],shape.carry[1],t/4.4);
   if(t>4.4){a[0]-=1.1*ease((t-4.4)/2);a[1]+=2*ease((t-4.4)/2)}
   return orient(a);
  }
  if(index===8){
-  const hit=interceptedPass().contact;
-  const intercept=isInterception(sequence)?[hit[0]-.12,hit[2]+.3]:slide?[-6.45,-34.45]:[-6.05,-34.35];
-  if(t<=4.4)return orient(interpolate([-3.2,-42],intercept,t/4.4));
+  const hit=isInterception(sequence)?interceptedPass(sequence).contact:null;
+  const intercept=hit?[hit[0]-.12,hit[2]+.3]:slide?shape.slide:shape.tackle;
+  if(t<=4.4)return orient(interpolate(shape.from,intercept,t/4.4));
   if(slide){
    const settled=[intercept[0]-.35,intercept[1]-.32];
    if(t<5.8)return orient(interpolate(intercept,settled,(t-4.4)/.6));
-   return orient(interpolate(settled,[5.8,-15.5],(t-5.8)/4.6));
+   return orient(interpolate(settled,shape.slideExit,(t-5.8)/4.6));
   }
   // The ball winner drives toward midfield (+Z), AWAY from the
   // defended -Z goal, rather than turning into that goal's box.
-  return orient(interpolate(intercept,[5.8,-14.5],(t-4.4)/5.2));
+  return orient(interpolate(intercept,shape.exit,(t-4.4)/5.2));
  }
  if(index>=9&&index<=15){
   const n=index-9,from=[-21+n*6,-40+(n%3)*4],u=ease((t-4.45)/5.2);
+  // Keep the back line clear of the authored duel lane.
+  if(shape!==DEFENSE_SHAPES.base){const lane=interpolate(shape.carry[0],shape.carry[1],clamp(t/4.4));if(Math.abs(from[0]-lane[0])<3.2&&Math.abs(from[1]-lane[1])<6)from[0]+=from[0]<lane[0]?-3.4:3.4}
   return orient([from[0]+(n%2?2.2:-1.2)*u,from[1]+(10+(n%3)*2.3)*u]);
  }
  return null;
@@ -1863,8 +1882,8 @@ export function defenseBall(time,sequence){
  if(t<receive){const u=(t-release)/(receive-release),point=interpolate(from,to,u);
   point[1]+=.28*Math.sin(Math.PI*u);return point}
  if(isInterception(sequence)&&t>=3.2&&t<4.4){
-  const pass=interceptedPass(),u=(t-3.2)/(4.95-3.2);
-  const point=pass.from.map((v,i)=>mix(v,pass.to[i],u));return sequence==='defense_press_recovery'?[-point[0],point[1],point[2]]:point;
+  const pass=interceptedPass(sequence),u=(t-3.2)/(4.95-3.2);
+  const point=pass.from.map((v,i)=>mix(v,pass.to[i],u));return side<0?[-point[0],point[1],point[2]]:point;
  }
  if(t<(isInterception(sequence)?3.2:4.03))return[a[0]+.27*side,.14,a[1]-.42];
  if(!isInterception(sequence)&&t<4.4){
