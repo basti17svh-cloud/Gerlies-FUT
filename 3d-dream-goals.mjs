@@ -1,5 +1,5 @@
 /*
- * Footera V21.445 — Traumtore: authored signature goals (13), V21.449: +21, V21.450: +15 new scenes.
+ * Footera V21.445 — Traumtore: authored signature goals (13), V21.449: +21, V21.450: +15, V21.451: +13 new scenes.
  * Basti (16.11.2026): "Die Tore sehen tatsächlich viele sehr identisch aus."
  * Every older play ends in the same strike: a straight 1.25 s shot from the
  * box edge. These scenes bring their own build-up, their own finishing
@@ -266,7 +266,63 @@ const BASE=[
    7:[[0,7,-17],[1.6,6.6,-19.6],[1.95,6.6,-20.2],[3.4,7.8,-25],[5.4,8,-31]],
    2:[[0,21,-30],[1.6,20.6,-32.6],[2.65,20,-35],[3.6,18.6,-39.6],[4.2,17.2,-43.4],[4.5,16.4,-45],[5.4,15,-47]]},
   beats:[[.3,.85],[1.3,1.95],[2.4,4.2],[4.5,5.4]],arcs:[.06,.06,.12,.06],
-  flight:{post:-1,goal:[2.6,.26],bend:[0,0],rise:[.04,0],rate:2.4}}
+  flight:{post:-1,goal:[2.6,.26],bend:[0,0],rise:[.04,0],rate:2.4}},
+// V21.451 Neue Spielszenen, Paket 3.
+ {id:'dream_dribble_dink_right',sims:['normal','finesse','chip'],mirror:'dream_dribble_dink_left',family:'dribble',finish:'chip',delivery:'short',
+  order:[7,0],length:'medium',weight:6,kinds:['dribble'],style:'lob',title:'Dribbling und Lupfer',
+  routes:{
+   0:[[0,13,-27],[1.1,12.4,-29.4],[2.2,10.6,-32.8],[3.2,8.2,-36.4],[4.2,6,-39.8],[5,4.6,-42.2],[5.4,4,-43.2],[6.4,3.4,-44.6]],
+   7:[[0,6,-19],[.45,6.2,-19.6],[2,6.6,-24],[5.4,6,-31]],
+   3:[[0,-4,-30],[2.4,-3,-37],[5.4,-2,-43]]},
+  beats:[[.45,1.1]],
+  flight:{post:-1,goal:[2.6,1.96],bend:[0,0],rise:[3.6,3],rate:1.3}},
+ {id:'dream_central_header_right',sims:['header'],mirror:'dream_central_header_left',family:'cross',finish:'header',delivery:'cross',
+  order:[7,5,0],length:'long',weight:6,kinds:['cross'],style:'nod',title:'Wuchtiger Kopfball nach Flanke',direct:true,
+  routes:{
+   0:[[0,1,-30],[2,1.4,-34.6],[3.6,1,-38.6],[4.7,.4,-41.2],[5.4,.2,-42.2],[6.4,0,-43.2]],
+   5:[[0,25,-16],[.9,25.6,-19],[1.4,25.8,-20.6],[2.6,25.4,-25.6],[3.6,24.4,-30],[5.4,22.6,-35]],
+   7:[[0,9,-18],[.4,9.2,-18.4],[2,9,-22],[5.4,7,-29]]},
+  beats:[[.4,1.4],[3.6,5.4]],arcs:[.06,2.9],
+  flight:{post:0,goal:[2.96,.34],bend:[0,0],rise:[-.2,-.4],rate:2}},
+ {id:'dream_outside_near_left',sims:['normal','finesse','low_driven'],mirror:'dream_outside_near_right',family:'dribble',finish:'finesse',delivery:'short',
+  order:[4,0],length:'medium',weight:6,kinds:['dribble','combination'],foot:'Right',style:'outside',title:'Außenrist ins kurze Eck',
+  routes:{
+   0:[[0,-20,-24],[1.2,-19.6,-27],[2.4,-17.8,-30.6],[3.5,-15.6,-34],[4.5,-13.4,-37],[5.4,-11.8,-39.2],[6.4,-10.8,-40.6]],
+   4:[[0,-26,-14],[.5,-26,-14.6],[2,-25,-19],[5.4,-23,-27]],
+   3:[[0,0,-30],[2.4,-1,-37],[5.4,-2,-43]]},
+  beats:[[.5,1.2]],
+  flight:{post:-1,goal:[3.26,.82],bend:[1.2,.9],rise:[.4,.3],rate:1.6}},
+ {id:'dream_diagonal_run_near_left',sims:['normal','low_driven','power'],mirror:'dream_diagonal_run_near_right',family:'through',finish:'low_driven',delivery:'through',
+  order:[6,0],length:'medium',weight:7,kinds:['through'],style:'drive',title:'Diagonallauf und Flachschuss ins kurze Eck',
+  routes:{
+   0:[[0,-20,-25],[1.3,-18.4,-28.6],[2.6,-15.6,-32.8],[3.7,-12.6,-36.6],[4.6,-10.2,-39.4],[5.4,-8.4,-41.2],[6.4,-7.2,-42.6]],
+   6:[[0,-4,-17],[1.1,-3.6,-19],[1.9,-3.4,-20.2],[5.4,-3,-27]],
+   3:[[0,3,-30],[2.4,4,-37],[5.4,4,-43]]},
+  beats:[[1.9,3.7]],
+  flight:{post:-1,goal:[3.28,.24],bend:[0,0],rise:[.04,0],rate:1.7}},
+ {id:'dream_layoff_curl_far_right',sims:['finesse','normal'],mirror:'dream_layoff_curl_far_left',family:'distance',finish:'finesse',delivery:'short',
+  order:[7,3,0],length:'medium',weight:7,kinds:['distance','combination'],foot:'Right',style:'curl',title:'Ablage und Schlenzer ins Kreuzeck',
+  routes:{
+   0:[[0,9,-18],[1.5,8.6,-21],[3,7.8,-25],[4.2,7.2,-27.6],[5.4,6.8,-29.2],[6.4,6.4,-30.6]],
+   3:[[0,2,-32],[.9,2.2,-30.4],[1.5,2.4,-29.6],[2.9,2.6,-30.6],[5.4,1.6,-35]],
+   7:[[0,10,-12],[.4,10.2,-12.6],[2,10,-17],[5.4,9,-23]]},
+  beats:[[.4,1.5],[2.9,4.2]],arcs:[.06,.06],
+  flight:{post:-1,goal:[3.3,2.2],bend:[-2.4,-1.8],rise:[1.05,.9],rate:1.5}},
+ {id:'dream_overlap_header_right',sims:['header','volley'],mirror:'dream_overlap_header_left',family:'overlap',finish:'header',delivery:'driven',
+  order:[2,5,0],length:'long',weight:6,kinds:['cross'],style:'nod',title:'Hinterlaufen, Flanke, Kopfball am kurzen Pfosten',direct:true,
+  routes:{
+   0:[[0,-2,-31],[2,-1,-36],[3.6,1.4,-41.4],[4.7,2.8,-44.6],[5.4,3.2,-45.8],[6.4,3.4,-46.8]],
+   2:[[0,20,-24],[.45,20.2,-24.6],[2,18.6,-28],[5.4,16,-33]],
+   5:[[0,25,-18],[1.3,25.4,-25],[2.6,24.6,-32],[3.9,22.4,-40],[4.5,21,-43.4],[5.4,19.8,-45]]},
+  beats:[[.45,1.6],[4.5,5.4]],arcs:[.06,1.5],
+  flight:{post:1,goal:[3.2,1.1],bend:[0,0],rise:[.15,.05],rate:2.1}},
+ {id:'dream_box_turn_shot',sims:['normal','low_driven','power','finesse'],family:'combination',finish:'normal',delivery:'short',
+  order:[6,0],length:'short',weight:7,kinds:['combination','through'],style:'turn',title:'Ballannahme mit Drehung und Abschluss',
+  routes:{
+   0:[[0,1,-42],[1.4,.8,-39.4],[2.6,.6,-37.4],[3.4,.6,-36.8],[4.2,.2,-37],[4.9,-.4,-37.6],[5.4,-.6,-38.2],[6.4,-.8,-39.4]],
+   6:[[0,-7,-20],[.5,-6.8,-21],[2.6,-5.6,-24],[5.4,-4,-30]]},
+  beats:[[2.6,3.4]],
+  flight:{post:0,goal:[3.26,.3],bend:[0,0],rise:[.06,.02],rate:1.8}}
 ];
 const mirrorPoint=([t,x,z])=>[t,-x,z];
 function mirrored(def){
