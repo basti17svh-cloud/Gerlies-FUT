@@ -1,0 +1,16 @@
+name: Wikidata club probe
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['scripts/wikidata-clubs-probe.cjs']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: node scripts/wikidata-clubs-probe.cjs
