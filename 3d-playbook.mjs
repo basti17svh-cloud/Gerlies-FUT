@@ -2,7 +2,7 @@ import {sampleSkill} from './3d-skill-actions.mjs?v=21303';
 import {SCENARIO_CATALOG,SCENARIO_STORIES,CINEMATIC_SCENE_IDS} from './3d-cinematic-scenarios.mjs?v=21341';
 export {CINEMATIC_SCENE_IDS};
 import {sampleFlowRun} from './3d-attack-flow.mjs?v=2160';
-import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21451';
+import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21452';
 export {DREAM_GOAL_IDS};
 /* Footera V21.86 — football playbook. Pure, deterministic visual choreography.
    All turnovers are AUTHORED by the match simulator, never by this module. */

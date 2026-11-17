@@ -7,12 +7,13 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(x)?x:a));
 const ease=(t,a,b)=>{const u=clamp((t-a)/(b-a));return u*u*(3-2*u)};
 const pulse=(t,a,b,c,d)=>ease(t,a,b)*(1-ease(t,c,d));
 export const GOALKEEPER_MOTION_VERSION='21.114-visible-keeper-contact';
-export const GOALKEEPER_ACTIONS=Object.freeze(['classic','fingertip','parry','low_reflex','rush_spread','high_reach','beaten']);
+// V21.452: over_bar = tipped over the crossbar, punch = fisted clear of a cross/header.
+export const GOALKEEPER_ACTIONS=Object.freeze(['classic','fingertip','parry','low_reflex','rush_spread','high_reach','over_bar','punch','beaten']);
 export function sampleGoalkeeperMotion(time,type='goal',action='classic',impactX=2.5,impactY=1.1){
  const t=clamp(time,0,10.4),save=type==='big_chance_saved',side=Math.sign(impactX)||1,
   kind=save&&GOALKEEPER_ACTIONS.includes(action)?action:'beaten',
   low=kind==='low_reflex',spread=kind==='rush_spread',
-  high=kind==='high_reach'||kind==='fingertip',
+  high=kind==='high_reach'||kind==='fingertip'||kind==='over_bar'||kind==='punch',
   early=kind==='rush_spread'?.23:0,
   ready=ease(t,3.5,4.36),shuffle=pulse(t,4.48,4.79,5.02,5.30),
   plant=pulse(t,5.12-early,5.58-early,5.82-early,6.12-early),
@@ -96,6 +97,15 @@ export function applyGoalkeeperMotion(p,time,base,type='goal',action='classic',i
   p.upper.rotation.y+=side*.12*flight;p.elbows[lead].rotation.x-=.20*contact;
  }else if(kind==='parry'){
   p.arms[lead].rotation.x-=.14*flight+.18*contact;p.elbows[trail].rotation.x+=.14*flight;
+ }else if(kind==='over_bar'){
+  // Arched back, top hand flicks the ball up over the bar.
+  p.upper.rotation.x-=.24*flight;p.arms[lead].rotation.x-=.34*flight+.22*contact;
+  p.elbows[lead].rotation.x-=.18*contact;p.legs[trail].rotation.x-=.2*flight;
+ }else if(kind==='punch'){
+  // Both fists together, punched out through the ball.
+  p.upper.rotation.x-=.12*flight;p.arms[trail].rotation.z+=nearSign*.9*flight;
+  p.arms[lead].rotation.x-=.3*flight;p.arms[trail].rotation.x-=.3*flight;
+  p.elbows[lead].rotation.x-=.3*contact;p.elbows[trail].rotation.x-=.3*contact;
  }
  // A missed shot / conceded goal does not fake a successful catch.
  if(!save){p.arms[lead].rotation.z*=.84;p.elbows[lead].rotation.x+=.27*flight}

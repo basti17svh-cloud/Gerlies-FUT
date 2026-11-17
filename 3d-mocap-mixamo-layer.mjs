@@ -13,7 +13,7 @@ import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21369';
 import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
 import {FOOTERA_MIXAMO_GAIT} from './3d-mocap-mixamo-gait-data.mjs?v=21433';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
-import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
+import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21452';
 export const MIXAMO_KEEPER_LAYER_VERSION='21.369-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
@@ -30,7 +30,7 @@ export function keeperCaptureTime(time,keys,early=0){
  return c[c.length-1]+(time-g[g.length-1]);
 }
 export function keeperCaptureClip(action='classic'){
- return action==='high_reach'||action==='fingertip'?'keeper_dive_high':'keeper_dive';
+ return ['high_reach','fingertip','over_bar','punch'].includes(action)?'keeper_dive_high':'keeper_dive';
 }
 // Weights of the ready sway and the dive over the play.
 // V21.369: game time of the caught ball's throw-out. The capture's hold

@@ -79,7 +79,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21451').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21452').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -455,6 +455,7 @@
   const breakaway=/(?:through_ball|one_on_one|counter|duel)/.test(seq);
   const skill=/(?:dribble|inside|feint|cut_inside|halfspace)/.test(seq);
   const low=finish==='low_driven'||/(?:low_cross|low_driven)/.test(seq);
+  const high=!low&&event.shotPlacement?.height==='high';
   const styles=(map,...ids)=>Math.max(0,...ids.map(id=>map.get(id)||0));
   const hashKey=[event.id||'',event.minute||0,event.team||'',event.playerId||'',seq,finish,event.type||''].join('|');
   function pick(options,salt){
@@ -479,7 +480,10 @@
     ['parry',4*(1+styles(keeper,'deflector')*1.4)],
     ['low_reflex',low?6*(1+styles(keeper,'footwork')*1.25):.15],
     ['rush_spread',breakaway?5*(1+styles(keeper,'rush-out')*1.3):.14],
-    ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14]
+    ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14],
+    // V21.452: tipped over the bar (high shots) and punched clear (crosses).
+    ['over_bar',high&&!['low_driven','chip'].includes(finish)?4.5*(1+styles(keeper,'far-reach')*1.2):0],
+    ['punch',aerial&&['header','volley','bicycle'].includes(finish)?4*(1+styles(keeper,'cross-claimer','deflector')*1.1):finish==='power'?1.1:0]
    ],':keeper');
   }
   // V21.195 drama: some missed chances become a clearance off the goal line.
@@ -554,7 +558,7 @@
   }
   if(event.type==='big_chance_saved'){
    const action=event.keeperAction||'';
-   const ids=finish==='header'&&action==='high_reach'?['cross-claimer']:kind==='distance'&&['fingertip','high_reach'].includes(action)?['far-reach']:kind==='through'&&action==='rush_spread'?['rush-out']:action==='low_reflex'&&kind!=='distance'&&finish!=='header'?['footwork']:action==='parry'&&kind!=='distance'&&kind!=='through'&&finish!=='header'?['deflector']:[];
+   const ids=finish==='header'&&['high_reach','punch'].includes(action)?['cross-claimer']:['fingertip','high_reach','over_bar'].includes(action)&&(kind==='distance'||action==='over_bar')?['far-reach']:kind==='through'&&action==='rush_spread'?['rush-out']:action==='low_reflex'&&kind!=='distance'&&finish!=='header'?['footwork']:action==='parry'&&kind!=='distance'&&kind!=='through'&&finish!=='header'?['deflector']:[];
    add(keeper,ids,'keeper','save');
   }
   return Object.freeze(out);

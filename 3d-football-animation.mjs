@@ -83,7 +83,7 @@ export function keeperDiveMechanics(time,action='classic',save=true){
  const landing=phase(time,6.78,7.07)*(1-phase(time,7.62,8.25));
  const rise=phase(time,7.65,8.75);
  const spread=action==='rush_spread'?1.35:action==='low_reflex'?.65:1;
- const high=action==='high_reach'||action==='fingertip'?1.22:1;
+ const high=['high_reach','fingertip','over_bar','punch'].includes(action)?1.22:1;
  return{load,flight,landing,rise,spread,high,save};
 }
 export function animateGoalkeeperDive(p,time,action='classic',save=true){
