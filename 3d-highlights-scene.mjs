@@ -17,6 +17,7 @@ import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrati
 import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21444';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
+import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21461';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21445';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraHumanModelStatus,footeraRealBodyLoaded};
@@ -1452,22 +1453,26 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const kit=team==='home'?crowdKits.home:team==='away'?crowdKits.away:null;
    return kit?[kit.shirt,kit.shirt,kit.shirtSecondary,'#e4e1d8','#26343a','#52616a','#a39485','#d2c8b5','#343c49']:neutralFanPalette;
   }
+  // V21.460 Lebendige Ränge: GPU layer on every fan + scarves, mosaic, swinging flags, fence banners, ticker tape.
+  const crowdLife=crowdLifeWanted()?createCrowdLife(THREE,{scene,track,weak,high,mobileStandard,hash,kits:crowdKits,hostTeam,hostEnd,crowdType,attackTeam:event.team==='away'?'away':'home',
+   impact:IMPACT_TIME,netArrival,sceneEnd:SCENE_END,homeName:event.homeName,awayName:event.awayName,crowdRows}):null;
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
    // V21.358: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
-   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),mat('#ffffff'),specs.length);
-   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),mat('#ffffff',{vertexColors:true}),specs.length);
-   const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),mat('#ffffff'),specs.length*2);
-   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6,1,true)),mat('#ffffff'),specs.length*2);
+   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),crowdLife?crowdLife.material('torso'):mat('#ffffff'),specs.length);
+   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
+   const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),crowdLife?crowdLife.material('arm'):mat('#ffffff'),specs.length*2);
+   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6,1,true)),crowdLife?crowdLife.material('leg'):mat('#ffffff'),specs.length*2);
    for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
    return{torso,head,arms,legs,specs,dynamic};
   }
   const crowdStatic=crowdGroup(crowdStaticSpecs,false),crowdDynamic=crowdGroup(crowdDynamicSpecs,true);
+  if(crowdLife){crowdLife.attach(crowdStatic);crowdLife.attach(crowdDynamic);crowdLife.patchFanWall(fanWall?.mesh?.material)}
   function writeCrowdFan(spec,i,group,time=0,paint=false){
    const reaction=group.dynamic?crowdReactionState(crowdType,event.team,spec.team,time,SCENE_END):{suspense:0,mood:0};
    const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.35+spec.loop*.41)+spec.phase):0;
    const cheerBeat=group.dynamic?Math.abs(Math.sin(time*(4.25+spec.loop*.55)+spec.phase)):0;
-   const jump=cheerBeat*positive*.34,bob=wave*.045+jump+reaction.suspense*.055;
+   const jump=cheerBeat*positive*(crowdLife?.08:.34),bob=wave*.045+jump+reaction.suspense*.055;
    const bodyY=spec.y-.25+.64*spec.height+bob,lean=wave*.055+negative*.09,yaw=Math.atan2(-spec.x,-spec.z),lx=Math.cos(yaw),lz=-Math.sin(yaw);
    crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,yaw,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
    crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,yaw,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
@@ -1643,6 +1648,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    update(0);return{update};
   })():null;
+  if(crowdLife)crowdLife.build(crowdSpecs,{choreo:customChoreo,drawChoreo:globalThis.FooteraChoreo?.draw,crestImage:customChoreo?.crest?footeraCrestImageNow(event.teamCrestHTML):null});
   // V21.444 Pokalübergabe: winners' stage, pedestal, the cup, confetti and fountains.
   const trophyStage=trophyNight?createTrophyStage({scene,parent:field,renderer,event,weak,track,hash}):null;
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
@@ -2151,7 +2157,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
-   updateCrowd(time);pyro?.update(time);fireworks?.update(time);tifo?.update(time);
+   updateCrowd(time);crowdLife?.update(time);pyro?.update(time);fireworks?.update(time);tifo?.update(time);
    const cam=ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
    camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
    // V21.406 stadium shot: fog and far plane move out with the high camera.
@@ -2732,7 +2738,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     sprite.visible=on&&!!owner;
     if(sprite.visible){const head=owner.root.getWorldPosition(new THREE.Vector3());sprite.position.set(head.x,head.y+2.45,head.z);const [from,to]=moment.badge;sprite.material.opacity=smooth((time-from)/.18)*(1-smooth((time-to+.2)/.2));sprite.scale.setScalar(1.35)}
    }
-   updateCrowd(time);pyro?.update(time);fireworks?.update(time);
+   updateCrowd(time);crowdLife?.update(time);pyro?.update(time);fireworks?.update(time);
    // Extended match scenes must use the exact same stable broadcast track.
    const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):(extended&&extendedSetPieceCamera(sequence,time,direction,camera.aspect,eventBallPosition(event.type,time)))||broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
@@ -2795,6 +2801,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    flagPole.visible=flagCloth.visible=false;
    supporterBanners.forEach(x=>x.visible=false);
+   crowdLife?.reduce();
   }
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){
@@ -2871,7 +2878,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':extended&&extendedSetPieceCamera(sequence,renderTime,direction,camera.aspect,eventBallPosition(event.type,renderTime))?'set-piece':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',arena:arena?.info||null,crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':extended&&extendedSetPieceCamera(sequence,renderTime,direction,camera.aspect,eventBallPosition(event.type,renderTime))?'set-piece':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',arena:arena?.info||null,crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdLife:crowdLife?.info||null,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   // V21.371 Stadion-Sound: the ball's world position and the attacked goal.
   const soundBall=new THREE.Vector3(),soundGoal=worldPosition([0,0,-52.5],direction);
