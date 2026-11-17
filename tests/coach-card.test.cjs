@@ -65,8 +65,8 @@ test('coach card: card markup uses the normal card frame classes and escapes nam
 
 test('coach card: wired into the app shell, service worker and match end',()=>{
  const index=read('index.html'),sw=read('service-worker.js'),app=read('footera-app.js');
- assert.match(index,/footera-coach-card\.js\?v=21458/);assert.match(index,/footera-coach-card\.css\?v=21458/);
- assert.ok(sw.includes('"./footera-coach-card.js?v=21458"')&&sw.includes('"./footera-coach-card.css?v=21458"'));
+ assert.match(index,/footera-coach-card\.js\?v=21461/);assert.match(index,/footera-coach-card\.css\?v=21458/);
+ assert.ok(sw.includes('"./footera-coach-card.js?v=21461"')&&sw.includes('"./footera-coach-card.css?v=21458"'));
  assert.ok(app.includes('globalThis.FooteraCoachCard?.afterMatch(match)'));
  assert.ok(index.indexOf('footera-museum.js')<index.indexOf('footera-coach-card.js'),'museum (titles) loads first');
  assert.ok(!read('footera-coach-card.js').includes('state.')||!/state\.[a-zA-Z]+\s*=[^=]/.test(read('footera-coach-card.js')),'never writes to the save');
