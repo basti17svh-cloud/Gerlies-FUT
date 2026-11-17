@@ -423,7 +423,16 @@ export async function renderManagerPortrait(spec={},opts={}){
   camera.position.set(.3,full?h*.55:h*.86,full?4.15:2.5);
   measureManagerHead(p);
   poseManager(p,{pose:opts.pose||'crossed',camera,yaw:opts.yaw??-.18,body:opts.body??'',frame:opts.frame??20});
-  camera.lookAt(0,full?h*.5:h*.8,0);camera.updateMatrixWorld(true);
+  if(full)camera.lookAt(0,h*.5,0);
+  else{
+   // Card bust (Basti 2026-11-17 "wirkt so klein"): frame from the real head like the EA/POTM cards,
+   // crown just under the window top, crossed arms at the bottom, shoulders across most of the width.
+   const head=p.bones.get('Head'),hy=head?head.getWorldPosition(V()).y:h*.9;
+   const top=hy+(opts.headroom??.25),bottom=hy-(opts.chest??.56),mid=(top+bottom)/2,half=(top-bottom)/2;
+   const dist=half/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+   camera.position.set(dist*.09,mid+.04,dist);camera.lookAt(0,mid,0);
+  }
+  camera.updateMatrixWorld(true);
   st.renderer.render(st.scene,camera);
   return st.canvas.toDataURL('image/png');
  }finally{st.scene.remove(p.root);disposeOwned(p.owned)}

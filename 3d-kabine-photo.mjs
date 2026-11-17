@@ -14,7 +14,7 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
  footeraShirtName,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21441';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
-import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21462';
+import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21463';
 
 export const KABINE_PHOTO_VERSION='21.462-kabine-photo';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
