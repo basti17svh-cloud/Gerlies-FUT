@@ -3956,7 +3956,10 @@ function defaultClubIdentity(){return{
  // V21.406: own stadium. Empty name/colours follow club name and club colours.
  stadium:{name:"",style:"arena",seatPrimary:"",seatSecondary:""}
 }}
-const STADIUM_STYLES={arena:{label:"Flutlicht-Arena",text:"Oberrang, Dach und Lichtring"},kessel:{label:"Hexenkessel",text:"Steile Ränge, Lichtring in Vereinsfarbe"},tradition:{label:"Traditionsstadion",text:"Offen, mit vier Flutlichtmasten"}};
+const STADIUM_STYLES={arena:{label:"Flutlicht-Arena",text:"Oberrang, Dach und Lichtring"},kessel:{label:"Hexenkessel",text:"Steile Ränge, Lichtring in Vereinsfarbe"},tradition:{label:"Traditionsstadion",text:"Offen, mit vier Flutlichtmasten"},
+ // V21.460: six more builds (Basti 2026-11-17 "Mache noch 6 neue Stadionmodelle").
+ welle:{label:"Wellendach",text:"Geschwungenes helles Membrandach"},bogen:{label:"Bogenarena",text:"Zwei riesige Stahlbögen über dem Dach"},kuppel:{label:"Kuppelstadion",text:"Geschlossene Glaskuppel"},
+ ground:{label:"Englischer Ground",text:"Vier einzelne Tribünen mit Giebeldach"},wand:{label:"Fanwand",text:"Riesige steile Heimkurve hinter dem Tor"},berg:{label:"Bergstadion",text:"Grüne Wälle, Haupttribüne, Berge"}};
 function cleanClubStadium(raw){const x=raw&&typeof raw==="object"?raw:{},hex=v=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v).toLowerCase():"";
  return{name:String(x.name??"").replace(/[<>\u0000-\u001f]/g,"").replace(/\s+/g," ").trim().slice(0,28),style:Object.hasOwn(STADIUM_STYLES,x.style)?x.style:"arena",seatPrimary:hex(x.seatPrimary),seatSecondary:hex(x.seatSecondary)}}
 // The stadium as the 3D scenes get it: blanks filled from club name and colours.
@@ -3965,9 +3968,10 @@ function resolvedClubStadium(identity,clubName){const id=cleanClubIdentity(ident
 // Every opponent always plays in the same ground, built and named from its name.
 function opponentClubStadium(name,kit){
  const club=String(name||"Gast").trim()||"Gast";let h=2166136261;for(const c of club)h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
- const style=["arena","kessel","tradition"][h%3],base=club.replace(/^(?:1\.\s*)?(?:FC|SC|SV|VfB|VfL|TSG|AC|AS|SS|RC|CF|CD|SL|AFC)\s+/i,"").trim()||club;
+ const styles=Object.keys(STADIUM_STYLES),style=styles[h%styles.length],base=club.replace(/^(?:1\.\s*)?(?:FC|SC|SV|VfB|VfL|TSG|AC|AS|SS|RC|CF|CD|SL|AFC)\s+/i,"").trim()||club;
  const hex=v=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v).toLowerCase():"";
- return{name:(style==="arena"?`${base} Arena`:style==="kessel"?`Stadion ${base}`:`${base} Park`).slice(0,28),style,seatPrimary:hex(kit?.shirtPrimary)||"#c8102e",seatSecondary:hex(kit?.shirtSecondary)||"#1d2430"}}
+ const named={arena:`${base} Arena`,kessel:`Stadion ${base}`,tradition:`${base} Park`,welle:`${base} Arena`,bogen:`${base} Stadium`,kuppel:`${base} Dome`,ground:`${base} Ground`,wand:`Stadion ${base}`,berg:`${base} Bergstadion`};
+ return{name:named[style].slice(0,28),style,seatPrimary:hex(kit?.shirtPrimary)||"#c8102e",seatSecondary:hex(kit?.shirtSecondary)||"#1d2430"}}
 // Basti 2026-11-13 "Abwechselnd Heim/Auswärts": every second match is shown in
 // the opponent's ground. Only the picture changes; result and home advantage stay.
 function matchStadiumFor(matchNumber,opponentProfile,opponentName,awayKit){
@@ -7197,12 +7201,37 @@ function renderClubIdentityPreview(){
  document.querySelectorAll("[data-crest-symbol]").forEach(b=>b.classList.toggle("active",b.dataset.crestSymbol===x.crest.symbol));renderIdentityColorTools();renderStadiumIdentity(x,d.clubName)
 }
 // V21.406 stadium tab: name, build and seat colours, with a small drawn preview.
+// V21.460 (Basti: "so eine Ansicht aus der Luft wie beim Anfang vom Spiel"):
+// the preview is the real 3D stadium seen from the air, slowly circling; the
+// drawn strip stays underneath as fallback when 3D can't start.
+const STADIUM_PREVIEW_MODULE="./3d-stadium-preview.mjs?v=21456";
+let stadiumPreview3D=null,stadiumPreviewLoad=null,stadiumPreviewKey="",stadiumPreviewTimer=0,stadiumPreviewFailed=false;
+function stadiumPreview3DWanted(){try{return localStorage.getItem("footera-3d-stadium-preview")!=="0"}catch(e){return true}}
+function showStadiumPreview3D(box,st,identity){
+ if(stadiumPreviewFailed||!stadiumPreview3DWanted())return;
+ const kit=identity?.kits?.home||{},kits={home:{shirt:kit.shirtPrimary||st.seatPrimary,shirtSecondary:kit.shirtSecondary||st.seatSecondary}};
+ const key=JSON.stringify([st,kits]);
+ if(stadiumPreview3D&&stadiumPreview3D.host===box&&stadiumPreviewKey===key)return;
+ clearTimeout(stadiumPreviewTimer);
+ // Colour pickers fire on every move: build once the finger rests.
+ stadiumPreviewTimer=setTimeout(async()=>{
+  try{
+   const mod=await(stadiumPreviewLoad||(stadiumPreviewLoad=import(STADIUM_PREVIEW_MODULE)));
+   if(!box.isConnected)return;
+   if(stadiumPreview3D&&stadiumPreview3D.host!==box){stadiumPreview3D.view.dispose();stadiumPreview3D=null}
+   if(!stadiumPreview3D)stadiumPreview3D={host:box,view:mod.mountStadiumPreview(box.querySelector(".stadium-preview-3d")||box)};
+   stadiumPreview3D.view.show(st,kits);stadiumPreviewKey=key;box.classList.add("is-3d");
+  }catch(e){console.warn("Stadion-Vorschau 3D:",e);stadiumPreviewFailed=true;box.classList.remove("is-3d");stadiumPreviewLoad=null}
+ },stadiumPreview3D?160:0)}
 function renderStadiumIdentity(identity,clubName){
  const st=resolvedClubStadium(identity,clubName),box=$("identityStadiumPreview"),styles=$("identityStadiumStyles");
  if(box){const rows=Array.from({length:6},(_,r)=>`<i></i>`).join("");
-  box.className=`stadium-preview stadium-${st.style}`;box.style.setProperty("--seat-a",st.seatPrimary);box.style.setProperty("--seat-b",st.seatSecondary);
-  box.innerHTML=`<div class="stadium-preview-sky">${st.style==="tradition"?'<b class="mast l"></b><b class="mast r"></b>':'<b class="roof"></b>'}</div><div class="stadium-preview-stand">${rows}</div><div class="stadium-preview-pitch"></div><strong>${esc(st.name)}</strong><small>${esc(STADIUM_STYLES[st.style].label)}</small>`}
- if(styles){if(!styles.children.length)styles.innerHTML=Object.entries(STADIUM_STYLES).map(([id,s])=>`<button type="button" role="radio" data-stadium-style="${id}"><b>${esc(s.label)}</b><span>${esc(s.text)}</span></button>`).join("");
+  if(!box.querySelector(".stadium-preview-3d"))box.innerHTML=`<div class="stadium-preview-3d"></div><div class="stadium-preview-flat"></div><strong></strong><small></small>`;
+  box.className=`stadium-preview stadium-${st.style}${box.classList.contains("is-3d")?" is-3d":""}`;box.style.setProperty("--seat-a",st.seatPrimary);box.style.setProperty("--seat-b",st.seatSecondary);
+  box.querySelector(".stadium-preview-flat").innerHTML=`<div class="stadium-preview-sky">${st.style==="tradition"||st.style==="ground"||st.style==="berg"?'<b class="mast l"></b><b class="mast r"></b>':'<b class="roof"></b>'}</div><div class="stadium-preview-stand">${rows}</div><div class="stadium-preview-pitch"></div>`;
+  box.querySelector("strong").textContent=st.name;box.querySelector("small").textContent=STADIUM_STYLES[st.style].label;
+  showStadiumPreview3D(box,st,cleanClubIdentity(identity))}
+ if(styles){if(styles.children.length!==Object.keys(STADIUM_STYLES).length)styles.innerHTML=Object.entries(STADIUM_STYLES).map(([id,s])=>`<button type="button" role="radio" data-stadium-style="${id}"><b>${esc(s.label)}</b><span>${esc(s.text)}</span></button>`).join("");
   styles.querySelectorAll("[data-stadium-style]").forEach(b=>{const on=b.dataset.stadiumStyle===st.style;b.classList.toggle("active",on);b.setAttribute("aria-checked",String(on))})}
 }
 $("identityStadiumStyles")?.addEventListener("click",e=>{const b=e.target.closest("[data-stadium-style]");if(!b)return;if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();clubIdentityDraft.identity.stadium={...cleanClubStadium(clubIdentityDraft.identity.stadium),style:b.dataset.stadiumStyle};renderClubIdentityPreview()});
@@ -10937,7 +10966,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.455";
+const GFUT_BUILD="V21.456";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10995,7 +11024,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21455",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21456",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -8,9 +8,11 @@
 //  - the stadium shot before kick-off
 // Pure and deterministic: seeded hashes only, no randomness, no clock.
 
-export const STADIUM_VERSION='21.410-stadiums';
-export const STADIUM_STYLES=Object.freeze(['arena','kessel','tradition']);
-export const STADIUM_STYLE_LABELS=Object.freeze({arena:'Flutlicht-Arena',kessel:'Hexenkessel',tradition:'Traditionsstadion'});
+export const STADIUM_VERSION='21.456-stadiums';
+// V21.460 (Basti 2026-11-17 "Mache noch 6 neue Stadionmodelle"): six more
+// builds, each with its own silhouette from the air (see stadiumLook).
+export const STADIUM_STYLES=Object.freeze(['arena','kessel','tradition','welle','bogen','kuppel','ground','wand','berg']);
+export const STADIUM_STYLE_LABELS=Object.freeze({arena:'Flutlicht-Arena',kessel:'Hexenkessel',tradition:'Traditionsstadion',welle:'Wellendach',bogen:'Bogenarena',kuppel:'Kuppelstadion',ground:'Englischer Ground',wand:'Fanwand',berg:'Bergstadion'});
 export const STADIUM_NAME_MAX=28;
 
 const HEX=/^#[0-9a-f]{6}$/i;
@@ -36,13 +38,34 @@ export function stadiumLook(stadium){
  const look={name:s.name,style:s.style,seatPrimary:s.seatPrimary,seatSecondary:s.seatSecondary,
   steps:[mixHex(s.seatPrimary,dark,.82),mixHex(s.seatSecondary,dark,.78)],
   tierSeat:[mixHex(s.seatPrimary,dark,.72),mixHex(s.seatSecondary,dark,.66)],
-  upper:{r0:21.2,y0:12.4,r1:34,y1:25.2},roof:true,ring:'#f4f8ff',ribbon:null};
+  upper:{r0:21.2,y0:12.4,r1:34,y1:25.2},roof:true,ring:'#f4f8ff',ribbon:null,
+  // V21.460 extras: roofShape 'ring'|'wave', openHostEnd (no tier/roof there),
+  // arch, dome, stands (4 separate stands), wall (giant home end), hills, masts.
+  roofShape:'ring',openHostEnd:false,arch:false,dome:false,stands:false,wall:false,hills:false,masts:false,facade:true,roofColour:null};
  if(s.style==='kessel'){
   // Steeper, closer and higher: the noise stays inside. Light ring in club colour.
   look.upper={r0:21.2,y0:12.4,r1:31,y1:28.2};look.ring=mixHex(s.seatPrimary,'#ffffff',.55);look.ribbon=s.seatPrimary;
  }else if(s.style==='tradition'){
   // No upper tier and no roof: the old ground with four floodlight masts.
   look.upper=null;look.roof=false;
+ }else if(s.style==='welle'){
+  // White membrane roof that rises and falls round the bowl.
+  look.roofShape='wave';look.roofColour='#e9eef2';look.ring=mixHex(s.seatPrimary,'#ffffff',.7);
+ }else if(s.style==='bogen'){
+  // A giant steel arch over the whole ground, roof hung from it by cables.
+  look.arch=true;look.upper={r0:21.2,y0:12.4,r1:35,y1:27};
+ }else if(s.style==='kuppel'){
+  // Closed: a ribbed glass dome over the pitch.
+  look.dome=true;look.ring=mixHex(s.seatPrimary,'#ffffff',.6);
+ }else if(s.style==='ground'){
+  // Four separate stands with pitched roofs, open corners, four masts.
+  look.upper=null;look.roof=false;look.stands=true;look.masts=true;
+ }else if(s.style==='wand'){
+  // The home end is one huge steep terrace; tier and roof stop there.
+  look.upper={r0:21.2,y0:12.4,r1:31,y1:21.4};look.openHostEnd=true;look.wall=true;look.ribbon=s.seatPrimary;
+ }else if(s.style==='berg'){
+  // Green banks round three sides, one covered main stand, mountains behind.
+  look.upper=null;look.roof=false;look.hills=true;look.masts=true;look.facade=false;
  }
  return look;
 }
