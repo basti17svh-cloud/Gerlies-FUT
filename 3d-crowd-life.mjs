@@ -1,4 +1,4 @@
-// V21.460 Lebendige Ränge (Basti 2026-11-17: "Die Fans müssen lebendiger werden und die Ränge
+// V21.461 Lebendige Ränge (Basti 2026-11-17: "Die Fans müssen lebendiger werden und die Ränge
 // müssen echt leben. Choreo, Fahnen, etc.").
 // Everything here runs on the GPU: one vertex-shader layer on the four crowd meshes moves every
 // single fan (also the ones the CPU never touches) every frame, smoothly: jumping blocks after a
@@ -7,7 +7,7 @@
 // fence banners with the club names and ticker tape. The CPU only writes a handful of uniforms per
 // frame; the extra meshes cost at most five draw calls and hide themselves while unused.
 // Opt-out: localStorage footera-3d-crowd-life=0.
-export const CROWD_LIFE_VERSION='21.460';
+export const CROWD_LIFE_VERSION='21.461';
 export function crowdLifeWanted(){
  try{return globalThis.localStorage?.getItem('footera-3d-crowd-life')!=='0'}catch(_){return true}
 }

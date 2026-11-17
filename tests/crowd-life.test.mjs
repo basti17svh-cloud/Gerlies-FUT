@@ -27,11 +27,11 @@ test('saves cheer the defending end; full-time winners start La Ola round the gr
 });
 test('scene wiring: GPU layer on all four crowd parts, opt-out, reduce, cache versions',()=>{
  const scene=read('3d-highlights-scene.mjs'),sw=read('service-worker.js'),life=read('3d-crowd-life.mjs');
- assert.match(scene,/from '\.\/3d-crowd-life\.mjs\?v=21460'/);
+ assert.match(scene,/from '\.\/3d-crowd-life\.mjs\?v=21461'/);
  for(const part of ['torso','head','arm','leg'])assert.match(scene,new RegExp(`crowdLife\\.material\\('${part}'\\)`));
  assert.match(scene,/crowdLife\.attach\(crowdStatic\);crowdLife\.attach\(crowdDynamic\)/);
  assert.match(scene,/crowdLife\?\.reduce\(\)/);assert.match(scene,/updateCrowd\(time\);crowdLife\?\.update\(time\)/);
- assert.ok(sw.includes('"./3d-crowd-life.mjs?v=21460"'));
+ assert.ok(sw.includes('"./3d-crowd-life.mjs?v=21461"'));
  assert.match(life,/footera-3d-crowd-life/);assert.equal(/Math\.random\s*\(/.test(life),false);
- assert.equal(crowdLifeWanted(),true);assert.ok(SCARF_SHARE.host>SCARF_SHARE.guest);assert.equal(CROWD_LIFE_VERSION,'21.460');
+ assert.equal(crowdLifeWanted(),true);assert.ok(SCARF_SHARE.host>SCARF_SHARE.guest);assert.equal(CROWD_LIFE_VERSION,'21.461');
 });
