@@ -20,8 +20,8 @@ import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21445';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraHumanModelStatus,footeraRealBodyLoaded};
-// V21.193: phones below the LOW line and players who chose the previous model
-// (localStorage footera-3d-player-model=quaternius) keep the Quaternius squad.
+// V21.460: model choice is independent of render quality. Only an explicit
+// classic-model preference keeps the Quaternius squad once humans are ready.
 // HALLOWEEN 2026 (30.10. 19:00 to 06.11. 19:00 Berlin): night stadium, pumpkins and event boards.
 // window.__FOOTERA_HALLOWEEN=true/false overrides the date for previews and QA.
 export function halloweenNight(at=Date.now()){
@@ -56,8 +56,7 @@ export function sceneWeatherFor(event){
 }
 export function footeraHumanPlayersWanted(){
  try{if(['quaternius','legacy'].includes(globalThis.localStorage?.getItem('footera-3d-player-model')))return false}catch(_){}
- const memory=globalThis.navigator?.deviceMemory||8,cores=globalThis.navigator?.hardwareConcurrency||8;
- return !(memory<4||cores<=4);
+ return true;
 }
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=21269';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
@@ -2993,9 +2992,9 @@ export function play(event,signal){
    if(typeof window!=='undefined'&&window.__FOOTERA_FORCE_LEGACY_MOTION===true)fluidMotion=false;
    let forceLegacyModel=false;
    try{forceLegacyModel=window.localStorage?.getItem('footera-3d-player-model')==='legacy'}catch(_){}
-   // V21.193: the MakeHuman-based human squad where the phone can carry it;
-   // otherwise (or until its file has loaded) the verified Quaternius squad.
-   const modelVariant=!weak&&footeraHumanPlayersWanted()&&isFooteraHumanModelReady()?'human':'quaternius';
+   // V21.460: LOW reduces rendering detail, never blocks a loaded human body.
+   // Until the body is ready, keep the existing non-blocking classic fallback.
+   const modelVariant=footeraHumanPlayersWanted()&&isFooteraHumanModelReady()?'human':'quaternius';
    world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant);
    // V21.439: a sprint to the corner flag makes the goal scene longer.
    if(world.duration>DURATION)playback=createHighlightPlayback(event,DURATION,{...(realtimeTest?{maxFrameMs:2000}:{}),tail:world.duration-DURATION});
@@ -3011,7 +3010,7 @@ export function play(event,signal){
    const humanState=footeraHumanModelStatus();
    modelStatus.textContent=!imported?(forceLegacyModel?'ALT · MANUELL':weak?'ALT · LOW':'ALTES MODELL')
     :modelVariant==='human'?({metahuman:'METAHUMAN',real:'MAN PLAYER',makehuman:'MAKEHUMAN'}[humanState.body]||'MENSCHEN')
-    :weak?'KLASSISCH · LOW':!footeraHumanPlayersWanted()?'KLASSISCH · AUS':humanState.state==='loading'?'KLASSISCH · LÄDT'
+    :!footeraHumanPlayersWanted()?'KLASSISCH · AUS':humanState.state==='loading'?'KLASSISCH · LÄDT'
     :humanState.state==='failed'?'KLASSISCH · FEHLER':'KLASSISCH';
    layer.dataset.humanModel=humanState.state+(humanState.body?':'+humanState.body:'')+(humanState.error?' · '+humanState.error:'');
    modelStatus.dataset.motionCaption=modelInfo.capturedMotionEnabled?'CC0 BEREIT':'CC0 AUS';
