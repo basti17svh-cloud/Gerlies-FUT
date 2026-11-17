@@ -14,9 +14,9 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
  footeraShirtName,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21441';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
-import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21461';
+import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21462';
 
-export const KABINE_PHOTO_VERSION='21.461-kabine-photo';
+export const KABINE_PHOTO_VERSION='21.462-kabine-photo';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 export function photoHash(text){
  let h=2166136261;for(const ch of String(text)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}
@@ -113,7 +113,7 @@ export function photoLayout(spec={}){
  return{variant,rows,actors:out};
 }
 
-// V21.461: where the manager stands on the Siegerfoto: on the floor at the end of the middle row (or the
+// V21.462: where the manager stands on the Siegerfoto: on the floor at the end of the middle row (or the
 // front row), on the right, turned a little towards the team. Pure.
 export function managerSpot(actors=[]){
  const floor=actors.filter(a=>!a.back);const row=floor.length?floor:actors;
@@ -510,7 +510,7 @@ export async function renderKabinePhoto(spec={},opts={}){
    actor.arms?.forEach((a,i)=>{if(a==='bottle')addBottle(m,i?'r':'l',owned,seed+actor.index)});
    mounted.push({m,actor});
   }
-  // V21.461: the manager the user designed stands at the side of the team, one fist up (the cup after a title).
+  // V21.462: the manager the user designed stands at the side of the team, one fist up (the cup after a title).
   if(spec.manager&&mounted.length){
    const at=managerSpot(layout.actors);
    const mg=mountManager(scene,spec.manager,{detail:true,crest:crestImg});

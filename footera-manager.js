@@ -1,4 +1,4 @@
-// V21.461 Manager als Person (Basti 2026-11-17): next to the Trainerkarte the user designs his manager as a person:
+// V21.462 Manager als Person (Basti 2026-11-17): next to the Trainerkarte the user designs his manager as a person:
 // name, Trainer or Trainerin, skin, haircut, hair colour, beard, glasses, age, build and clothes (suit, tracksuit
 // or polo) in his own colours. The manager is one of our own 3D humans (3d-manager.mjs): his picture is the portrait
 // on the Trainerkarte, he stands on the Siegerfoto in the Kabine, and before kick-off he is shown with his card.
@@ -6,7 +6,7 @@
 // user changes something in the editor). The rendered portrait is kept on this device only.
 (function(root){
  "use strict";
- const MODULE="./3d-manager.mjs?v=21461",PORTRAIT_KEY="footera-manager-portrait-v1";
+ const MODULE="./3d-manager.mjs?v=21462",PORTRAIT_KEY="footera-manager-portrait-v1";
  const HEX=/^#[0-9a-f]{6}$/i;
  const escText=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 

@@ -1,4 +1,4 @@
-/* Footera V21.461 Manager als Person (Basti 2026-11-17: "zur Trainerkarte
+/* Footera V21.462 Manager als Person (Basti 2026-11-17: "zur Trainerkarte
  * zusätzlich noch einen Manager bearbeiten als Person ... dass man ihn auch
  * sieht auf Mannschaftsbildern, vor dem Spiel einblenden mit seiner Karte";
  * "individuell gestalten mit Kleidungsstücken in verschiedenen Farben,
@@ -21,7 +21,7 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 
-export const MANAGER_3D_VERSION='21.461-manager';
+export const MANAGER_3D_VERSION='21.462-manager';
 const hexOr=(v,fb)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v).toLowerCase():fb;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const luminance=hex=>{const c=new THREE.Color(hex);return .2126*c.r+.7152*c.g+.0722*c.b};

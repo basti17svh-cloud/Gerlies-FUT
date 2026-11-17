@@ -1,4 +1,4 @@
-// V21.461 Manager als Person: the user designs his manager next to the Trainerkarte (footera-manager.js),
+// V21.462 Manager als Person: the user designs his manager next to the Trainerkarte (footera-manager.js),
 // rendered as one of our own 3D humans (3d-manager.mjs), on his card, on the Siegerfoto and before kick-off.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
 const {pathToFileURL}=require('url');
@@ -72,7 +72,7 @@ test('Siegerfoto: the manager stands on the floor beside the team, inside the pi
 
 test('kick-off shows the manager with his card; files are pinned and cached',()=>{
  const app=read('footera-app.js');
- assert.match(app,/queueMatchCeremony3D\("kickoff"\);\n \/\/ V21\.461[^\n]*\n try\{window\.FooteraManager\?\.kickoff\(match\)\}catch\(e\)\{\}/);
+ assert.match(app,/queueMatchCeremony3D\("kickoff"\);\n \/\/ V21\.462[^\n]*\n try\{window\.FooteraManager\?\.kickoff\(match\)\}catch\(e\)\{\}/);
  const index=read('index.html'),sw=read('service-worker.js'),v=(read('footera-manager.js').match(/3d-manager\.mjs\?v=(\d+)/)||[])[1];
  assert.ok(v);
  for(const f of ['footera-manager.js','footera-manager.css'])assert.ok(index.includes(`./${f}?v=${v}`)&&sw.includes(`"./${f}?v=${v}"`),f);

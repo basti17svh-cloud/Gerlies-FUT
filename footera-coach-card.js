@@ -78,7 +78,7 @@
   try{if(typeof crestHTML==="function"&&typeof clubIdentitySnapshot==="function")return crestHTML(clubIdentitySnapshot(),true)}catch(e){}
   return"";
  }
- // V21.461: the manager the user designed is the card's portrait (rendered on the device, see footera-manager.js).
+ // V21.462: the manager the user designed is the card's portrait (rendered on the device, see footera-manager.js).
  function managerFace(){try{return root.FooteraManager?.cardFace?.()||""}catch(e){return""}}
  const WHISTLE=`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.5 7H20a1 1 0 0 1 1 1v2.2a1 1 0 0 1-.7.95L15 12.8A5.5 5.5 0 1 1 9.5 7Zm0 3a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM10 3h2v3h-2z"/></svg>`;
  function cardHTMLFor(d){
@@ -123,7 +123,7 @@
   decorateHub();
   return d;
  }
- // V21.461: second tab, the manager as a person (editor in footera-manager.js).
+ // V21.462: second tab, the manager as a person (editor in footera-manager.js).
  let tab="card";
  function showTab(name){
   const el=document.getElementById(MODAL_ID);if(!el)return;

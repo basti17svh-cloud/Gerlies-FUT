@@ -1,4 +1,4 @@
-/* V21.461 Manager als Person */
+/* V21.462 Manager als Person */
 .card-shell .custom-card.coach-card .coach-face>img.coach-manager-face{width:100%!important;height:100%!important;max-width:none;margin:0;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px #0008)}
 #coachCardModal .modalhead{flex-wrap:wrap}
 #coachCardModal .modalhead>div:first-child{flex:1 1 180px;min-width:0}

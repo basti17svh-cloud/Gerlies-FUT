@@ -9026,7 +9026,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  updateMatchUI();setMatchPill(false);startMatchTimer();
  // V21.226: the teams walk out in 3D first (Wichtige/Alle Highlights).
  if(typeof queueMatchCeremony3D==="function")queueMatchCeremony3D("kickoff");
- // V21.461: before kick-off the user's manager is shown with his Trainerkarte.
+ // V21.462: before kick-off the user's manager is shown with his Trainerkarte.
  try{window.FooteraManager?.kickoff(match)}catch(e){}
 }
 function addLog(t,side=""){
@@ -10968,7 +10968,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.461";
+const GFUT_BUILD="V21.462";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11026,7 +11026,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21461",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21462",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
