@@ -1,0 +1,52 @@
+{
+  "kind": "event",
+  "theme": "blackfriday",
+  "postAt": "2026-11-27T19:00:00+01:00",
+  "title": "BLACK FRIDAY TEAM 1 Launch",
+  "keys": [
+    "event-start:blackfriday-2026",
+    "sbc-start:blackfriday-kvaratskhelia-91",
+    "store-deal-start:2026-11-27T19:00:00",
+    "evo-start:blackfriday_neon",
+    "obj-start:blackfriday-lewandowski"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🖤 BLACK FRIDAY TEAM 1 IST LIVE ⚡\n\n👉 Wisch dich durch:\n\n1️⃣ 18 neue Event-Karten, angeführt von Donnarumma 91, Nuno Mendes 90 und Valverde 89\n2️⃣ Spieler-SBC Khvicha Kvaratskhelia 91: 4 Teile, bis Fr 04.12. 19 Uhr\n3️⃣ Robert Lewandowski 88 gratis: Gewinne 8 Squad-Battles-Partien auf mindestens Profi\n4️⃣ Neue Evolution „Neon-Deal-Evolution“ (BLACK FRIDAY)\n5️⃣ Coin-Packs im Shop −30 %, bis Di 01.12. 19 Uhr\n\nWer ist dein Favorit? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "type": "reel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "🖤 BLACK FRIDAY TEAM 1 IST LIVE ⚡",
+    "caption": "🖤 BLACK FRIDAY TEAM 1 IST LIVE ⚡\n\n👉 Wisch dich durch:\n\n1️⃣ 18 neue Event-Karten, angeführt von Donnarumma 91, Nuno Mendes 90 und Valverde 89\n2️⃣ Spieler-SBC Khvicha Kvaratskhelia 91: 4 Teile, bis Fr 04.12. 19 Uhr\n3️⃣ Robert Lewandowski 88 gratis: Gewinne 8 Squad-Battles-Partien auf mindestens Profi\n4️⃣ Neue Evolution „Neon-Deal-Evolution“ (BLACK FRIDAY)\n5️⃣ Coin-Packs im Shop −30 %, bis Di 01.12. 19 Uhr\n\nWer ist dein Favorit? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🖤 BLACK FRIDAY TEAM 1 IST LIVE ⚡\n\n• 18 neue Event-Karten, angeführt von Donnarumma 91, Nuno Mendes 90 und Valverde 89\n• Spieler-SBC Khvicha Kvaratskhelia 91: 4 Teile, bis Fr 04.12. 19 Uhr\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "reel",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-27-1900-blackfriday",
+  "media": {
+    "feed": [
+      "feed-1.jpg",
+      "feed-2.jpg",
+      "feed-3.jpg",
+      "feed-4.jpg",
+      "feed-5.jpg"
+    ],
+    "story": [
+      "story-1.jpg",
+      "story-2.jpg",
+      "story-3.jpg",
+      "story-4.jpg",
+      "story-5.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}

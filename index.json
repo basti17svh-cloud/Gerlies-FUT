@@ -206,5 +206,18 @@
       "x": true
     },
     "scheduled": true
+  },
+  {
+    "id": "2026-11-27-1900-blackfriday",
+    "postAt": "2026-11-27T19:00:00+01:00",
+    "title": "BLACK FRIDAY TEAM 1 Launch",
+    "kind": "event",
+    "plan": {
+      "instagram": "reel",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
   }
 ]
