@@ -1,4 +1,4 @@
-/* V21.456 Trainerkarte */
+/* V21.458 Trainerkarte */
 .club-hub-card.club-hub-coach{min-height:120px;background:radial-gradient(circle at 86% 30%,rgba(216,255,62,.2),transparent 40%),linear-gradient(120deg,rgba(216,255,62,.12),rgba(216,255,62,.02) 60%),var(--card,#151a22);border-color:rgba(216,255,62,.45)}
 .club-hub-card.club-hub-coach .club-hub-kicker{color:#d8ff3e}
 .club-hub-card.club-hub-coach:before{content:"TRN";position:absolute;right:46px;top:20px;color:#d8ff3e;font:950 34px/1 Inter,system-ui,sans-serif;opacity:.14;transform:rotate(-8deg)}

@@ -1,5 +1,5 @@
 'use strict';
-// V21.456 Trainerkarte: own Footera card for the coach, rating and stats from what the club really did. Only reads the save.
+// V21.458 Trainerkarte: own Footera card for the coach, rating and stats from what the club really did. Only reads the save.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.join(__dirname,'..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
@@ -65,8 +65,8 @@ test('coach card: card markup uses the normal card frame classes and escapes nam
 
 test('coach card: wired into the app shell, service worker and match end',()=>{
  const index=read('index.html'),sw=read('service-worker.js'),app=read('footera-app.js');
- assert.match(index,/footera-coach-card\.js\?v=21456/);assert.match(index,/footera-coach-card\.css\?v=21456/);
- assert.ok(sw.includes('"./footera-coach-card.js?v=21456"')&&sw.includes('"./footera-coach-card.css?v=21456"'));
+ assert.match(index,/footera-coach-card\.js\?v=21458/);assert.match(index,/footera-coach-card\.css\?v=21458/);
+ assert.ok(sw.includes('"./footera-coach-card.js?v=21458"')&&sw.includes('"./footera-coach-card.css?v=21458"'));
  assert.ok(app.includes('globalThis.FooteraCoachCard?.afterMatch(match)'));
  assert.ok(index.indexOf('footera-museum.js')<index.indexOf('footera-coach-card.js'),'museum (titles) loads first');
  assert.ok(!read('footera-coach-card.js').includes('state.')||!/state\.[a-zA-Z]+\s*=[^=]/.test(read('footera-coach-card.js')),'never writes to the save');

@@ -1,4 +1,4 @@
-// V21.456 Trainerkarte: the user gets an own Footera card as the coach of the club. The rating and six stats come
+// V21.458 Trainerkarte: the user gets an own Footera card as the coach of the club. The rating and six stats come
 // from what the club really did (matches, win rate, goals, goals against, titles, best winning run, Rivals division).
 // Wins make it grow: bronze -> silver -> gold -> Trainer-Legende. After a match a small pill shows an upgrade.
 // The save is only read. The last rating the user has seen is kept on this device (localStorage), nothing else.
