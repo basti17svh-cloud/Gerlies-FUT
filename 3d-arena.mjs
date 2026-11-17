@@ -1,4 +1,4 @@
-import {createSurroundings,mixHex} from './3d-stadium.mjs?v=21457';
+import {createSurroundings,mixHex} from './3d-stadium.mjs?v=21459';
 // Footera V21.382 "Flutlicht-Arena": the floodlit night stadium around the
 // existing pitch and stands. Purely visual and fully deterministic (time in,
 // picture out); it never touches simulation, camera or player motion.
@@ -58,7 +58,7 @@ export function arenaPerimeter(radius,splits=1){
 }
 // V21.460 wave roof: high in the middle of every stand, low in the corners.
 export function waveRoofLift(x,z){return 6.2*Math.cos(4*Math.atan2(z*CORNER_X/CORNER_Z,x))}
-// V21.457 Fanwand: 0 along the sides, 1 behind the home goal; the corners blend.
+// V21.459 Fanwand: 0 along the sides, 1 behind the home goal; the corners blend.
 export function swellWeight(x,z,hostEnd=-1){const t=Math.max(0,Math.min(1,(z*hostEnd-48)/32));return t*t*(3-2*t)}
 // Straight run of the host end.
 export function onHostEnd(p,hostEnd=-1){return p.z*hostEnd>CORNER_Z+.5&&Math.abs(p.x)<=CORNER_X+.01}
@@ -191,7 +191,7 @@ function buildStadiumExtras(THREE,{look,hostEnd,trim,group,track,weak,spooky,has
   names.push('FooteraStadiumArch');
  }
  if(plan.dome){
-  // V21.457 (Basti: "rund auf eckigem Stadion? nicht schön"): the glass roof
+  // V21.459 (Basti: "rund auf eckigem Stadion? nicht schön"): the glass roof
   // follows the stadium's own rounded rectangle, ring by ring up to a gentle
   // crown; steel ribs along the rings and from every corner and stand.
   const base=arenaPerimeter(roofDims.r1-.4,4).points,rings=weak?8:12,y0=roofDims.y1-.2,rise=13.5,pos=[],idx=[],n=base.length;
@@ -337,7 +337,7 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  const home=kits?.home?.shirt||'#37df78',away=kits?.away?.shirt||'#d85a6a';
  // V21.406 stadiums: build (upper tier, roof), seat colours, ring and ribbon.
  const upperTier=look?look.upper:{r0:21.2,y0:12.4,r1:34,y1:25.2},hasRoof=look?look.roof!==false:true;
- // V21.457: roof position per build (Hexenkessel: higher and closer) and the
+ // V21.459: roof position per build (Hexenkessel: higher and closer) and the
  // Fanwand swell: tier, roof and facade grow out and up behind the home goal.
  const roofDims=look?.roofDims||{r0:15.5,y0:29.2,r1:36,y1:33.6};
  const sw=look?.swell||null,sweep=sw?{splits:8}:{};
@@ -388,7 +388,7 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
    ctx.shadowColor=accent;ctx.shadowBlur=14;ctx.fillStyle=accent;ctx.fillRect(0,6,w,5);ctx.fillRect(0,h-12,w,4);
    ctx.shadowBlur=0;ctx.globalAlpha=.55;for(let x=0;x<w;x+=48)ctx.fillRect(x+22,14,3,h-26);
    ctx.globalAlpha=.22;ctx.fillStyle=accent2;for(let x=24;x<w;x+=96)ctx.fillRect(x,14,22,h-26);ctx.globalAlpha=1;
-   // V21.457 Hexenkessel: a glowing diamond lattice in the club colour.
+   // V21.459 Hexenkessel: a glowing diamond lattice in the club colour.
    if(look?.facadeStyle==='lattice'){ctx.fillStyle='#120a0c';ctx.fillRect(0,12,w,h-22);ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.shadowColor=accent;ctx.shadowBlur=10;
     for(let x=-h;x<w+h;x+=34){ctx.beginPath();ctx.moveTo(x,12);ctx.lineTo(x+h-22,h-10);ctx.moveTo(x+h-22,12);ctx.lineTo(x,h-10);ctx.stroke()}ctx.shadowBlur=0}
    // The name, big and lit, twice per tile.

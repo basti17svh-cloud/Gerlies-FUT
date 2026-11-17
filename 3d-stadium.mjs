@@ -8,7 +8,7 @@
 //  - the stadium shot before kick-off
 // Pure and deterministic: seeded hashes only, no randomness, no clock.
 
-export const STADIUM_VERSION='21.457-stadiums';
+export const STADIUM_VERSION='21.459-stadiums';
 // V21.460 (Basti 2026-11-17 "Mache noch 6 neue Stadionmodelle"): six more
 // builds, each with its own silhouette from the air (see stadiumLook).
 export const STADIUM_STYLES=Object.freeze(['arena','kessel','tradition','welle','bogen','kuppel','ground','wand','berg']);
@@ -44,7 +44,7 @@ export function stadiumLook(stadium){
   roofShape:'ring',openHostEnd:false,arch:false,dome:false,stands:false,wall:false,hills:false,masts:false,facade:true,roofColour:null,
   roofDims:null,swell:null,towers:false,facadeStyle:'panels'};
  if(s.style==='kessel'){
-  // V21.457 (Basti: "Wo ist der Unterschied zur Flutlicht-Arena?"): a tall,
+  // V21.459 (Basti: "Wo ist der Unterschied zur Flutlicht-Arena?"): a tall,
   // tight cauldron. Very steep upper tier, low-slung roof in the club colour
   // right over the stands, glowing lattice facade, four light towers.
   look.upper={r0:21.2,y0:12.4,r1:28.6,y1:33.4};look.ring=mixHex(s.seatPrimary,'#ffffff',.55);look.ribbon=s.seatPrimary;
@@ -65,7 +65,7 @@ export function stadiumLook(stadium){
   // Four separate stands with pitched roofs, open corners, four masts.
   look.upper=null;look.roof=false;look.stands=true;look.masts=true;
  }else if(s.style==='wand'){
-  // V21.457 new model (Basti: "Fanwand komplett ersetzen"): one continuous
+  // V21.459 new model (Basti: "Fanwand komplett ersetzen"): one continuous
   // bowl that swells into a huge steep home end; tier, roof and facade rise
   // smoothly round the corners, no separate block.
   look.upper={r0:21.2,y0:12.4,r1:32,y1:23.4};look.swell={tier:[13,23],roof:[12,24]};look.ribbon=s.seatPrimary;
@@ -191,7 +191,7 @@ export function surroundingsPlan({facadeRadius:fr=34,weak=false,hash=n=>{const x
  const training=[{x:-(CX+road[1]+40),z:-36,w:44,d:66},{x:-(CX+road[1]+40),z:36,w:44,d:66}];
  const inTraining=(x,z,m=4)=>training.some(t=>Math.abs(x-t.x)<t.w/2+m&&Math.abs(z-t.z)<t.d/2+m);
  const trees=[];for(let i=0,tries=0;trees.length<(weak?45:110)&&tries<900;tries++,i++){const [x,z]=at(road[1]+5+hash(i*5+1)*42,hash(i*5+2));if(x>park.x0-6&&x<park.x1+6&&z>park.z0-6&&z<park.z1+6)continue;if(inTraining(x,z))continue;trees.push({x,z,s:.8+hash(i*5+3)*.6})}
- // V21.457 (Basti: "außen herum bisschen was und in der Ferne einfach nichts"):
+ // V21.459 (Basti: "außen herum bisschen was und in der Ferne einfach nichts"):
  // food stands and club flags on the plaza, a motorway ring with traffic and
  // a lit city skyline all round on the horizon.
  const kiosks=[];for(let i=0;i<(weak?16:32);i++){const e=[0.115,0.385,0.615,0.885][i%4],t=e+((i>>2)%2?1:-1)*(.012+hash(i*3+1)*.03),[x,z,nx,nz]=at(plaza[1]-3.2,t);kiosks.push({x,z,yaw:Math.atan2(nx,nz),colour:i%3})}
@@ -243,7 +243,7 @@ export function createSurroundings(THREE,{group,track=o=>o,band,facadeRadius,kit
  const carColours=['#d7dadb','#1d2226','#8b1d22','#2a4a7a','#9aa3a8','#3c3f42','#e6e2d6','#24563a'];
  const cars=new THREE.InstancedMesh(track(new THREE.BoxGeometry(1.8,1.35,4.3)),track(new THREE.MeshLambertMaterial({color:'#ffffff'})),Math.max(1,plan.cars.length));cars.count=plan.cars.length;
  plan.cars.forEach((c,i)=>{dummy.position.set(c.x,.5,c.z);dummy.rotation.set(0,c.yaw+Math.PI/2,0);dummy.scale.setScalar(1);dummy.updateMatrix();cars.setMatrixAt(i,dummy.matrix);cars.setColorAt(i,colour.set(carColours[c.colour]))});out.add(cars);track(cars);
- // ---- V21.457: plaza life, training ground, motorway and skyline -----------
+ // ---- V21.459: plaza life, training ground, motorway and skyline -----------
  const clubA=kits?.home?.shirt||look?.seatPrimary||'#d8ff3e',clubB=kits?.home?.shirtSecondary||look?.seatSecondary||'#173627';
  {const k=new THREE.InstancedMesh(track(new THREE.BoxGeometry(3.4,2.6,2.4)),track(new THREE.MeshLambertMaterial({color:'#ffffff'})),plan.kiosks.length);
   plan.kiosks.forEach((q,i)=>{dummy.position.set(q.x,1.1,q.z);dummy.rotation.set(0,q.yaw,0);dummy.scale.setScalar(1);dummy.updateMatrix();k.setMatrixAt(i,dummy.matrix);k.setColorAt(i,colour.set([clubA,'#f1e6cf','#e84a3a'][q.colour]))});k.name='FooteraStadiumKiosks';out.add(k);track(k);}

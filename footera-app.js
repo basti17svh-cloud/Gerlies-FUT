@@ -7204,7 +7204,7 @@ function renderClubIdentityPreview(){
 // V21.460 (Basti: "so eine Ansicht aus der Luft wie beim Anfang vom Spiel"):
 // the preview is the real 3D stadium seen from the air, slowly circling; the
 // drawn strip stays underneath as fallback when 3D can't start.
-const STADIUM_PREVIEW_MODULE="./3d-stadium-preview.mjs?v=21457";
+const STADIUM_PREVIEW_MODULE="./3d-stadium-preview.mjs?v=21459";
 let stadiumPreview3D=null,stadiumPreviewLoad=null,stadiumPreviewKey="",stadiumPreviewTimer=0,stadiumPreviewFailed=false;
 function stadiumPreview3DWanted(){try{return localStorage.getItem("footera-3d-stadium-preview")!=="0"}catch(e){return true}}
 function showStadiumPreview3D(box,st,identity){
@@ -9941,7 +9941,7 @@ function finishMatch(){
  const penaltyPanel=$("penaltyShootoutPanel");if(penaltyPanel)penaltyPanel.hidden=true;
  stopMatchTimer();
  dismissMatchGoalMoment(false);
- match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();globalThis.FooteraWeekRecap?.afterMatch(match);globalThis.FooteraKabine?.afterMatch(match);
+ match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();globalThis.FooteraWeekRecap?.afterMatch(match);globalThis.FooteraKabine?.afterMatch(match);globalThis.FooteraCoachCard?.afterMatch(match);
  recordMatchEvent("break","", "Abpfiff");
  state.stats.matches++;globalThis.FooteraShare?.afterMatch();
  const isFriendly=String(match.mode).startsWith("friendly");
@@ -10966,7 +10966,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.457";
+const GFUT_BUILD="V21.459";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11024,7 +11024,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21457",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21459",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

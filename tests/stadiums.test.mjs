@@ -36,7 +36,7 @@ test('slow phones thin every stand evenly instead of hiding whole stands',()=>{
  assert.ok(!/Math\.random|Date\.now|performance\.now/.test(read('3d-stadium.mjs')));
 });
 
-test('builds: arena, Hexenkessel, Traditionsstadion + six new ones (V21.457); data is cleaned',()=>{
+test('builds: arena, Hexenkessel, Traditionsstadion + six new ones (V21.459); data is cleaned',()=>{
  assert.deepEqual([...STADIUM_STYLES],['arena','kessel','tradition','welle','bogen','kuppel','ground','wand','berg']);
  assert.ok(stadiumLook({style:'arena'}).upper&&stadiumLook({style:'arena'}).roof);
  const k=stadiumLook({style:'kessel',seatPrimary:'#dc052d'});assert.ok(k.upper.y1>25.2&&k.upper.r1<34&&k.ribbon==='#dc052d');

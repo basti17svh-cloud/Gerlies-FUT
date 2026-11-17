@@ -7,10 +7,10 @@
 // camera circles slowly at a height where roof, stands and seats are still
 // easy to tell apart. Drag turns it. Rebuilt whenever build or colours change.
 import * as THREE from './vendor/three/three.module.min.js';
-import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21457';
-import {createArena} from './3d-arena.mjs?v=21457';
+import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
+import {createArena} from './3d-arena.mjs?v=21459';
 
-export const STADIUM_PREVIEW_VERSION='21.457-stadium-preview';
+export const STADIUM_PREVIEW_VERSION='21.459-stadium-preview';
 const hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
 
 // Where the preview camera is: angle in radians round the ground. Close

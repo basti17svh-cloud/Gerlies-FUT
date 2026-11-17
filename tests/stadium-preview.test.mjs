@@ -1,4 +1,4 @@
-// V21.457 (Basti 2026-11-17): "Ansicht aus der Luft (wie beim Anfang vom Spiel)
+// V21.459 (Basti 2026-11-17): "Ansicht aus der Luft (wie beim Anfang vom Spiel)
 // ... nicht komplett weit weg" + "Mache noch 6 neue Stadionmodelle".
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,7 +21,7 @@ test('six new builds, each with its own silhouette',()=>{
  const berg=stadiumExtrasPlan(stadiumLook({style:'berg'}));assert.ok(berg.hills);assert.equal(berg.stands.length,1);
 });
 
-test('Fanwand: one bowl that swells into a huge home end (V21.457 new model)',()=>{
+test('Fanwand: one bowl that swells into a huge home end (V21.459 new model)',()=>{
  const l=stadiumLook({style:'wand'});assert.ok(l.swell&&l.swell.tier[1]>=20&&l.swell.roof[1]>=20);assert.equal(l.wall,false);
  for(const hostEnd of [-1,1]){assert.equal(swellWeight(0,hostEnd*85,hostEnd),1);assert.equal(swellWeight(60,0,hostEnd),0);assert.equal(swellWeight(0,-hostEnd*85,hostEnd),0)}
  assert.match(read('3d-highlights-scene.mjs'),/kits:crowdKits,look,hostEnd,/,'the scene tells the arena which end is home');
