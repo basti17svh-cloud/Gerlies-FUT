@@ -1,3 +1,4 @@
+// V21.464: safe group chat on mobile: bounded history rendering, resilient log, on-demand WebGL photos.
 // V21.404 Kabinen-Chat: the group chat of your squad. After every match your players write about the game
 // (scorer brags, keeper after a clean sheet, red card apology, joker, player of the match ...), new top signings
 // from packs join the group and players used in SBCs leave it.
@@ -41,7 +42,11 @@
  /* ---------- storage ---------- */
  function read(){
   let v={};try{v=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){v={}}
-  if(!Array.isArray(v.msgs))v.msgs=[];if(!Array.isArray(v.refs))v.refs=[];if(!v.replies||typeof v.replies!=="object")v.replies={};
+  if(!Array.isArray(v.msgs))v.msgs=[];
+  // Older/incomplete chat entries must never crash the whole game on render.
+  else v.msgs=v.msgs.filter(m=>m&&typeof m==="object"&&["sys","msg","me"].includes(m.kind)&&(m.kind!=="msg"||m.who&&typeof m.who==="object")).slice(-MAX_MSGS);
+  if(!Array.isArray(v.refs))v.refs=[];else v.refs=v.refs.filter(x=>typeof x==="string").slice(-MAX_REFS);
+  if(!v.replies||typeof v.replies!=="object"||Array.isArray(v.replies))v.replies={};
   if(!v.memo||typeof v.memo!=="object")v.memo={};
   v.seen=num(v.seen);v.mood=v.mood==null?60:clamp(Math.round(num(v.mood)),0,100);return v;
  }
@@ -974,34 +979,62 @@
  }
  function photoHTML(m){
   const url=photoUrl(m.id),alt=m.photo?.signing?"Vorstellungsfoto":"Siegerfoto aus der Kabine";
-  return`<div class="kb-photo${m.photo?.signing?" kb-photo-portrait":""}${url?" ready":""}" data-kb-photo="${escText(m.id)}">${url?`<img src="${escText(url)}" alt="${alt}">`:`<div class="kb-photo-wait"><span aria-hidden="true">📸</span><small>${photoFailed.has(m.id)?"Foto konnte nicht entwickelt werden":"Foto wird entwickelt …"}</small></div>`}</div>`;
+  // Generating a 3D photo on opening the chat exhausts mobile GPU/RAM on some devices.
+  // Existing cached pictures remain instant; new pictures render only after an explicit tap.
+  return`<div class="kb-photo${m.photo?.signing?" kb-photo-portrait":""}${url?" ready":""}" data-kb-photo="${escText(m.id)}">${url?`<img src="${escText(url)}" alt="${alt}">`:`<button type="button" class="kb-photo-wait" data-kb-photo-develop="${escText(m.id)}"><span aria-hidden="true">📸</span><small>${photoBusy.has(m.id)?"Foto wird erstellt …":photoFailed.has(m.id)?"Erneut versuchen":"Foto ansehen"}</small></button>`}</div>`;
  }
  function shrink(url,w=800,q=.82){
   return new Promise(res=>{const img=new Image();img.onload=()=>{try{const c=document.createElement("canvas"),h=Math.round(img.height*w/img.width);c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q))}catch(e){res(url)}};img.onerror=()=>res(url);img.src=url});
  }
  function hydratePhotos(){
+  // Only reuse pictures already cached. Never launch WebGL for unseen chat history.
   if(typeof document==="undefined"||!document.querySelectorAll)return;
-  let v=null;
   document.querySelectorAll("#kabineList .kb-photo:not(.ready)").forEach(el=>{
-   const id=el.dataset.kbPhoto,url=photoUrl(id);
-   if(url){showPhoto(id,url);return}
-   if(photoBusy.has(id)||photoFailed.has(id))return;
-   v=v||read();const m=v.msgs.find(x=>x.id===id);if(!m||!m.photo)return;
-   photoBusy.add(id);
-   photoQueue=photoQueue.then(async()=>{
-    try{
-     const mod=await import(PHOTO_MODULE);
-     // V21.462: the user's manager stands next to the team on the Siegerfoto (his look at the time the photo is developed).
-     let manager=null;try{manager=root.FooteraManager?.forPhoto?.()||null}catch(e){}
-     const r=m.photo.signing?await mod.renderSigningPhoto(m.photo,{width:1080,height:1350}):await mod.renderKabinePhoto({...m.photo,manager},{width:1080,height:810});
-     photoMem.set(id,r.url);showPhoto(id,r.url);keepPhoto(id,await shrink(r.url));
-    }catch(e){console.warn("Siegerfoto:",e);photoFailed.add(id);document.querySelectorAll(`[data-kb-photo="${cssId(id)}"] small`).forEach(s=>s.textContent="Foto konnte nicht entwickelt werden")}
-    finally{photoBusy.delete(id)}
-   });
+   const url=photoUrl(el.dataset.kbPhoto);
+   if(url)showPhoto(el.dataset.kbPhoto,url);
   });
  }
+ function developPhoto(id){
+  id=String(id||"");
+  if(!id||photoBusy.has(id))return;
+  const m=read().msgs.find(x=>x.id===id);
+  if(!m?.photo)return;
+  photoFailed.delete(id);
+  photoBusy.add(id);
+  const status=message=>document.querySelectorAll("#kabineList .kb-photo:not(.ready)").forEach(el=>{
+   if(el.dataset.kbPhoto!==id)return;
+   const label=el.querySelector(".kb-photo-wait small");
+   if(label)label.textContent=message;
+  });
+  status("Foto wird erstellt …");
+  // One render at a time and smaller output on phones prevents memory spikes.
+  photoQueue=photoQueue.catch(()=>{}).then(async()=>{
+   try{
+    const mod=await import(PHOTO_MODULE);
+    let manager=null;try{manager=root.FooteraManager?.forPhoto?.()||null}catch(_){}
+    const mobile=typeof matchMedia==="function"&&matchMedia("(max-width:700px)").matches;
+    const width=mobile?720:960;
+    const spec=m.photo.signing?m.photo:{...m.photo,manager};
+    const r=m.photo.signing?await mod.renderSigningPhoto(spec,{width,height:Math.round(width*1.25)}):await mod.renderKabinePhoto(spec,{width,height:Math.round(width*.75)});
+    if(!r?.url||!r.url.startsWith("data:image/"))throw new Error("Empty photo");
+    photoMem.set(id,r.url);
+    while(photoMem.size>PHOTO_KEEP)photoMem.delete(photoMem.keys().next().value);
+    showPhoto(id,r.url);
+    keepPhoto(id,r.url);
+   }catch(e){
+    console.warn("Kabinenfoto konnte nicht erstellt werden:",e);
+    photoFailed.add(id);
+    status("Foto fehlgeschlagen – erneut tippen");
+   }finally{photoBusy.delete(id)}
+  });
+ }
+
  function showPhoto(id,url){
-  document.querySelectorAll(`[data-kb-photo="${cssId(id)}"]`).forEach(el=>{if(el.classList.contains("ready"))return;el.classList.add("ready");el.innerHTML=`<img src="${escText(url)}" alt="Siegerfoto aus der Kabine">`});
+  document.querySelectorAll("#kabineList .kb-photo").forEach(el=>{
+   if(el.dataset.kbPhoto!==id||el.classList.contains("ready"))return;
+   el.classList.add("ready");
+   el.innerHTML=`<img src="${escText(url)}" alt="${el.classList.contains("kb-photo-portrait")?"Vorstellungsfoto":"Siegerfoto aus der Kabine"}" loading="lazy" decoding="async">`;
+  });
  }
  function openPhoto(id){
   const url=photoUrl(id);if(!url)return;
@@ -1031,6 +1064,12 @@
   msgs.forEach((m,i)=>{const d=dayLabel(m.ts,now);if(d!==day){day=d;html+=`<div class="kb-day"><span>${escText(d)}</span></div>`}html+=msgHTML(m,msgs[i-1])});
   return html;
  }
+ // Keep all messages in storage, but mount only a limited number of DOM rows.
+ const CHAT_PAGE=60;let chatVisible=CHAT_PAGE;
+ function historyHTML(msgs){
+  const start=Math.max(0,msgs.length-chatVisible);
+  return (start?`<button type="button" class="kb-history-more" data-kb-more>Ältere Nachrichten anzeigen (${start})</button>`:"")+listHTML(msgs.slice(start));
+ }
  function emptyHTML(){return`<div class="kb-empty"><span aria-hidden="true">💬</span><strong>Noch ruhig in der Kabine</strong><p>Nach deinem nächsten Spiel schreibt deine Mannschaft hier, was sie vom Spiel hält. Neue Topstars aus Packs stellen sich vor.</p></div>`}
  function clubName(){try{return typeof matchHomeTeamName==="function"?matchHomeTeamName():String(state?.profile?.clubName||"Footera Club")}catch(e){return"Footera Club"}}
  function crest(){try{if(typeof crestHTML==="function"&&typeof clubIdentitySnapshot==="function")return crestHTML(clubIdentitySnapshot(),true)}catch(e){}return'<span class="kb-crest-fallback">⚽</span>'}
@@ -1053,6 +1092,17 @@
   document.body.appendChild(el);
   el.addEventListener("click",async e=>{
    if(e.target.closest("[data-kb-close]")||e.target===el){close();return}
+   if(e.target.closest("[data-kb-more]")){
+    if(playing)finishPlay();
+    const list=$("#kabineList");if(!list)return;
+    const height=list.scrollHeight,top=list.scrollTop;
+    chatVisible=Math.min(MAX_MSGS,chatVisible+CHAT_PAGE);
+    list.innerHTML=historyHTML(read().msgs);
+    list.scrollTop=Math.max(0,top+list.scrollHeight-height);
+    hydratePhotos();return;
+   }
+   const develop=e.target.closest("[data-kb-photo-develop]");
+   if(develop){e.preventDefault();if(playing)finishPlay();developPhoto(develop.dataset.kbPhotoDevelop);return}
    const chip=e.target.closest("[data-kb-reply]");
    if(chip){finishPlay();const added=answer(chip.dataset.kbRef,chip.dataset.kbReply);renderFoot(true);if(added.length)play(added.map(()=>0),true);return}
    const ph=e.target.closest(".kb-photo.ready");if(ph&&!playing){openPhoto(ph.dataset.kbPhoto);return}
@@ -1087,12 +1137,12 @@
   if(playing){clearTimeout(playing.timer);playing=null}
   const v=read(),list=$("#kabineList");if(!list)return;
   const reduce=typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const fresh=appendOnly?v.msgs.slice(-_.length):v.msgs.filter(m=>num(m.ts)>v.seen);
+  const fresh=appendOnly?v.msgs.slice(-_.length):v.msgs.filter(m=>num(m.ts)>v.seen).slice(-chatVisible);
   const old=appendOnly?v.msgs.slice(0,-_.length):v.msgs.filter(m=>num(m.ts)<=v.seen);
-  if(!appendOnly)list.innerHTML=v.msgs.length?listHTML(old):emptyHTML();
+  if(!appendOnly)list.innerHTML=v.msgs.length?historyHTML(old):emptyHTML();
   markSeen(v);
   if(!fresh.length){scrollEnd();unlockFoot();return}
-  if(reduce){list.innerHTML=listHTML(v.msgs);scrollEnd();unlockFoot();return}
+  if(reduce){list.innerHTML=historyHTML(v.msgs);scrollEnd();unlockFoot();return}
   let i=0;const all=v.msgs;
   const me={all,timer:0};playing=me;
   const step=()=>{
@@ -1112,15 +1162,25 @@
  function finishPlay(){
   if(!playing){unlockFoot();return}
   clearTimeout(playing.timer);playing=null;
-  const list=$("#kabineList"),v=read();if(list){list.innerHTML=v.msgs.length?listHTML(v.msgs):emptyHTML();scrollEnd()}
+  const list=$("#kabineList"),v=read();if(list){list.innerHTML=v.msgs.length?historyHTML(v.msgs):emptyHTML();scrollEnd()}
   unlockFoot();
  }
  function markSeen(v=read()){const last=v.msgs.length?num(v.msgs[v.msgs.length-1].ts):0;if(last>v.seen){v.seen=last;write(v)}refreshBadges()}
  function open(){
-  try{if(typeof match!=="undefined"&&match?.finished)afterMatch(match)}catch(e){}
-  ensureModal();renderHead();renderFoot();
-  if(typeof showUiLayer==="function")showUiLayer(MODAL_ID,KIND);else $("#"+MODAL_ID).classList.add("active");
-  play();
+  try{if(typeof match!=="undefined"&&match?.finished)afterMatch(match)}catch(e){console.warn("Kabinenchat Spielabschluss:",e)}
+  try{
+   ensureModal();chatVisible=CHAT_PAGE;renderHead();renderFoot();
+   if(typeof showUiLayer==="function")showUiLayer(MODAL_ID,KIND);else $("#"+MODAL_ID).classList.add("active");
+   play();
+  }catch(e){
+   // A broken legacy message or failing image must not take down a finished match.
+   console.error("Kabinenchat öffnen:",e);
+   try{
+    ensureModal();
+    const list=$("#kabineList");if(list)list.innerHTML='<div class="kb-empty"><span>💬</span><strong>Chat konnte nicht vollständig geladen werden</strong><p>Dein Spielstand bleibt erhalten. Bitte Footera neu laden.</p></div>';
+    $("#"+MODAL_ID)?.classList.add("active");
+   }catch(_){}
+  }
  }
  function close(){if(playing){clearTimeout(playing.timer);playing=null}typeof closeUiLayer==="function"?closeUiLayer(MODAL_ID,KIND):$("#"+MODAL_ID)?.classList.remove("active")}
 
