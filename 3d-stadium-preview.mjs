@@ -96,7 +96,7 @@ export function mountStadiumPreview(host){
   canvas,
   show(stadium,kits){const next=build(renderer,stadium,kits);current?.dispose();current=next;startedAt=clock;frame(0);loop();return next.arena.info},
   // Test hook: one picture at a fixed angle.
-  still(angle){if(!current)return null;size();const c=previewCamera(angle);camera.position.set(...c.position);camera.fov=c.fov;camera.updateProjectionMatrix();camera.lookAt(...c.target);current.arena.update(0,camera);renderer.render(current.scene,camera);return canvas.toDataURL('image/jpeg',.9)},
+  still(angle,zoom=1){if(!current)return null;size();const c=previewCamera(angle);camera.position.set(...c.position.map((v,i)=>c.target[i]+(v-c.target[i])*zoom));camera.fov=c.fov;camera.updateProjectionMatrix();camera.lookAt(...c.target);current.arena.update(0,camera);renderer.render(current.scene,camera);return canvas.toDataURL('image/jpeg',.9)},
   get info(){return current?.arena.info||null},
   get since(){return clock-startedAt},
   dispose(){cancelAnimationFrame(raf);raf=0;io?.disconnect();current?.dispose();current=null;renderer.dispose();canvas.remove()}

@@ -232,7 +232,8 @@ function buildStadiumExtras(THREE,{look,hostEnd,trim,group,track,weak,spooky,has
    for(let k=0;k<(weak?1:2);k++){const r=27+hash(i*13+k*7)*16,q=arenaPerimeter(r,4).points[i],h=5+hash(i*17+k)*4,yb=Math.max(0,10.9-(r-25)*11/27);
     const c=new THREE.ConeGeometry(1.8+hash(i*19+k)*1.2,h,6);c.translate(q.x+(hash(i*23+k)-.5)*4,yb+h/2,q.z+(hash(i*29+k)-.5)*4);trim.push([c,C(['#1e3a24','#244529','#183020'][(i+k)%3])])}}
   const peaks=[[-150,40,95,70],[-185,-60,120,82],[-160,-140,88,64],[-40,-200,105,78],[60,-205,92,70],[-120,170,110,80],[10,205,96,72],[110,190,80,60],[-205,110,100,74]];
-  for(const [x,z,h,r] of peaks){const c=new THREE.ConeGeometry(r,h,11,10);c.translate(x,h/2-2,z);
+  // Far enough out that no camera (preview orbit, stadium shot) flies into them.
+  for(const [px,pz,ph,pr] of peaks){const x=px*1.5,z=pz*1.5,h=ph*1.35,r=pr*1.3,c=new THREE.ConeGeometry(r,h,11,10);c.translate(x,h/2-2,z);
    trim.push([c,(px,py)=>py>h*.58?C(spooky?'#9a8fb0':'#c9d5de'):C(mixHex(spooky?'#0c0a12':'#16212b',spooky?'#2a2438':'#3c4c5a',Math.max(0,py/(h*.58))))])}
   names.push('FooteraStadiumHills');
  }
