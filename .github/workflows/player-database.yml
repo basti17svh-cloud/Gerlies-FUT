@@ -5,10 +5,14 @@ on:
     paths:
       - '.github/workflows/player-database.yml'
       - 'scripts/build-player-db.cjs'
+      - 'scripts/club-transfers.cjs'
   pull_request:
     paths:
       - '.github/workflows/player-database.yml'
       - 'scripts/build-player-db.cjs'
+      - 'scripts/club-transfers.cjs'
+      - 'data/club-transfers.json'
+      - 'tests/club-transfers.test.cjs'
       - 'assets/players-db.csv'
       - 'assets/players-db-version.json'
       - 'tests/player-database.test.cjs'
@@ -34,13 +38,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Download every player from EA's rating database
+      - name: Download every player from EA's rating database (late transfers from Wikidata)
         run: node scripts/build-player-db.cjs
       - name: Check that the game reads the new file
-        run: node --test tests/player-database.test.cjs
+        run: node --test tests/player-database.test.cjs tests/club-transfers.test.cjs
       - name: Commit the player database to this branch
         run: |
-          git add assets/players-db.csv assets/players-db-version.json
+          git add assets/players-db.csv assets/players-db-version.json data/club-transfers.json
           if git diff --cached --quiet; then echo "Player database unchanged"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
@@ -56,4 +60,4 @@ jobs:
         with:
           node-version: '22'
       - name: The game loads the checked-in player database
-        run: node --test tests/player-database.test.cjs tests/serie-c.test.cjs tests/player-traits.test.cjs tests/startup-state.test.cjs
+        run: node --test tests/player-database.test.cjs tests/club-transfers.test.cjs tests/serie-c.test.cjs tests/player-traits.test.cjs tests/startup-state.test.cjs

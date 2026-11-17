@@ -6,10 +6,13 @@
    replaces the checked-in file. */
 'use strict';
 const fs=require('fs'),path=require('path');
+const{applyClubTransfers}=require('./club-transfers.cjs');
 
 const SITE='https://www.ea.com',PAGE_PATH='/en/games/ea-sports-fc/ratings';
 // The game the ratings page must show. Raise it when EA switches the page to the next FC.
 const GAME='fc-27';
+// Transfers from this date on are checked against Wikidata (scripts/club-transfers.cjs). Raise it with GAME.
+const TRANSFERS_SINCE='2026-06-01';
 const OUT=path.join(__dirname,'..','assets','players-db.csv');
 // The game compares this revision with its offline copy and downloads the new file only when it changed.
 const SERIE_C=path.join(__dirname,'..','assets','players-serie-c.csv');
@@ -18,8 +21,11 @@ const PARALLEL=6;
 const MIN_MEN=10000,MIN_WOMEN=1000;
 // EA ships some clubs under licence names; the game shows the real clubs.
 const CLUB_ALIASES={'Lombardia FC':'Inter','Milano FC':'AC Milan','Bergamo Calcio':'Atalanta','Latium':'Lazio','Piemonte Calcio':'Juventus','OM':'Olympique de Marseille'};
-// Transfers EA's ratings site has not picked up yet: EA id -> club. Remove an entry once EA shows the club itself.
-const CLUB_OVERRIDES={264652:{"club_name":"Liverpool","club_team_id":"9","club_logo_url":"https://drop-assets.ea.com/images/3mmzooNXBDCKuCy6kWcGQo/2e332a30fe2a7225a88fcb1898f48bbf/l9.png","league_name":"Premier League"},232411:{club_name:'RB Leipzig',club_team_id:112172,club_logo_url:'https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png',league_name:'Bundesliga'}}; // Nkunku
+// Transfers EA's ratings site and Wikidata both miss: EA id -> club. Remove an entry once EA shows the club itself.
+// Most late transfers are found automatically (scripts/club-transfers.cjs); these win over that list.
+const CLUB_OVERRIDES={264652:{"club_name":"Liverpool","club_team_id":"9","club_logo_url":"https://drop-assets.ea.com/images/3mmzooNXBDCKuCy6kWcGQo/2e332a30fe2a7225a88fcb1898f48bbf/l9.png","league_name":"Premier League"},232411:{club_name:'RB Leipzig',club_team_id:112172,club_logo_url:'https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png',league_name:'Bundesliga'}, // Nkunku
+ 230666:{club_name:'FC Barcelona'} // Gabriel Jesus (deadline day 01.09.2026, missing on Wikidata)
+};
 const COLUMNS=['player_id','common_name','short_name','long_name','positions','overall','pace','shooting','passing','dribbling','defending','physic',
  'preferred_foot','weak_foot','skill_moves','nationality_name','nationality_id','nation_flag_url','club_name','club_team_id','club_logo_url',
  'league_name','player_face_url','playstyles','playstyles_plus','gender'];
@@ -125,7 +131,16 @@ function check(rows,men,women){
  const sample=men.items.find(p=>Array.isArray(p.playerAbilities)&&p.playerAbilities.length);
  if(sample)console.log('Sample playerAbilities',JSON.stringify(sample.playerAbilities.slice(0,3)));
  const seen=new Set(),rows=[];
- for(const p of[...men.items,...women.items]){if(p?.id==null||seen.has(String(p.id)))continue;seen.add(String(p.id));rows.push({...row(p),...CLUB_OVERRIDES[p.id]})}
+ for(const p of[...men.items,...women.items]){if(p?.id==null||seen.has(String(p.id)))continue;seen.add(String(p.id));rows.push(row(p))}
+ // EA freezes its squads before the transfer window closes: late moves come from Wikidata, then the hand-made overrides.
+ await applyClubTransfers(rows,{since:TRANSFERS_SINCE});
+ // An override may name only the club: id, logo and league then come from EA's own players at that club.
+ const clubRow=new Map();for(const r of rows)if(r.club_name&&!clubRow.has(r.club_name+'|'+r.gender))clubRow.set(r.club_name+'|'+r.gender,r);
+ for(const r of rows){
+  const o=CLUB_OVERRIDES[r.player_id];if(!o)continue;
+  const c=clubRow.get(o.club_name+'|'+r.gender);
+  Object.assign(r,c?{club_team_id:c.club_team_id,club_logo_url:c.club_logo_url,league_name:c.league_name}:{},o);
+ }
  rows.sort((a,b)=>b.overall-a.overall||Number(a.player_id)-Number(b.player_id));
  const{fail,leagues}=check(rows,men.items.length,women.items.length);
  console.log('Top leagues',JSON.stringify(Object.entries(leagues).sort((a,b)=>b[1]-a[1]).slice(0,12)));
