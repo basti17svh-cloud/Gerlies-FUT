@@ -58,7 +58,7 @@ test('set-piece variants: no ball teleport, human run speeds, players on the pit
   let prev=M.ballPosition('goal',0,seq,finish);
   for(let n=1;n<=540;n++){
    const t=n/100,b=M.ballPosition('goal',t,seq,finish),dt=E.extendedSeconds(seq,t)-E.extendedSeconds(seq,t-.01);
-   assert.ok(Math.hypot(...b.map((v,i)=>v-prev[i]))/dt<14,seq+' ball speed at '+t);prev=b;
+   assert.ok(Math.hypot(...b.map((v,i)=>v-prev[i]))/dt<28,seq+' ball speed at '+t);prev=b;// a real corner cross flies at ~20-25 m/s
   }
   for(let i=0;i<17;i++){
    let p=E.extendedPosition(i,0,seq);
@@ -73,8 +73,8 @@ test('set-piece variants: no ball teleport, human run speeds, players on the pit
  // Short corner: a real short pass, a carry to the byline and then the cross.
  const s='extended_corner_short',passes=E.extendedPasses(s);
  assert.deepEqual(passes.map(p=>[p[0],p[1]]),[[1,6],[6,0]]);
- const t=x=>x/10.5*5.4;
- assert.ok(E.extendedControl(t(6.4),s).index===6,'crosser carries the ball');
- const carry=E.extendedBall(t(6.4),s,M.shotContact(s,'header')),crosser=E.extendedPosition(6,t(6.4),s);
+ const t=x=>x/7.4*5.4;
+ assert.ok(E.extendedControl(t(5.5),s).index===6,'crosser carries the ball');
+ const carry=E.extendedBall(t(5.5),s,M.shotContact(s,'header')),crosser=E.extendedPosition(6,t(5.5),s);
  assert.ok(Math.hypot(carry[0]-crosser[0],carry[2]-crosser[1])<.8,'ball at the crosser\'s feet');
 });

@@ -2,7 +2,7 @@ import {sampleSkill} from './3d-skill-actions.mjs?v=21303';
 import {SCENARIO_CATALOG,SCENARIO_STORIES,CINEMATIC_SCENE_IDS} from './3d-cinematic-scenarios.mjs?v=21341';
 export {CINEMATIC_SCENE_IDS};
 import {sampleFlowRun} from './3d-attack-flow.mjs?v=2160';
-import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21453';
+import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21454';
 export {DREAM_GOAL_IDS};
 /* Footera V21.86 — football playbook. Pure, deterministic visual choreography.
    All turnovers are AUTHORED by the match simulator, never by this module. */
@@ -1611,7 +1611,7 @@ export const EXTENDED_HIGHLIGHT_TYPES=Object.freeze(['keeper_buildout','turnover
 const EXTENDED_BEATS=Object.freeze({
  keeper_buildout:[['keeper_control',0,4,'home'],['short_distribution',4,9,'home'],['midfield_progression',9,17,'home'],['final_third',17,25,'home']],
  turnover_counter:[['possession_build',0,7,'home'],['interception',7,9,'contested'],['transition',9,17,'away'],['counter_finish',17,25,'away']],
- corner:[['setup',0,4,'home'],['delivery',4,8,'home'],['aerial_duel',8,11,'contested'],['second_ball',11,18,'contested']],
+ corner:[['setup',0,5.6,'home'],['delivery',5.6,7.4,'home'],['aerial_duel',7.4,9,'contested'],['second_ball',9,15,'contested']],
  free_kick:[['setup',0,5,'home'],['run_up',5,8,'home'],['delivery',8,11,'home'],['rebound',11,16,'contested']],
  penalty:[['setup',0,6,'home'],['run_up',6,9,'home'],['strike',9,10,'home'],['keeper_response',10,13,'contested']],
  throw_in:[['setup',0,3,'home'],['throw',3,5,'home'],['reception',5,8,'home'],['combination',8,16,'home']]

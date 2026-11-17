@@ -79,7 +79,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21453').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21454').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -482,7 +482,7 @@
     ['low_reflex',low?6*(1+styles(keeper,'footwork')*1.25):.15],
     ['rush_spread',breakaway?5*(1+styles(keeper,'rush-out')*1.3):.14],
     ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14],
-    // V21.453: tipped over the bar (high shots) and punched clear (crosses).
+    // V21.452: tipped over the bar (high shots) and punched clear (crosses).
     ['over_bar',high&&!['low_driven','chip'].includes(finish)?4.5*(1+styles(keeper,'far-reach')*1.2):0],
     ['punch',aerial&&['header','volley','bicycle'].includes(finish)?4*(1+styles(keeper,'cross-claimer','deflector')*1.1):finish==='power'?1.1:0]
    ],':keeper');
@@ -604,7 +604,7 @@
   // defenders motionless and the final runner offside. Preserve the simulator's
   // real chance outcome but select a normal, continuous 3D attacking play.
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
-  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:restartSequence(event,history),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
+  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:restartSequence(event,history),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:15,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const skillStars=Number(event.skillMoves)||0,requestedSkill=event.actionKind==='dribble'&&SKILL_LEVELS[event.skillMove]&&skillStars>=SKILL_LEVELS[event.skillMove]?event.skillMove:'';
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
