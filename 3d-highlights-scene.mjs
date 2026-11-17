@@ -16,7 +16,7 @@ import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21444';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
-import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
+import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21445';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraHumanModelStatus,footeraRealBodyLoaded};
@@ -76,7 +76,7 @@ import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACK
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
-import {createArena} from './3d-arena.mjs?v=21410';
+import {createArena} from './3d-arena.mjs?v=21459';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception} from './3d-playbook.mjs?v=21455';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
@@ -1889,7 +1889,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    ballAt:ceremony?null:t=>eventBallPosition(event.type,t),actors:()=>weatherActors()});
   // V21.382: the arena reads the weather's sky and fog, so it comes second.
   const arenaActors=[...players.map(p=>p.root),keeper.root];
-  const arena=arenaOn?track(createArena(THREE,{scene,field,renderer,pitch,track,weak,high,spooky,snow:sceneWeatherFor(event)?.kind==='snow',kits:crowdKits,look,
+  const arena=arenaOn?track(createArena(THREE,{scene,field,renderer,pitch,track,weak,high,spooky,snow:sceneWeatherFor(event)?.kind==='snow',kits:crowdKits,look,hostEnd,
    actors:()=>arenaActors,goalAt:event.type==='goal'&&!ceremony?netArrival:null,hash})):null;
   // Breath clouds start at the real head bone when the GLB squad is shown.
   let weatherActorCache=null;

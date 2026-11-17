@@ -1,4 +1,4 @@
-import {createSurroundings} from './3d-stadium.mjs?v=21410';
+import {createSurroundings,mixHex} from './3d-stadium.mjs?v=21459';
 // Footera V21.382 "Flutlicht-Arena": the floodlit night stadium around the
 // existing pitch and stands. Purely visual and fully deterministic (time in,
 // picture out); it never touches simulation, camera or player motion.
@@ -41,26 +41,41 @@ function glowColour(hex){const n=parseInt(String(hex).slice(1),16),[r,g,b]=[(n>>
  const l0=(mx+mn)/2,s0=d?d/(1-Math.abs(2*l0-1)):0,l=Math.max(l0,.56),sat=d?Math.max(s0,.75):0,c=(1-Math.abs(2*l-1))*sat,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
  const [a,b2,c2]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];return'#'+[a,b2,c2].map(v=>Math.round((v+m)*255).toString(16).padStart(2,'0')).join('')}
 const CORNER_X=37,CORNER_Z=57.1,CORNER_STEPS=10;
-export function arenaPerimeter(radius){
+// V21.460: `splits` cuts each straight run into that many pieces (wave roof).
+export function arenaPerimeter(radius,splits=1){
  const points=[];let length=0;
  const push=(x,z,nx,nz)=>{if(points.length){const p=points[points.length-1];length+=Math.hypot(x-p.x,z-p.z)}points.push({x,z,nx,nz,u:length})};
  const corners=[[1,1,0],[-1,1,Math.PI/2],[-1,-1,Math.PI],[1,-1,Math.PI*1.5]];
+ const straight=(to)=>{const p=points[points.length-1];for(let k=1;k<splits;k++){const t=k/splits;push(p.x+(to[0]-p.x)*t,p.z+(to[1]-p.z)*t,p.nx,p.nz)}};
  for(const [sx,sz,start] of corners)for(let i=0;i<=CORNER_STEPS;i++){
-  const a=start+i/CORNER_STEPS*Math.PI/2,nx=Math.cos(a),nz=Math.sin(a);
-  push(sx*CORNER_X+nx*radius,sz*CORNER_Z+nz*radius,nx,nz);
+  const a=start+i/CORNER_STEPS*Math.PI/2,nx=Math.cos(a),nz=Math.sin(a),x=sx*CORNER_X+nx*radius,z=sz*CORNER_Z+nz*radius;
+  if(i===0&&points.length)straight([x,z]);
+  push(x,z,nx,nz);
  }
+ straight([points[0].x,points[0].z]);
  push(points[0].x,points[0].z,points[0].nx,points[0].nz);
  return {points,length};
 }
+// V21.460 wave roof: high in the middle of every stand, low in the corners.
+export function waveRoofLift(x,z){return 6.2*Math.cos(4*Math.atan2(z*CORNER_X/CORNER_Z,x))}
+// V21.459 Fanwand: 0 along the sides, 1 behind the home goal; the corners blend.
+export function swellWeight(x,z,hostEnd=-1){const t=Math.max(0,Math.min(1,(z*hostEnd-48)/32));return t*t*(3-2*t)}
+// Straight run of the host end.
+export function onHostEnd(p,hostEnd=-1){return p.z*hostEnd>CORNER_Z+.5&&Math.abs(p.x)<=CORNER_X+.01}
 // A band lofted between two offsets of that perimeter. u runs round the bowl
 // in metres / uScale, v from the inner (0) to the outer edge (1).
-function loftBand(THREE,r0,y0,r1,y1,uScale){
- const a=arenaPerimeter(r0),b=arenaPerimeter(r1),n=a.points.length,position=[],uv=[],index=[];
- const mid=arenaPerimeter((r0+r1)/2);
+// Options (V21.460): splits (see arenaPerimeter), lift(x,z) raises both
+// edges, skip(p,q) leaves out the piece between two inner points.
+// shape(m) -> {dr0,dy0,dr1,dy1} moves the inner/outer edge out and up at that
+// point of the bowl (Fanwand: the bowl swells into one huge end).
+function loftBand(THREE,r0,y0,r1,y1,uScale,{splits=1,lift=null,skip=null,shape=null}={}){
+ const a=arenaPerimeter(r0,splits),b=arenaPerimeter(r1,splits),n=a.points.length,position=[],uv=[],index=[];
+ const mid=arenaPerimeter((r0+r1)/2,splits);
  for(let i=0;i<n;i++){
-  const p=a.points[i],q=b.points[i],u=mid.points[i].u/uScale;
-  position.push(p.x,y0,p.z,q.x,y1,q.z);uv.push(u,0,u,1);
-  if(i<n-1){const k=i*2;index.push(k,k+1,k+2,k+1,k+3,k+2)}
+  const p=a.points[i],q=b.points[i],u=mid.points[i].u/uScale,m=mid.points[i],up=lift?lift(m.x,m.z):0,sh=shape?shape(m):null;
+  const d0=sh?.dr0||0,d1=sh?.dr1||0;
+  position.push(p.x+p.nx*d0,y0+up+(sh?.dy0||0),p.z+p.nz*d0,q.x+q.nx*d1,y1+up+(sh?.dy1||0),q.z+q.nz*d1);uv.push(u,0,u,1);
+  if(i<n-1&&!(skip&&skip(p,a.points[i+1]))){const k=i*2;index.push(k,k+1,k+2,k+1,k+3,k+2)}
  }
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(position,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(index);
@@ -110,7 +125,122 @@ const TURF_FRAGMENT=`{
 	diffuseColor.rgb*=pool*vec3(0.86,0.80,1.04);
 }`;
 
-export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,weak=false,high=false,spooky=false,snow=false,kits=null,look=null,actors=()=>[],goalAt=null,hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}}={}){
+// ---- V21.460 six new builds -------------------------------------------------
+// Basti 2026-11-17: "Mache noch 6 neue Stadionmodelle". Every build gets a
+// silhouette of its own from the air. Solid pieces go into the shared unlit
+// trim batch (vertex colours, one draw call); textured seats, glass and
+// cables add at most one draw call each.
+function quadGeometry(THREE,pts){
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts.flat(),3));
+ g.setIndex(pts.length===3?[0,1,2]:[0,1,2,0,2,3]);return g;
+}
+// A stand built outward from distance a0 (front, height y0) to a1 (back,
+// height y1), b from -L to L along the stand. axis 'x': long side at x=side*a.
+export function standFrame(axis,side){return(a,b,y)=>axis==='x'?[side*a,y,b]:[b,y,side*a]}
+export function stadiumExtrasPlan(look,{hostEnd=-1}={}){
+ const stands=[];
+ if(look?.stands){
+  for(const side of [-1,1]){stands.push({axis:'x',side,a0:CORNER_X+21.2,a1:CORNER_X+34,y0:12.4,y1:24.6,L:50,roof:'gable'});stands.push({axis:'z',side,a0:CORNER_Z+21.2,a1:CORNER_Z+34,y0:12.4,y1:24.6,L:32,roof:'gable'})}
+ }
+ if(look?.hills)stands.push({axis:'x',side:1,a0:CORNER_X+21.2,a1:CORNER_X+36,y0:12.4,y1:27,L:56,roof:'flat'});
+ return{stands,arch:!!look?.arch,dome:!!look?.dome,hills:!!look?.hills,towers:!!look?.towers};
+}
+function buildStadiumExtras(THREE,{look,hostEnd,trim,group,track,weak,spooky,hash,makeTierTexture,add,basic,roofDims={r0:15.5,y0:29.2,r1:36,y1:33.6}}){
+ const plan=stadiumExtrasPlan(look,{hostEnd}),names=[],lamps=[],C=v=>new THREE.Color(v);
+ const club=C(spooky?'#ff8a3c':glowColour(look.seatPrimary||'#7fd6ff')),shell=C(spooky?'#120d1a':'#1b262d'),shellDark=C(spooky?'#0e0a16':'#141d22');
+ const seatPos=[],seatUv=[];
+ for(const st of plan.stands){
+  const W=standFrame(st.axis,st.side),{a0,a1,y0,y1,L}=st,top=st.roof==='flat'?31.2:28.4;
+  const P=seatPos,U=seatUv,u0=0,u1=2*L/91;
+  P.push(...W(a0,-L,y0),...W(a0,L,y0),...W(a1,L,y1),...W(a0,-L,y0),...W(a1,L,y1),...W(a1,-L,y1));U.push(u0,0,u1,0,u1,1,u0,0,u1,1,u0,1);
+  // Shell: back wall up to the roof, closed sides.
+  trim.push([quadGeometry(THREE,[W(a1,-L,0),W(a1,L,0),W(a1,L,top),W(a1,-L,top)]),shellDark]);
+  // Club-coloured band round the back of the stand, seen from outside.
+  trim.push([quadGeometry(THREE,[W(a1+.06,-L,top*.62),W(a1+.06,L,top*.62),W(a1+.06,L,top*.62+1.2),W(a1+.06,-L,top*.62+1.2)]),club]);
+  for(const b of [-L,L])trim.push([quadGeometry(THREE,[W(a0,b,0),W(a0,b,y0),W(a1,b,y1),W(a1,b,0)]),shell]);
+  if(st.roof==='gable'){
+   // Pitched roof with a lit fascia in the club colour, gables in the seat colour.
+   const e0=a0-2.6,e1=a1+1.4,mid=(e0+e1)/2,R=L+1.2,ridge=top+4.2;
+   trim.push([quadGeometry(THREE,[W(e0,-R,top),W(e0,R,top),W(mid,R,ridge),W(mid,-R,ridge)]),C(spooky?'#2a2038':'#4d5c65')]);
+   trim.push([quadGeometry(THREE,[W(mid,-R,ridge),W(mid,R,ridge),W(e1,R,top),W(e1,-R,top)]),C(spooky?'#1d1628':'#34424a')]);
+   for(const b of [-R,R]){trim.push([quadGeometry(THREE,[W(e0,b,top),W(mid,b,ridge),W(e1,b,top)]),C(mixHex(look.seatPrimary,'#ffffff',.25))]);trim.push([quadGeometry(THREE,[W(a1,b,y1),W(a1,b,top),W(e0,b,top),W(a0,b,y0)]),shell])}
+   trim.push([quadGeometry(THREE,[W(e0-.05,-R,top-1.1),W(e0-.05,R,top-1.1),W(e0-.05,R,top+.1),W(e0-.05,-R,top+.1)]),club]);
+   for(const b of [-L*.62,0,L*.62]){const g=new THREE.BoxGeometry(.5,top-y0,.5);const [x,,z]=W(a0+.8,b,0);g.translate(x,y0+(top-y0)/2,z);trim.push([g,C('#3a464d')])}
+   for(let b=-L+4;b<=L-4;b+=weak?16:9){lamps.push(W(e0+.4,b,top-1.6))}
+  }else if(st.roof==='flat'){
+   // Main stand of the Bergstadion: modern cantilever roof.
+   const e0=a0-3,e1=a1+1.5,R=L+1;
+   trim.push([quadGeometry(THREE,[W(e0,-R,top),W(e0,R,top),W(e1,R,top+2.4),W(e1,-R,top+2.4)]),C(spooky?'#2a2038':'#7d8a92')]);
+   trim.push([quadGeometry(THREE,[W(e0-.05,-R,top-1.4),W(e0-.05,R,top-1.4),W(e0-.05,R,top+.05),W(e0-.05,-R,top+.05)]),club]);
+   for(const b of [-R,R])trim.push([quadGeometry(THREE,[W(a0,b,y0),W(a1,b,y1),W(e1,b,top+2.4),W(e1,b,y1)]),shell]);
+   for(let b=-L+3;b<=L-3;b+=weak?14:7)lamps.push(W(e0+.4,b,top-1.8));
+  }
+ }
+ const seatMesh=(pos,uv,map,name)=>{if(!pos.length)return;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  map.wrapS=THREE.RepeatWrapping;add(g,basic({map,color:spooky?'#b8a6d8':'#c4ccd2'}),name);names.push(name)};
+ if(seatPos.length)seatMesh(seatPos,seatUv,makeTierTexture(),'FooteraStadiumStands');
+ const lines=[];
+ if(plan.arch){
+  // Two steel arches leaning out over the long stands, roof hung on cables.
+  for(const side of [-1,1]){
+   const pts=[];for(let i=0;i<=40;i++){const s=i/20-1,h=82*(1-s*s);pts.push(new THREE.Vector3(side*(60+.26*h),h,s*106))}
+   trim.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),weak?40:64,1.25,weak?6:8,false),C(spooky?'#c8b8e0':'#e9eff3')]);
+   for(let i=4;i<=36;i+=2){const p=pts[i];if(Math.abs(p.z)>57)continue;lines.push(p.x,p.y,p.z,side*(CORNER_X+36),33.6,p.z)}
+   for(const i of [8,14,20,26,32])lamps.push([pts[i].x,pts[i].y+1.4,pts[i].z]);
+  }
+  names.push('FooteraStadiumArch');
+ }
+ if(plan.dome){
+  // V21.459 (Basti: "rund auf eckigem Stadion? nicht schön"): the glass roof
+  // follows the stadium's own rounded rectangle, ring by ring up to a gentle
+  // crown; steel ribs along the rings and from every corner and stand.
+  const base=arenaPerimeter(roofDims.r1-.4,4).points,rings=weak?8:12,y0=roofDims.y1-.2,rise=13.5,pos=[],idx=[],n=base.length;
+  const at=(i,k)=>{const s=1-k/rings*.96,e=Math.pow(1-s*s,.62);const p=base[i];return[p.x*s,y0+rise*e,p.z*s]};
+  for(let k=0;k<=rings;k++)for(let i=0;i<n;i++)pos.push(...at(i,k));
+  pos.push(0,y0+rise+.4,0);const apex=pos.length/3-1;
+  // Wound so the outside is the front face: seen from the pitch (inside) the
+  // glass is culled and never washes the picture.
+  for(let k=0;k<rings;k++)for(let i=0;i<n-1;i++){const a=k*n+i,b=a+1,c=a+n,d=c+1;idx.push(a,c,b,b,c,d)}
+  for(let i=0;i<n-1;i++)idx.push(rings*n+i,apex,rings*n+i+1);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);
+  {const P=g.attributes.position,tri=[0,n,1].map(j=>new THREE.Vector3().fromBufferAttribute(P,j)),nrm=new THREE.Vector3().subVectors(tri[1],tri[0]).cross(new THREE.Vector3().subVectors(tri[2],tri[0]));
+   if(nrm.dot(tri[0])<0){for(let t=0;t<idx.length;t+=3)[idx[t+1],idx[t+2]]=[idx[t+2],idx[t+1]];g.setIndex(idx)}}
+  const glass=add(g,basic({color:spooky?'#6a4f8f':'#a8d4ee',transparent:true,opacity:.24,depthWrite:false,side:THREE.FrontSide}),'FooteraStadiumDome');glass.renderOrder=25;names.push('FooteraStadiumDome');
+  for(let k=0;k<=rings;k+=2)for(let i=0;i<n-1;i++)lines.push(...at(i,k),...at(i+1,k));
+  for(let i=0;i<n-1;i+=3){for(let k=0;k<rings;k++)lines.push(...at(i,k),...at(i,k+1));lines.push(...at(i,rings),0,y0+rise+.4,0)}
+  for(let i=0;i<n-1;i+=Math.max(1,Math.floor(n/14)))lamps.push(at(i,1));
+ }
+ if(plan.towers){
+  // Hexenkessel: four slim light towers rising out of the corners.
+  for(const sx of [-1,1])for(const sz of [-1,1]){const x=sx*(CORNER_X+20),z=sz*(CORNER_Z+20),h=roofDims.y1+15;
+   const pole=new THREE.CylinderGeometry(.55,1.1,h,8);pole.translate(x,h/2,z);trim.push([pole,C('#2a353b')]);
+   const crown=new THREE.CylinderGeometry(3.2,2.2,2.4,10);crown.translate(x,h+1,z);trim.push([crown,club]);
+   for(let i=0;i<6;i++){const a=i/6*Math.PI*2;lamps.push([x+Math.cos(a)*2.4,h+1.2,z+Math.sin(a)*2.4])}}
+  names.push('FooteraStadiumTowers');
+ }
+ if(lines.length){const g=track(new THREE.BufferGeometry());g.setAttribute('position',new THREE.Float32BufferAttribute(lines,3));
+  const o=new THREE.LineSegments(g,track(new THREE.LineBasicMaterial({color:plan.dome?'#d6ecf8':'#aab6be',transparent:true,opacity:plan.dome?.6:.75,fog:false,toneMapped:false})));o.name='FooteraStadiumCables';o.frustumCulled=false;o.renderOrder=26;group.add(o)}
+ if(plan.hills){
+  // Grass banks round three sides (the main stand has the fourth), trees on
+  // top, mountains in the distance behind the far side and both ends.
+  const grass=(x,y)=>C(mixHex(spooky?'#120c1a':'#14301b',spooky?'#2a1f3a':'#3d6b34',Math.max(0,Math.min(1,y/10.5))));
+  const main=(p,q)=>p.x>CORNER_X+1&&q.x>CORNER_X+1&&Math.abs(p.z)<=CORNER_Z+.01&&Math.abs(q.z)<=CORNER_Z+.01;
+  trim.push([loftBand(THREE,19.4,10.4,25,10.9,1,{skip:main}),grass]);
+  trim.push([loftBand(THREE,25,10.9,52,-.15,1,{skip:main}),grass]);
+  const ring=arenaPerimeter(30,4).points;
+  for(let i=0;i<ring.length-1;i++){const p=ring[i];if(p.x>CORNER_X+1&&Math.abs(p.z)<CORNER_Z+4)continue;
+   for(let k=0;k<(weak?1:2);k++){const r=27+hash(i*13+k*7)*16,q=arenaPerimeter(r,4).points[i],h=5+hash(i*17+k)*4,yb=Math.max(0,10.9-(r-25)*11/27);
+    const c=new THREE.ConeGeometry(1.8+hash(i*19+k)*1.2,h,6);c.translate(q.x+(hash(i*23+k)-.5)*4,yb+h/2,q.z+(hash(i*29+k)-.5)*4);trim.push([c,C(['#1e3a24','#244529','#183020'][(i+k)%3])])}}
+  const peaks=[[-150,40,95,70],[-185,-60,120,82],[-160,-140,88,64],[-40,-200,105,78],[60,-205,92,70],[-120,170,110,80],[10,205,96,72],[110,190,80,60],[-205,110,100,74]];
+  // Far enough out that no camera (preview orbit, stadium shot) flies into them.
+  for(const [px,pz,ph,pr] of peaks){const x=px*1.5,z=pz*1.5,h=ph*1.35,r=pr*1.3,c=new THREE.ConeGeometry(r,h,11,10);c.translate(x,h/2-2,z);
+   trim.push([c,(px,py)=>py>h*.58?C(spooky?'#9a8fb0':'#c9d5de'):C(mixHex(spooky?'#0c0a12':'#16212b',spooky?'#2a2438':'#3c4c5a',Math.max(0,py/(h*.58))))])}
+  names.push('FooteraStadiumHills');
+ }
+ return{names,lamps};
+}
+
+export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,weak=false,high=false,spooky=false,snow=false,kits=null,look=null,hostEnd=-1,actors=()=>[],goalAt=null,hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}}={}){
  const group=new THREE.Group();group.name='FooteraArena';scene.add(group);
  const info={grade:false,turf:false,shadows:0,flashes:0,lamps:0};
  // Scene objects stay out of info: inspect() serialises info to JSON.
@@ -207,18 +337,26 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  const home=kits?.home?.shirt||'#37df78',away=kits?.away?.shirt||'#d85a6a';
  // V21.406 stadiums: build (upper tier, roof), seat colours, ring and ribbon.
  const upperTier=look?look.upper:{r0:21.2,y0:12.4,r1:34,y1:25.2},hasRoof=look?look.roof!==false:true;
+ // V21.459: roof position per build (Hexenkessel: higher and closer) and the
+ // Fanwand swell: tier, roof and facade grow out and up behind the home goal.
+ const roofDims=look?.roofDims||{r0:15.5,y0:29.2,r1:36,y1:33.6};
+ const sw=look?.swell||null,sweep=sw?{splits:8}:{};
+ const swellAt=(x,z)=>sw?swellWeight(x,z,hostEnd):0;
+ const tierShape=sw?m=>{const w=swellAt(m.x,m.z);return{dr1:sw.tier[0]*w,dy1:sw.tier[1]*w}}:null;
+ const tierTop=(x,z)=>{const w=swellAt(x,z);return{dr:(sw?.tier[0]||0)*w,dy:(sw?.tier[1]||0)*w,roof:(sw?.roof[1]||0)*w,roofDr:(sw?.roof[0]||0)*w}};
  const seatRows=spooky?['#15101f','#15101f']:look?.tierSeat||['#16222a','#1b2931'];
  info.style=look?.style||'arena';info.upperTier=!!upperTier;info.roof=hasRoof;
  const TIER_REPEATS=6;
- const tierTexture=tex(weak?512:1024,weak?128:256,(ctx,w,h)=>{
+ // V21.460: hostShare > .16 paints a terrace full of home fans (Fanwand).
+ const makeTierTexture=(hostShare=.16,rows=22,seats=seatRows)=>tex(weak?512:1024,weak?128:256,(ctx,w,h)=>{
   ctx.fillStyle=spooky?'#15101f':'#101a20';ctx.fillRect(0,0,w,h);
-  const rows=22,cols=weak?84:168,rh=h/rows,cw=w/cols,neutral=['#c9ccd0','#8f98a3','#39424c','#b79a84','#5b6b7c','#d9d2c2','#2c3540','#a9b4bd'];
+  const cols=weak?84:168,rh=h/rows,cw=w/cols,neutral=['#c9ccd0','#8f98a3','#39424c','#b79a84','#5b6b7c','#d9d2c2','#2c3540','#a9b4bd'];
   for(let r=0;r<rows;r++){
-   ctx.fillStyle=r%2?seatRows[0]:seatRows[1];ctx.fillRect(0,r*rh,w,rh*.9);
+   ctx.fillStyle=r%2?seats[0]:seats[1];ctx.fillRect(0,r*rh,w,rh*.9);
    for(let c=0;c<cols;c++){
     const k=r*977+c*131;if(hash(k)>.95||c%42<2)continue;
     const pick=hash(k+5);
-    ctx.fillStyle=pick<.16?home:pick<.3?away:neutral[Math.floor(hash(k+9)*neutral.length)];
+    ctx.fillStyle=pick<hostShare?home:pick<hostShare+.14?away:neutral[Math.floor(hash(k+9)*neutral.length)];
     ctx.globalAlpha=.5+.4*hash(k+3);
     ctx.fillRect(c*cw+cw*.2,r*rh+rh*.3,cw*.6,rh*.6);
     ctx.globalAlpha=.8;ctx.fillStyle=['#e8c3a0','#c99670','#8d5a3c','#f0d5ba'][Math.floor(hash(k+15)*4)];
@@ -229,16 +367,18 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
   const shade=ctx.createLinearGradient(0,0,0,h);shade.addColorStop(0,'rgba(0,0,0,.6)');shade.addColorStop(.5,'rgba(0,0,0,.15)');shade.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
  },true);
+ const tierTexture=makeTierTexture();
  tierTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+ const openEnd=look?.openHostEnd?(p,q)=>onHostEnd(p,hostEnd)&&onHostEnd(q,hostEnd):null;
  const perimeterLength=arenaPerimeter(27).length;
  const basic=(opts)=>track(new THREE.MeshBasicMaterial({side:THREE.DoubleSide,...opts}));
  const add=(geometry,material,name)=>{const o=new THREE.Mesh(track(geometry),material);o.name=name;o.frustumCulled=false;group.add(o);return o};
  // Upper tier: the canvas top is the highest row, in the roof's shade.
- const tier=upperTier?add(loftBand(THREE,upperTier.r0,upperTier.y0,upperTier.r1,upperTier.y1,perimeterLength/TIER_REPEATS),basic({map:tierTexture,color:spooky?'#b8a6d8':'#c4ccd2'}),'FooteraArenaUpperTier'):null;
+ const tier=upperTier?add(loftBand(THREE,upperTier.r0,upperTier.y0,upperTier.r1,upperTier.y1,perimeterLength/TIER_REPEATS,{skip:openEnd,shape:tierShape,...sweep}),basic({map:tierTexture,color:spooky?'#b8a6d8':'#c4ccd2'}),'FooteraArenaUpperTier'):null;
  // V21.406/407: closed outer facade (seen in the stadium shot before kick-off):
  // fins, glowing bands in the seat colour and the stadium's name, and around
  // it plaza, ring road, street lights, fans on their way in, trees and parking.
- {const fr=upperTier?upperTier.r1+.02:19.4,fy=upperTier?upperTier.y1:10.6,accent=spooky?'#ff8a3c':glowColour(look?.seatPrimary||'#7fd6ff'),accent2=spooky?'#7a3cff':look?.seatSecondary||'#e9f6ff';
+ {const fr=look?.stands?33.2:upperTier?upperTier.r1+.02:19.4,fy=upperTier?upperTier.y1:10.6,accent=spooky?'#ff8a3c':glowColour(look?.seatPrimary||'#7fd6ff'),accent2=spooky?'#7a3cff':look?.seatSecondary||'#e9f6ff';
   const FACADE_REPEATS=6,label=String(look?.name||'FOOTERA ARENA').toUpperCase();
   const facadeTexture=tex(weak?1024:2048,128,(ctx,w,h)=>{
    ctx.fillStyle=spooky?'#120d1a':'#18242b';ctx.fillRect(0,0,w,h);
@@ -248,6 +388,9 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
    ctx.shadowColor=accent;ctx.shadowBlur=14;ctx.fillStyle=accent;ctx.fillRect(0,6,w,5);ctx.fillRect(0,h-12,w,4);
    ctx.shadowBlur=0;ctx.globalAlpha=.55;for(let x=0;x<w;x+=48)ctx.fillRect(x+22,14,3,h-26);
    ctx.globalAlpha=.22;ctx.fillStyle=accent2;for(let x=24;x<w;x+=96)ctx.fillRect(x,14,22,h-26);ctx.globalAlpha=1;
+   // V21.459 Hexenkessel: a glowing diamond lattice in the club colour.
+   if(look?.facadeStyle==='lattice'){ctx.fillStyle='#120a0c';ctx.fillRect(0,12,w,h-22);ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.shadowColor=accent;ctx.shadowBlur=10;
+    for(let x=-h;x<w+h;x+=34){ctx.beginPath();ctx.moveTo(x,12);ctx.lineTo(x+h-22,h-10);ctx.moveTo(x+h-22,12);ctx.lineTo(x,h-10);ctx.stroke()}ctx.shadowBlur=0}
    // The name, big and lit, twice per tile.
    let size=58;ctx.font=`italic 900 ${size}px Arial, sans-serif`;while(size>28&&ctx.measureText(label).width>w*.36){size-=2;ctx.font=`italic 900 ${size}px Arial, sans-serif`}
    ctx.textAlign='center';ctx.textBaseline='middle';
@@ -257,7 +400,7 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
   facadeTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   // The band's u runs counter-clockwise: mirrored so the name reads from outside.
   facadeTexture.repeat.x=-1;
-  add(loftBand(THREE,fr,0,fr,fy,arenaPerimeter(fr).length/FACADE_REPEATS),basic({map:facadeTexture,fog:false,toneMapped:false,color:'#d8dde0'}),'FooteraStadiumFacade');
+  if(look?.facade!==false)add(loftBand(THREE,fr,0,fr,fy,arenaPerimeter(fr).length/FACADE_REPEATS,{...sweep,shape:sw?m=>{const t=tierTop(m.x,m.z);return{dr0:t.dr,dr1:t.dr,dy1:t.dy}}:null}),basic({map:facadeTexture,fog:false,toneMapped:false,color:'#d8dde0'}),'FooteraStadiumFacade');
   const ground=new THREE.Mesh(track(new THREE.PlaneGeometry(900,900)),track(new THREE.MeshBasicMaterial({color:spooky?'#07050c':'#0b1316'})));
   ground.rotation.x=-Math.PI/2;ground.position.y=-.24;ground.name='FooteraStadiumGround';group.add(ground);
   surroundings=createSurroundings(THREE,{group,track,perimeter:arenaPerimeter,band:(r0,y0,r1,y1,u)=>loftBand(THREE,r0,y0,r1,y1,u),facadeRadius:fr,kits,look,weak,spooky,hash});
@@ -284,22 +427,29 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  add(ribbonGeometry,ribbonMaterial,'FooteraArenaRibbon');
  // Back wall closes the bowl above the upper tier.
  const roofTexture=tex(256,64,(ctx,w,h)=>{
-  ctx.fillStyle=spooky?'#181222':'#1a252c';ctx.fillRect(0,0,w,h);
-  ctx.fillStyle=spooky?'#2a2038':'#2f3d46';for(let x=0;x<w;x+=128)ctx.fillRect(x,0,5,h);
-  ctx.fillStyle=spooky?'#221a2e':'#25323a';for(let y=10;y<h;y+=18)ctx.fillRect(0,y,w,2);
+  // V21.460 Wellendach: light membrane panels instead of the dark steel roof.
+  const membrane=!spooky&&look?.roofColour;
+  ctx.fillStyle=spooky?'#181222':membrane?'#8d989f':'#1a252c';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle=spooky?'#2a2038':membrane?'#c3ccd2':'#2f3d46';for(let x=0;x<w;x+=128)ctx.fillRect(x,0,5,h);
+  ctx.fillStyle=spooky?'#221a2e':membrane?'#a9b3b9':'#25323a';for(let y=10;y<h;y+=18)ctx.fillRect(0,y,w,2);
   const lit=ctx.createLinearGradient(0,0,0,h);lit.addColorStop(0,'rgba(0,0,0,.3)');lit.addColorStop(.65,'rgba(190,215,235,.05)');lit.addColorStop(1,'rgba(190,215,235,.26)');
   ctx.fillStyle=lit;ctx.fillRect(0,0,w,h);
  },true);
- if(hasRoof)add(loftBand(THREE,15.5,29.2,36,33.6,8),basic({map:roofTexture}),'FooteraArenaRoof');
+ const wave=look?.roofShape==='wave',roofOpts={splits:wave?10:sw?8:1,lift:wave?waveRoofLift:null,skip:openEnd,
+  shape:sw?m=>{const t=tierTop(m.x,m.z);return{dy0:t.roof,dr1:t.roofDr,dy1:t.roof+t.roofDr*.12}}:null};
+ if(hasRoof)add(loftBand(THREE,roofDims.r0,roofDims.y0,roofDims.r1,roofDims.y1,8,roofOpts),basic({map:roofTexture,color:look?.roofColour||'#ffffff'}),'FooteraArenaRoof');
  // Light ring along the roof's inner edge: one continuous modern LED band.
  const ringColour=new THREE.Color(spooky?'#ffd9b0':look?.ring||'#f4f8ff');
  // Ring, the lit balcony edge and the dark back wall share one unlit draw call.
  const wallColour=new THREE.Color(spooky?'#0e0a16':'#0c1418');
  const trim=[[loftBand(THREE,21.1,12.5,21.1,12.72,1),new THREE.Color(spooky?'#ff8a3c':'#dfeaf2')]];
- if(hasRoof)trim.push([loftBand(THREE,15.4,28.35,15.5,29.2,1),ringColour]);
- if(upperTier)trim.push([loftBand(THREE,upperTier.r1,upperTier.y1,upperTier.r1+.5,hasRoof?34:upperTier.y1+1.6,1),wallColour]);
+ if(hasRoof)trim.push([loftBand(THREE,roofDims.r0-.1,roofDims.y0-.85,roofDims.r0,roofDims.y0,1,{...roofOpts,shape:sw?m=>{const t=tierTop(m.x,m.z);return{dy0:t.roof,dy1:t.roof}}:null}),ringColour]);
+ if(upperTier)trim.push([loftBand(THREE,upperTier.r1,upperTier.y1,upperTier.r1+.5,hasRoof?roofDims.y1+.4:upperTier.y1+1.6,1,{...roofOpts,shape:sw?m=>{const t=tierTop(m.x,m.z);return{dr0:t.dr,dy0:t.dy,dr1:t.dr,dy1:t.roof+t.roofDr*.12}}:null}),wallColour]);
  // Open grounds (Traditionsstadion): four floodlight masts behind the corners.
- const masts=hasRoof?[]:FLOODLIGHTS.map(([x,y,z])=>[x*1.13,y+5,z*1.1]);
+ const masts=hasRoof&&!look?.masts?[]:FLOODLIGHTS.map(([x,y,z])=>[x*1.13,y+5,z*1.1]);
+ // V21.460: the six new builds add their own pieces (arch, dome, stands, ...).
+ const extras=look?buildStadiumExtras(THREE,{look,hostEnd,trim,group,track,weak,spooky,hash,makeTierTexture,add,basic,roofDims}):null;
+ info.extras=extras?.names||[];
  for(const [x,y,z] of masts){
   const pole=new THREE.BoxGeometry(.9,y,.9);pole.translate(x,y/2,z);trim.push([pole,new THREE.Color('#2b363c')]);
   const head=new THREE.BoxGeometry(6.4,3.4,.5);head.rotateY(Math.atan2(x,z));head.translate(x,y+1,z);trim.push([head,new THREE.Color('#1b2328')]);
@@ -307,7 +457,9 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  info.masts=masts.length;
  {const position=[],colour=[],index=[];let base=0;
   for(const [g,c] of trim){
-   const p=g.attributes.position.array;for(let i=0;i<p.length;i+=3){position.push(p[i],p[i+1],p[i+2]);colour.push(c.r,c.g,c.b)}
+   // c: a THREE.Color, or (x,y,z)=>Color for a gradient (hills, mountains).
+   const p=g.attributes.position.array;for(let i=0;i<p.length;i+=3){position.push(p[i],p[i+1],p[i+2]);const k=typeof c==='function'?c(p[i],p[i+1],p[i+2]):c;colour.push(k.r,k.g,k.b)}
+   if(!g.index)g.setIndex([...Array(p.length/3).keys()]);
    for(const i of g.index.array)index.push(i+base);base+=p.length/3;g.dispose();
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(position,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colour,3));g.setIndex(index);
@@ -316,12 +468,14 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  // Lamp glow: additive sprites every few metres along the ring, a denser,
  // brighter cluster in the four corners where the shadow-casting banks sit.
  const lampPositions=[],lampSizes=[];
- if(hasRoof){const ring=arenaPerimeter(15.3),step=weak?13:7.5;let next=0;
+ if(hasRoof){const ring=arenaPerimeter(roofDims.r0-.2),step=weak?13:7.5;let next=0;
   for(let i=1;i<ring.points.length;i++){
    const a=ring.points[i-1],b=ring.points[i],span=b.u-a.u;
-   while(next<=b.u){const t=span?(next-a.u)/span:0;lampPositions.push(a.x+(b.x-a.x)*t,28.6,a.z+(b.z-a.z)*t);lampSizes.push(1);next+=step}
+   while(next<=b.u){const t=span?(next-a.u)/span:0,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;
+    if(!(openEnd&&onHostEnd({x,z},hostEnd))){lampPositions.push(x,roofDims.y0-.6+(wave?waveRoofLift(x,z):0)+tierTop(x,z).roof,z);lampSizes.push(1)}next+=step}
   }
-  for(const [x,y,z] of FLOODLIGHTS){lampPositions.push(x,y-1.6,z);lampSizes.push(2.6)}}
+  for(const [x,y,z] of FLOODLIGHTS){if(openEnd&&z*hostEnd>0)continue;lampPositions.push(x,y-1.6+(roofDims.y0-29.2)+(wave?waveRoofLift(x,z):0)+tierTop(x,z).roof,z);lampSizes.push(2.6)}}
+ for(const [x,y,z] of extras?.lamps||[]){lampPositions.push(x,y,z);lampSizes.push(1.6)}
  // Mast heads: a 3x2 grid of lamps on each panel, facing the pitch.
  for(const [x,y,z] of masts){const a=Math.atan2(x,z),cx=Math.cos(a),sx=-Math.sin(a);
   for(let i=0;i<3;i++)for(let j=0;j<2;j++){const o=(i-1)*2.1;lampPositions.push(x+cx*o-Math.sin(a)*.4,y+.2+j*1.6,z+sx*o-Math.cos(a)*.4);lampSizes.push(1.9)}}
