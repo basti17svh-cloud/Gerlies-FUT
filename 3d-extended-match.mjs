@@ -78,7 +78,7 @@ const RV={
  free_kick_far:{0:freeKickRun(FREE_KICK_SPOT.free_kick_far)},
  free_kick_edge:{0:freeKickRun(FREE_KICK_SPOT.free_kick_edge)},
  // A stutter: slow approach, a little hop and pause, then the quick strike.
- penalty_stutter:{0:[[0,0,-36.6],[6,0,-36.6],[7.2,-.02,-38.7],[7.75,-.03,-38.95],[8.45,-.05,-39.45],[9,-.105,-40.69]]},
+ penalty_stutter:{0:[[0,0,-37.3],[6,0,-37.3],[7.3,-.02,-38.9],[7.8,-.03,-39.1],[8.45,-.05,-39.6],[9,-.105,-40.69]]},
  // A long, wide run-up from the side.
  penalty_angled:{0:[[0,-2.2,-35.6],[6,-2.2,-35.6],[7.6,-1.2,-38.3],[8.5,-.5,-39.8],[9,-.105,-40.69]]}
 };
@@ -246,7 +246,7 @@ export function extendedSetPieceCamera(seq,time,direction,aspect,ball=null){
  const kind=extendedKind(seq),portrait=aspect<1.12;
  const angled=kind==='penalty'&&extendedVariant(seq)==='angled';
  // The wide run-up camera hands over to the TV camera right after the strike.
- const behind=kind==='penalty'&&time<(angled?6.1:7.7)?(angled?{from:[-3.9,2.2,-30.9],to:[.4,1.0,-50.5],fov:portrait?28:25,mirror:extendedMirrored(seq)}:{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?28:25}):
+ const behind=kind==='penalty'&&time<(angled?6.1:7.7)?(angled?{from:[-3.9,2.2,-30.9],to:[.4,1.0,-50.5],fov:portrait?30.5:25,mirror:extendedMirrored(seq)}:{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?30.5:25}):
   kind==='free_kick'&&time<7.3?freeKickBehind(seq,portrait):null;
  // V21.203 (Basti): corners stay in the normal TV camera, no corner-flag angle.
  if(!behind)return null;
