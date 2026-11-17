@@ -719,6 +719,9 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  // V21.205: the closer 34 m camera glides (never zooms) to keep the ball, and
  // from the shot on the whole goal, inside a phone picture. Judged at the
  // final range and the narrowest lens, before the track smooths the pan.
+ const shooterPoints=time=>{const r=runPosition(0,Math.min(time,SHOT_TIME+.9),sequence);return[0,1.9].map(y=>worldPosition([r[0],y,r[1]],direction))};
+ // Long highlights (counter) compose their own pass-and-goal frame.
+ const shooterHold=time=>extendedKind(sequence)?0:smooth((time-SHOT_TIME+1.1)/.6)*(1-smooth((time-SHOT_TIME-.12)/.55));
  function keepInBroadcastFrame(frame,time,holdGoal=false){
   const gap=Math.hypot(...frame.position.map((v,i)=>v-frame.target[i]))||1,k=BROADCAST_CAMERA_DISTANCE/gap;
   const real={...frame,position:frame.position.map((v,i)=>frame.target[i]+(v-frame.target[i])*k)},lens=aspect<1.12?32:30.5;
@@ -727,17 +730,27 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
   // A wide delivery also keeps the goal mouth in the picture (wide crosses).
   if(holdGoal){const mouth=worldPosition([0,0,-52.5],direction);fit=glideToFit(fit,[ball,mouth],[(ball[0]+mouth[0])/2,0,(ball[2]+mouth[2])/2],aspect,lens,.9,1)}
   const goal=smooth((time-SHOT_TIME+1.2)/1.0);
+  // V21.446 (Basti: "der Schütze im Moment des Schusses nicht zu sehen"): the
+  // scorer's whole body, boots to head, stays in the picture from his last
+  // touch through the strike and the first metres of the ball's flight.
+  // A strike from distance cannot share the picture with the goal: the
+  // shooter wins at the moment of the shot, the pan with the ball then
+  // brings the goal in before the ball arrives.
+  const strike=shooterHold(time),shooter=shooterPoints(time);
   if(goal>0){
    const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
    const net=worldPosition([0,0,-53.4],direction);
    fit=glideToFit(fit,points,[(ball[0]+net[0])/2,0,(ball[2]+net[2])/2],aspect,lens,.9,goal);
   }
+  if(strike>0)fit=glideToFit(fit,[ball,...shooter],shooter[0],aspect,lens,SHOOTER_EDGE,strike);
   const shift=fit.target.map((v,i)=>v-real.target[i]);
   // Where gliding alone cannot hold the ball and the goal, ask for a slightly
   // wider lens; the track keeps one lens for the whole highlight.
   let lensNeeded=frame.fov;
-  if(goal>=1){
-   const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+  if(goal>=1||strike>=1){
+   const points=[ball];
+   if(goal>=1)for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+   if(strike>=1)points.push(...shooter);
    if(frameOverflow(fit,[0,0],aspect,points,lens,.86)>0){let lo=lens,hi=60;for(let i=0;i<12;i++){const m=(lo+hi)/2;frameOverflow(fit,[0,0],aspect,points,m,.86)>0?lo=m:hi=m}lensNeeded=Math.max(lensNeeded,hi)}
   }
   return{...frame,fov:lensNeeded,position:frame.position.map((v,i)=>v+shift[i]),target:frame.target.map((v,i)=>v+shift[i])};
@@ -767,7 +780,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
 // composition can leave the ball or the net outside a portrait phone frame.
 // Glide camera and target together towards what must be seen, just enough to
 // keep it inside the picture. Lens, distance and camera side are unchanged.
-const CROSSER_EDGE=.82,frameCamera=new THREE.PerspectiveCamera(),frameProbe=new THREE.Vector3();
+const CROSSER_EDGE=.82,SHOOTER_EDGE=.8,frameCamera=new THREE.PerspectiveCamera(),frameProbe=new THREE.Vector3();
 function frameOverflow(frame,shift,aspect,points,fov,edge){
  frameCamera.fov=fov;frameCamera.aspect=aspect;frameCamera.near=.1;frameCamera.far=250;
  frameCamera.position.set(frame.position[0]+shift[0],frame.position[1],frame.position[2]+shift[1]);

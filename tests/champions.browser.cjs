@@ -63,7 +63,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   await page.screenshot({path:path.join(output,"champions-mobile-390.png"),fullPage:true});
   await page.locator("#squadBattleKickoff").click();await page.evaluate(()=>stopMatchTimer());
   check("kickoff uses Champions mode",await page.evaluate(()=>match?.mode==="champions"&&document.getElementById("matchCompetition").textContent==="Footera Champions"));
-  await page.evaluate(()=>{match.minute=90;match.home=0;match.away=0;match.halftimeLogged=true;match.paused=false;resolveEndOfPhase()});
+  await page.evaluate(()=>{match.minute=90;match.home=0;match.away=0;match.halftimeLogged=true;match.paused=false;match.highlight3DPending=false;resolveEndOfPhase()});
   check("90-minute draw goes to extra time",await page.evaluate(()=>match.extraTimeStarted&&!match.finished));
   await page.evaluate(()=>{match.paused=false;match.home=1;match.away=0;finishMatch()});
   check("finished Champions win advances record exactly once",await page.evaluate(()=>state.champions.games===1&&state.champions.wins===1&&state.champions.losses===0&&state.stats.championsMatches===1&&state.stats.championsWins===1&&match.competitionProgress?.mode==="champions"));
