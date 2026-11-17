@@ -13,11 +13,11 @@ test('V21.341: 36 new, selectable, distinct football scenes, never aliases',asyn
  const M=await import('../3d-highlights-scene.mjs');
  assert.equal(C.CINEMATIC_SCENE_IDS.length,36);
  assert.equal(new Set(C.CINEMATIC_SCENE_IDS).size,36);
- // V21.445/V21.449: 34 Traumtore and new scenes follow the 36 cinematic scenes.
- assert.equal(P.PLAYBOOK.length,219);
- assert.equal(H.PLAYBOOK_SCENES.length,219);
- assert.equal(M.PLAY_SEQUENCES.length,274);
- const old=new Set(P.PLAYBOOK.slice(0,-70).map(key));
+ // V21.445/V21.449: 49 Traumtore and new scenes follow the 36 cinematic scenes.
+ assert.equal(P.PLAYBOOK.length,234);
+ assert.equal(H.PLAYBOOK_SCENES.length,234);
+ assert.equal(M.PLAY_SEQUENCES.length,289);
+ const old=new Set(P.PLAYBOOK.slice(0,-85).map(key));
  const fresh=new Set();
  const locations=new Set();
  for(const id of C.CINEMATIC_SCENE_IDS){

@@ -1,5 +1,5 @@
 /*
- * Footera V21.445 — Traumtore: authored signature goals (13), V21.449: +21 new scenes.
+ * Footera V21.445 — Traumtore: authored signature goals (13), V21.449: +21, V21.450: +15 new scenes.
  * Basti (16.11.2026): "Die Tore sehen tatsächlich viele sehr identisch aus."
  * Every older play ends in the same strike: a straight 1.25 s shot from the
  * box edge. These scenes bring their own build-up, their own finishing
@@ -191,7 +191,82 @@ const BASE=[
    2:[[0,24,-27],[1,24.4,-29],[2.15,24,-31.2],[3.1,23.2,-32.4],[5.4,22,-38]],
    6:[[0,-14,-18],[.4,-14,-18.6],[2,-12,-22],[5.4,-9,-28]]},
   beats:[[.4,2.15],[3.1,4.4]],arcs:[3.3,.06],
-  flight:{post:-1,goal:[3.3,2.18],bend:[-2.6,-2],rise:[1,.85],rate:1.5}}
+  flight:{post:-1,goal:[3.3,2.18],bend:[-2.6,-2],rise:[1,.85],rate:1.5}},
+// V21.450 Neue Spielszenen, Paket 2.
+ {id:'dream_long_lob',sims:['power','normal','finesse'],family:'distance',finish:'chip',delivery:'short',
+  order:[6,0],length:'medium',weight:6,kinds:['distance'],style:'lob',title:'Heber aus der Distanz',
+  routes:{
+   0:[[0,4,-9],[1.5,3.6,-12],[3,3,-15.4],[4.2,2.6,-17.6],[5.4,2.2,-19.6],[6.4,2,-21]],
+   6:[[0,-8,-5],[.45,-8,-5.6],[2,-6.6,-9],[5.4,-5,-15]],
+   3:[[0,0,-30],[2.4,-1,-34],[5.4,-2,-40]]},
+  beats:[[.45,3]],
+  flight:{post:0,goal:[2.4,2.12],bend:[0,0],rise:[7,6],rate:1.15}},
+ {id:'dream_cutback_sidefoot_left',sims:['normal','finesse','low_driven'],mirror:'dream_cutback_sidefoot_right',family:'cutback',finish:'finesse',delivery:'driven',
+  order:[6,1,0],length:'long',weight:7,kinds:['cutback'],style:'placed',title:'Rückpass und Innenseite hoch',direct:true,
+  routes:{
+   0:[[0,2,-29],[2,1.6,-33],[3.6,.6,-37],[4.6,-.4,-39.2],[5.4,-.8,-40.2],[6.4,-1,-41.4]],
+   1:[[0,-21,-24],[.9,-21.4,-26.4],[1.45,-21.6,-28],[2.8,-20.2,-36],[3.9,-18.4,-43.4],[4.45,-17,-47.2],[5.4,-15.6,-49]],
+   6:[[0,-9,-20],[.4,-9.2,-20.4],[2,-8,-25],[5.4,-6,-32]]},
+  beats:[[.4,1.45],[4.45,5.4]],arcs:[.06,.1],
+  flight:{post:1,goal:[3.2,1.74],bend:[.5,.4],rise:[.5,.45],rate:1.8}},
+ {id:'dream_back_post_tap_left',sims:['normal','low_driven'],mirror:'dream_back_post_tap_right',family:'lowcross',finish:'low_driven',delivery:'driven',
+  order:[7,1,0],length:'medium',weight:7,kinds:['cutback'],style:'tap',title:'Querpass und Abstauber am langen Pfosten',direct:true,
+  routes:{
+   0:[[0,12,-31],[2,11,-36],[3.6,8.6,-41.4],[4.7,6.2,-45.6],[5.4,5,-47.4],[6.3,4.4,-48.6]],
+   1:[[0,-20,-24],[1.3,-20.4,-27],[2,-20.4,-29.2],[2.9,-19.6,-36],[3.85,-17.4,-43],[4.45,-15.6,-47.4],[5.4,-14.2,-48.8]],
+   7:[[0,-2,-21],[.4,-2.2,-21.4],[2,-3,-26],[5.4,-4,-34]]},
+  beats:[[.4,2],[4.45,5.4]],arcs:[.06,.1],
+  flight:{post:1,goal:[2.2,.24],bend:[0,0],rise:[.04,0],rate:2.6}},
+ {id:'dream_third_man_drive',sims:['normal','power','low_driven'],family:'combination',finish:'power',delivery:'short',
+  order:[3,6,0],length:'medium',weight:7,kinds:['combination','through'],style:'drive',title:'Dritter Mann',
+  routes:{
+   0:[[0,-2,-16],[1.4,-1.8,-19.4],[2.8,-1.2,-24.4],[3.9,-.6,-28.8],[4.8,0,-32],[5.4,.4,-33.6],[6.4,.8,-35]],
+   3:[[0,1,-27],[.35,1,-26.6],[.95,.8,-25.8],[1.5,.6,-25.4],[5.4,2,-30]],
+   6:[[0,-9,-24],[1.55,-7.4,-25.4],[2.25,-6.8,-26],[5.4,-5,-31]]},
+  beats:[[.35,1.55],[2.25,3.9]],arcs:[.06,.3],
+  flight:{post:0,goal:[3.18,1.12],bend:[0,0],rise:[.3,.2],rate:1.5}},
+ {id:'dream_edge_curl_near_left',sims:['finesse','normal'],mirror:'dream_edge_curl_near_right',family:'distance',finish:'finesse',delivery:'short',
+  order:[4,6,0],length:'medium',weight:7,kinds:['distance','dribble'],foot:'Right',style:'curl',title:'Schlenzer ins kurze Kreuzeck',
+  routes:{
+   0:[[0,-14,-22],[1.6,-13,-25],[3.2,-11.6,-28],[4.3,-10.6,-30],[5.4,-9.8,-31.6],[6.4,-9.2,-33]],
+   4:[[0,-26,-10],[.4,-26,-10.6],[2,-24,-15],[5.4,-22,-22]],
+   6:[[0,-11,-14],[1.3,-10.4,-16.2],[2.15,-10,-17.6],[5.4,-8,-24]]},
+  beats:[[.4,1.3],[2.15,3.2]],
+  flight:{post:-1,goal:[3.26,2.2],bend:[1.6,1.2],rise:[1.1,.9],rate:1.5}},
+ {id:'dream_far_post_volley_right',sims:['volley','header'],mirror:'dream_far_post_volley_left',family:'cross',finish:'volley',delivery:'cross',
+  order:[7,5,0],length:'long',weight:6,kinds:['cross'],style:'volley',title:'Volley am langen Pfosten',direct:true,
+  routes:{
+   0:[[0,-10,-31],[2,-9.4,-36],[3.6,-8.4,-40.4],[4.7,-7.2,-43.4],[5.4,-6.4,-44.6],[6.4,-5.8,-45.6]],
+   5:[[0,25,-20],[.9,25.6,-23],[1.4,25.8,-24.6],[2.6,25.2,-30],[3.75,23.8,-35.6],[5.4,22,-39]],
+   7:[[0,9,-20],[.4,9.2,-20.4],[2,9,-24],[5.4,7,-31]]},
+  beats:[[.4,1.4],[3.75,5.4]],arcs:[.06,2.9],
+  flight:{post:1,goal:[3.1,2.08],bend:[0,0],rise:[.55,.4],rate:1.9}},
+ {id:'dream_counter_square_left',sims:['normal','low_driven','finesse'],mirror:'dream_counter_square_right',family:'through',finish:'low_driven',delivery:'through',
+  order:[3,1,0],length:'long',weight:7,kinds:['through'],style:'tap',title:'Konter mit Querpass',direct:true,
+  routes:{
+   0:[[0,3,-8],[1,2.6,-12],[2,2,-17.6],[3,1.6,-23.6],[4,1.2,-30],[4.8,1,-35],[5.4,.8,-38.4],[6.4,.6,-40]],
+   1:[[0,-14,-6],[1.15,-14.6,-11.6],[2.2,-14,-18],[3.3,-12.4,-25.6],[4.3,-10.2,-32.4],[4.85,-9,-35.6],[5.4,-8.4,-37.4]],
+   3:[[0,-2,2],[.45,-2.2,1.4],[2,-2,-5],[5.4,-1,-16]]},
+  beats:[[.45,2.2],[4.85,5.4]],arcs:[.4,.06],
+  flight:{post:0,goal:[3.22,.3],bend:[0,0],rise:[.05,0],rate:1.8}},
+ {id:'dream_switch_cutback_left',sims:['normal','low_driven','finesse'],mirror:'dream_switch_cutback_right',family:'switch',finish:'normal',delivery:'loft',
+  order:[7,4,0],length:'long',weight:7,kinds:['switch'],style:'placed',title:'Seitenwechsel und Rückpass',direct:true,
+  routes:{
+   0:[[0,4,-27],[2,3.4,-31],[3.8,1.6,-35.4],[4.8,.4,-37.6],[5.4,0,-38.6],[6.4,-.4,-40]],
+   4:[[0,-25,-26],[1,-25.6,-28.6],[2.3,-25.4,-32.2],[3.2,-24.4,-37],[4,-22.6,-42.4],[4.55,-21,-45.4],[5.4,-19.8,-47]],
+   7:[[0,12,-19],[.4,12.2,-19.4],[2,12,-23],[5.4,10,-29]]},
+  beats:[[.4,2.3],[4.55,5.4]],arcs:[3.2,.08],
+  flight:{post:0,goal:[3.2,.62],bend:[0,0],rise:[.18,.1],rate:1.7}},
+ {id:'dream_tiki_square_tap',sims:['normal','low_driven','finesse'],family:'combination',finish:'low_driven',delivery:'short',
+  order:[6,3,7,2,0],length:'long',weight:7,kinds:['combination'],style:'tap',title:'Tiki-Taka bis ins Tor',direct:true,
+  routes:{
+   0:[[0,-6,-30],[2,-5.6,-34],[3.6,-4.4,-39],[4.7,-3.2,-43.4],[5.4,-2.6,-45.2],[6.3,-2.2,-46.6]],
+   6:[[0,-8,-15],[.3,-8,-15.4],[1.6,-6.4,-19],[5.4,-4,-27]],
+   3:[[0,0,-25],[.85,-.4,-22.6],[1.3,.3,-22.3],[2.4,1,-25],[5.4,2,-33]],
+   7:[[0,7,-17],[1.6,6.6,-19.6],[1.95,6.6,-20.2],[3.4,7.8,-25],[5.4,8,-31]],
+   2:[[0,21,-30],[1.6,20.6,-32.6],[2.65,20,-35],[3.6,18.6,-39.6],[4.2,17.2,-43.4],[4.5,16.4,-45],[5.4,15,-47]]},
+  beats:[[.3,.85],[1.3,1.95],[2.4,4.2],[4.5,5.4]],arcs:[.06,.06,.12,.06],
+  flight:{post:-1,goal:[2.6,.26],bend:[0,0],rise:[.04,0],rate:2.4}}
 ];
 const mirrorPoint=([t,x,z])=>[t,-x,z];
 function mirrored(def){

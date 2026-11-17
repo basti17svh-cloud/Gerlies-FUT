@@ -78,9 +78,9 @@ import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21410';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21449';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21450';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
-import {isDreamGoal,dreamGoal,dreamStyle,dreamContact,dreamImpact,dreamFlightPoint,dreamGateParam,dreamFinishPose,dreamFacesAway} from './3d-dream-goals.mjs?v=21449';
+import {isDreamGoal,dreamGoal,dreamStyle,dreamContact,dreamImpact,dreamFlightPoint,dreamGateParam,dreamFinishPose,dreamFacesAway} from './3d-dream-goals.mjs?v=21450';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
