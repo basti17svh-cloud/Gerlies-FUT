@@ -63,8 +63,10 @@ const day=v=>v?String(v.value).slice(0,10):'';
 // Every footballer with a club spell that started (or a spell that ended) on/after `since`.
 async function wikidataMoves(since){
  const t=`"${since}T00:00:00Z"^^xsd:dateTime`;
- const hits=await sparql(`SELECT DISTINCT ?p WHERE { ?p wdt:P106 wd:Q937857. ?p p:P54 ?st.
-  { ?st pq:P580 ?d. FILTER(?d >= ${t}) FILTER NOT EXISTS{?st pq:P582 ?e} } UNION { ?st pq:P582 ?d. FILTER(?d >= ${t}) } }`);
+ // Two small queries instead of one UNION: the combined one times out (HTTP 504).
+ const hits=await sparql(`SELECT DISTINCT ?p WHERE { ?p p:P54 ?st. ?st pq:P580 ?d. FILTER(?d >= ${t}) FILTER NOT EXISTS{?st pq:P582 ?e} ?p wdt:P106 wd:Q937857. }`);
+ // Spells that ended after `since` catch new clubs entered without a start date; optional when it times out.
+ try{hits.push(...await sparql(`SELECT DISTINCT ?p WHERE { ?p p:P54 ?st. ?st pq:P582 ?d. FILTER(?d >= ${t} && ?d <= NOW()) ?p wdt:P106 wd:Q937857. }`))}catch(e){}
  const ids=[...new Set(hits.map(h=>qid(h.p)))],players=[];
  for(let i=0;i<ids.length;i+=150){
   const rows=await sparql(`SELECT ?p ?name ?alt ?club ?clubName ?start ?end ?how WHERE {
