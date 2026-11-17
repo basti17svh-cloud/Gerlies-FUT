@@ -1,8 +1,23 @@
-import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21452';
+import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21453';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),smooth=v=>{v=clamp(v);return v*v*(3-2*v)},mix=(a,b,u)=>a+(b-a)*u;
-export const EXTENDED_SEQUENCES=[...EXTENDED_HIGHLIGHT_TYPES.map(k=>'extended_'+k),'extended_corner_right'];
+// V21.453 Standards: every restart has several authored variants. A sequence
+// is 'extended_<kind>[_<variant>][_right]'; '_right' mirrors the whole scene.
+export const EXTENDED_VARIANTS=Object.freeze({corner:Object.freeze(['near','far','short','edge']),free_kick:Object.freeze(['side','far','edge']),penalty:Object.freeze(['stutter','angled']),throw_in:Object.freeze([])});
+const MIRRORS={corner:['','near','far','short','edge'],free_kick:['side','far','edge'],penalty:['angled'],throw_in:['']};
+export const EXTENDED_SEQUENCES=[...EXTENDED_HIGHLIGHT_TYPES.map(k=>'extended_'+k),'extended_corner_right',
+ ...Object.entries(EXTENDED_VARIANTS).flatMap(([k,list])=>list.map(v=>'extended_'+k+'_'+v)),
+ ...Object.entries(MIRRORS).flatMap(([k,list])=>list.filter(v=>v||k!=='corner').map(v=>'extended_'+k+(v?'_'+v:'')+'_right'))];
+const PARSED=new Map(EXTENDED_SEQUENCES.map(seq=>{
+ const kind=[...EXTENDED_HIGHLIGHT_TYPES].sort((a,b)=>b.length-a.length).find(k=>seq==='extended_'+k||seq.startsWith('extended_'+k+'_'));
+ const rest=seq.slice(9+kind.length).split('_').filter(Boolean),mirror=rest.at(-1)==='right';if(mirror)rest.pop();
+ return[seq,Object.freeze({kind,variant:rest.join('_'),mirror})];
+}));
 const shots={keeper_buildout:20,turnover_counter:20,corner:10.5,free_kick:8,penalty:9,throw_in:12};
-export const extendedKind=seq=>EXTENDED_SEQUENCES.includes(seq)?seq.slice(9).replace(/_right$/,''):null;
+export const extendedKind=seq=>PARSED.get(seq)?.kind||null;
+export const extendedVariant=seq=>PARSED.get(seq)?.variant||'';
+export const extendedMirrored=seq=>!!PARSED.get(seq)?.mirror;
+const variantKey=seq=>{const p=PARSED.get(seq);return p?(p.variant?p.kind+'_'+p.variant:p.kind):null};
+const mirrorSign=seq=>extendedMirrored(seq)?-1:1;
 export function extendedTiming(seq){const kind=extendedKind(seq);return kind?{shot:shots[kind],duration:createExtendedHighlightPlan(kind).duration}:null}
 export function extendedSeconds(seq,time){const t=extendedTiming(seq);if(!t)return time;if(time<=5.4)return time/5.4*t.shot;if(time<=6.65)return t.shot+time-5.4;return t.shot+1.25+(time-6.65)/3.75*(t.duration-t.shot-1.25)}
 function route(keys,t){if(t<=keys[0][0])return keys[0].slice(1);for(let n=1;n<keys.length;n++)if(t<keys[n][0]){const a=keys[n-1],b=keys[n],u=smooth((t-a[0])/(b[0]-a[0]));return [mix(a[1],b[1],u),mix(a[2],b[2],u)]}return keys.at(-1).slice(1)}
@@ -33,6 +48,41 @@ const R={
  penalty:{0:[[0,0,-37.3],[6,0,-37.3],[8,0,-39.5],[9,-.105,-40.68988172767776]]},
  throw_in:{1:[[0,34.15,-20],[3.2,34.15,-20],[5,34.15,-20],[9,28,-27],[12,26,-34]],6:[[0,24,-23],[3,24,-23],[5,23,-25],[8,20,-28],[10,14,-32],[12,10,-35]],0:[[0,9,-28],[5,9,-28],[8,7,-31],[10,3,-35],[12,1,-39]]}
 };
+// Ball spots of the free-kick variants (left side; '_right' mirrors them).
+const FREE_KICK_SPOT={free_kick:[0,-29.5],free_kick_side:[-9.5,-31],free_kick_far:[-3,-23.2],free_kick_edge:[-15,-35]};
+// Off-centre and long free kicks need a slightly wider lens to keep taker and both posts.
+const FREE_KICK_ZOOM={free_kick_side:1.3,free_kick_far:1.3,free_kick_edge:1.38};
+const goalUnit=([x,z])=>{const dx=-x,dz=-52.5-z,l=Math.hypot(dx,dz);return[dx/l,dz/l]};
+function freeKickRun(spot){
+ // Short angled run-up that ends with the standing foot beside the ball.
+ const [ux,uz]=goalUnit(spot),end=[spot[0]-.1-.0*ux,spot[1]+.81],side=-.95;
+ const back=d=>[end[0]-ux*d+uz*side*Math.min(1,d/3),end[1]-uz*d-ux*side*Math.min(1,d/3)];
+ return[[0,...back(3.3)],[5,...back(3.3)],[7.2,...back(1.5)],[8,...end]];
+}
+// Variant routes replace only the actors they name; everyone else keeps the base lane.
+const RV={
+ corner_near:{
+  0:[[0,-6.5,-40],[4,-6.5,-40],[7.6,-6,-43.5],[10.5,-3.6,-49.2]],
+  8:[[0,-5.2,-42.6],[4,-5.2,-42.6],[8,-5,-46.5],[10.5,-4.4,-48.4]]},
+ corner_far:{
+  0:[[0,3.5,-39.5],[4,3.5,-39.5],[7,4.4,-43],[10.5,4.6,-49]],
+  8:[[0,4.8,-42],[4,4.8,-42],[8,5.3,-46],[10.5,5.5,-47.8]]},
+ corner_edge:{
+  0:[[0,1,-32.6],[4,1,-32.6],[8,1.4,-34.4],[10.5,1.2,-36.4]],
+  8:[[0,1,-44],[4,1,-44],[8,2.4,-45],[10.5,2.6,-45.6]]},
+ corner_short:{
+  1:[[0,-33.8,-50.6],[3.6,-33.8,-50.6],[4.3,-33.65,-51.65],[6.4,-31.2,-49.5],[10.5,-27.5,-46.5]],
+  6:[[0,-25.5,-45.2],[3.6,-25.5,-45.2],[5.2,-29.3,-48.4],[7.6,-26,-49.6],[10.5,-22.5,-48.2]],
+  0:[[0,-2,-41],[7,-1.6,-41.2],[9,-.4,-44],[10.5,.6,-46.8]]},
+ free_kick_side:{0:freeKickRun(FREE_KICK_SPOT.free_kick_side)},
+ free_kick_far:{0:freeKickRun(FREE_KICK_SPOT.free_kick_far)},
+ free_kick_edge:{0:freeKickRun(FREE_KICK_SPOT.free_kick_edge)},
+ // A stutter: slow approach, a little hop and pause, then the quick strike.
+ penalty_stutter:{0:[[0,0,-36.6],[6,0,-36.6],[7.2,-.02,-38.7],[7.75,-.03,-38.95],[8.45,-.05,-39.45],[9,-.105,-40.69]]},
+ // A long, wide run-up from the side.
+ penalty_angled:{0:[[0,-2.2,-35.6],[6,-2.2,-35.6],[7.6,-1.2,-38.3],[8.5,-.5,-39.8],[9,-.105,-40.69]]}
+};
+const routeFor=(seq,index)=>{const key=variantKey(seq);return RV[key]?.[index]||R[extendedKind(seq)]?.[index]||null};
 
 /* Authored restarts, not a j-based grid. Each player has a real support,
  * covering, marking or rebound lane; goalkeepers/takers stay in R routes. */
@@ -63,11 +113,24 @@ const RESTART_FORMATIONS={
  }
 };
 const RESTART_RELEASE={penalty:9,free_kick:8,corner:4.3,throw_in:3.2};
-function restartPosition(index,seconds,kind){
+function freeKickShape(key,attack,j,target){
+ const spot=FREE_KICK_SPOT[key],base=RESTART_FORMATIONS.free_kick,src=(attack?(target?base.targets.attack:base.attack):(target?base.targets.defend:base.defend))[j];
+ if(!src||key==='free_kick')return src;
+ const [ux,uz]=goalUnit(spot);
+ if(!attack&&j<4){
+  // The wall stands 9.15 m from the ball on the line to goal, shifted to cover the near post.
+  const off=[-.84,-.28,.28,.84][j]+(spot[0]<0?-.35:.35),d=9.15+(target?1.6+j*.35:0);
+  return[spot[0]+ux*d-uz*off,spot[1]+uz*d+ux*off];
+ }
+ const dx=spot[0]*.55,dz=(spot[1]+29.5)*.45;
+ return[Math.max(-33,Math.min(33,src[0]+dx)),Math.max(-50,Math.min(-12,src[1]+dz))];
+}
+function restartPosition(index,seconds,kind,key=kind){
  const shape=RESTART_FORMATIONS[kind],attack=index<8,j=attack?index:index-8;
- const start=(attack?shape?.attack:shape?.defend)?.[j];
+ const fk=kind==='free_kick'&&key!=='free_kick';
+ const start=fk?freeKickShape(key,attack,j,false):(attack?shape?.attack:shape?.defend)?.[j];
  if(!start)return null;
- const end=(attack?shape.targets.attack:shape.targets.defend)[j]||start;
+ const end=fk?freeKickShape(key,attack,j,true)||start:(attack?shape.targets.attack:shape.targets.defend)[j]||start;
  const release=RESTART_RELEASE[kind],wall=kind==='free_kick'&&!attack&&j<4;
  // Micro-positioning before delivery stays behind the penalty line and arc.
  const drift=wall?0:kind==='penalty'?.075:.18;
@@ -84,9 +147,10 @@ function restartPosition(index,seconds,kind){
 
 export function extendedPosition(index,time,seq){
  const kind=extendedKind(seq);if(!kind)return null;const t=extendedSeconds(seq,time);
- if(R[kind][index]){const point=route(R[kind][index],t);if(seq.endsWith('_right'))point[0]*=-1;return point;}
- const staged=restartPosition(index,t,kind);
- if(staged){if(seq.endsWith('_right'))staged[0]*=-1;return staged;}
+ const keys=routeFor(seq,index);
+ if(keys){const point=route(keys,t);point[0]*=mirrorSign(seq);return point;}
+ const staged=restartPosition(index,t,kind,variantKey(seq));
+ if(staged){staged[0]*=mirrorSign(seq);return staged;}
  const attack=index<8,j=attack?index:index-8;
  const progress=smooth(t/shots[kind]),initial=kind==='keeper_buildout'?24:0;
  return[(j-3)*6+(attack?0:2),mix(initial+(attack?10:0)-(j%3)*6,(attack?-23:-38)-(j%3)*3,progress)];
@@ -94,8 +158,14 @@ export function extendedPosition(index,time,seq){
 export function extendedContact(seq,base){const p=extendedPosition(0,5.4,seq);return p?[p[0]+base[0],['penalty','free_kick'].includes(extendedKind(seq))?.14:base[1],p[1]+base[2]+37]:null}
 const foot=(i,t,seq)=>{const p=extendedPosition(i,t/extendedTiming(seq).shot*5.4,seq);return[p[0]+.1,i===16?1.08:.14,p[1]+(extendedKind(seq)==='turnover_counter'&&i>=8&&i<16?.45:-.45)]};
 // Physical seconds, exact receiver endpoints; the final pass meets the actual finishing contact.
-export function extendedPasses(seq){const k=extendedKind(seq);return({keeper_buildout:[[16,1,4,6,.65],[1,6,9,12,.25],[6,0,17,19,.3]],turnover_counter:[[9,8,2.7,4.5,.18],[6,1,13,15,.25],[1,0,17,19,.25]],corner:[[1,0,4.3,10.5,4.2]],throw_in:[[1,6,3.2,5,2.1],[6,0,9,11,.25]],free_kick:[],penalty:[]})[k]||[]}
-export function extendedControl(time,seq){const k=extendedKind(seq),t=extendedSeconds(seq,time);if(!k||time>=5.15||['penalty','free_kick','corner','throw_in'].includes(k)&&t<(k==='throw_in'?5:99))return{index:-1,weight:0};
+const VARIANT_PASSES={corner_near:[[1,0,4.3,10.5,3.1]],corner_far:[[1,0,4.3,10.5,4.8]],corner_edge:[[1,0,4.3,10.5,4.7]],corner_short:[[1,6,4.3,5.2,.1],[6,0,7.6,10.5,3.4]]};
+// Wall players turn to face the ball, wherever the free kick is taken.
+export function extendedWallHeading(seq){
+ const key=variantKey(seq),spot=FREE_KICK_SPOT[key];if(!spot)return Math.PI;
+ const [ux,uz]=goalUnit(spot);return Math.atan2(ux*mirrorSign(seq),uz);
+}
+export function extendedPasses(seq){const k=extendedKind(seq),v=VARIANT_PASSES[variantKey(seq)];if(v)return v;return({keeper_buildout:[[16,1,4,6,.65],[1,6,9,12,.25],[6,0,17,19,.3]],turnover_counter:[[9,8,2.7,4.5,.18],[6,1,13,15,.25],[1,0,17,19,.25]],corner:[[1,0,4.3,10.5,4.2]],throw_in:[[1,6,3.2,5,2.1],[6,0,9,11,.25]],free_kick:[],penalty:[]})[k]||[]}
+export function extendedControl(time,seq){const k=extendedKind(seq),t=extendedSeconds(seq,time);if(!k||time>=5.15||['penalty','free_kick','corner','throw_in'].includes(k)&&t<(k==='throw_in'?5:k==='corner'&&extendedPasses(seq).length>1?5.2:99))return{index:-1,weight:0};
  // The counter has explicit possession states; completed opponent passes must
  // never overwrite the later defender's recovery or return to an old carrier.
  if(k==='turnover_counter'){
@@ -117,8 +187,8 @@ export function extendedBall(time,seq,contact){
   }
  }
  if(k==='corner'&&t<4.3)return foot(1,4.3,seq);
- if(k==='throw_in'&&t<3.2){const p=extendedPosition(1,time,seq);return[p[0]-.12,1.92+.12*smooth(t/3),p[1]]}
- for(const [a,b,start,end,arc]of extendedPasses(seq))if(t>=start&&t<end){const from=k==='throw_in'&&a===1?[34.03,2.04,-20]:foot(a,start,seq),to=end===shots[k]?contact:foot(b,end,seq),u=(t-start)/(end-start),p=from.map((v,i)=>mix(v,to[i],u));p[1]+=arc*Math.sin(Math.PI*u);return p}
+ if(k==='throw_in'&&t<3.2){const p=extendedPosition(1,time,seq);return[p[0]-.12*mirrorSign(seq),1.92+.12*smooth(t/3),p[1]]}
+ for(const [a,b,start,end,arc]of extendedPasses(seq))if(t>=start&&t<end){const from=k==='throw_in'&&a===1?[34.03*mirrorSign(seq),2.04,-20]:foot(a,start,seq),to=end===shots[k]?contact:foot(b,end,seq),u=(t-start)/(end-start),p=from.map((v,i)=>mix(v,to[i],u));p[1]+=arc*Math.sin(Math.PI*u);return p}
  if(t>shots[k]-.55){const from=foot(0,shots[k]-.55,seq),u=smooth((t-shots[k]+.55)/.55);return from.map((v,i)=>mix(v,contact[i],u))}
  const c=extendedControl(time,seq);return foot(c.index<0?0:c.index,t,seq);
 }
@@ -146,9 +216,10 @@ export function extendedCamera(seq,time,direction,aspect,ball){
   // Once struck, keep the whole goal and the actual rebound/miss together.
   target[2]=mix(target[2],(ball[2]-51.25)/2,smooth((time-5.4)/1.25));
  }
- if(kind==='penalty'||kind==='free_kick'){target[0]=0;target[2]=kind==='penalty'?-44:-38}
- if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
- if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
+ if(kind==='penalty'){target[0]=0;target[2]=-44}
+ if(kind==='free_kick'){const spot=FREE_KICK_SPOT[variantKey(seq)]||FREE_KICK_SPOT.free_kick;target[0]=spot[0]*.4*mirrorSign(seq);target[2]=-38+(spot[1]+29.5)*.65}
+ if(kind==='corner'){target[0]=mix(extendedMirrored(seq)?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=extendedVariant(seq)==='edge'?mix(-44,-40,smooth((t-6)/4)):-44}
+ if(kind==='throw_in'){target[0]=mix(19*mirrorSign(seq),0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
  // Open-play counters use the ordinary elevated touchline rail and range
  // (V21.205: 34 m, the same as BROADCAST_CAMERA_DISTANCE in the scene).
@@ -160,17 +231,23 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  // so the whole goal fits next to the ball (counter) or the taker (free kick).
  const wide=width=>2*Math.atan(width/aspect)*180/Math.PI;
  const fov=kind==='turnover_counter'?Math.max(portrait?42:32,wide(.384)):
-  kind==='free_kick'?Math.max(portrait?38:35.5,wide(.355)):(portrait?29.4:28.6);
+  kind==='free_kick'?Math.max(portrait?38:35.5,wide(.355))*(FREE_KICK_ZOOM[variantKey(seq)]||1):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // V21.195 set-piece TV angles, cut in directly (not through the stabilized
 // 40 m rail): a camera behind the penalty taker for the run-up and strike,
 // one behind the ball looking over the wall at a free kick, and one from
 // behind the corner flag into the box for a corner.
+function freeKickBehind(seq,portrait){
+ const spot=FREE_KICK_SPOT[variantKey(seq)]||FREE_KICK_SPOT.free_kick,[ux,uz]=goalUnit(spot);
+ return{from:[spot[0]-ux*11.5-2,3.3,spot[1]-uz*11.5],to:[spot[0]+ux*16.5+.3,1.2,spot[1]+uz*16.5],fov:portrait?31:28,mirror:extendedMirrored(seq)};
+}
 export function extendedSetPieceCamera(seq,time,direction,aspect,ball=null){
  const kind=extendedKind(seq),portrait=aspect<1.12;
- const behind=kind==='penalty'&&time<7.7?{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?28:25}:
-  kind==='free_kick'&&time<7.3?{from:[-2,3.3,-18],to:[.3,1.2,-46],fov:portrait?31:28}:null;
+ const angled=kind==='penalty'&&extendedVariant(seq)==='angled';
+ // The wide run-up camera hands over to the TV camera right after the strike.
+ const behind=kind==='penalty'&&time<(angled?6.1:7.7)?(angled?{from:[-3.9,2.2,-30.9],to:[.4,1.0,-50.5],fov:portrait?28:25,mirror:extendedMirrored(seq)}:{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?28:25}):
+  kind==='free_kick'&&time<7.3?freeKickBehind(seq,portrait):null;
  // V21.203 (Basti): corners stay in the normal TV camera, no corner-flag angle.
  if(!behind)return null;
  const f=v=>[v[0]*(behind.mirror?-1:1)*direction,v[1],v[2]*direction],position=f(behind.from),target=f(behind.to);

@@ -301,9 +301,12 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 
 test('visual, playbook, defensive and extended scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
- const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in'];
+ const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in',
+  // V21.453 Standards: authored variants and mirrored sides.
+  'extended_corner_near','extended_corner_far','extended_corner_short','extended_corner_edge','extended_free_kick_side','extended_free_kick_far','extended_free_kick_edge','extended_penalty_stutter','extended_penalty_angled',
+  'extended_corner_near_right','extended_corner_far_right','extended_corner_short_right','extended_corner_edge_right','extended_free_kick_side_right','extended_free_kick_far_right','extended_free_kick_edge_right','extended_penalty_angled_right','extended_throw_in_right'];
  assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,247);
- assert.equal(M.PLAY_SEQUENCES.length,302);
+ assert.equal(M.PLAY_SEQUENCES.length,320);
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
@@ -991,14 +994,15 @@ test('V21.166: freekick taker and both goal posts share a frame, wall faces take
   return[dot(v,r)/(aspect*d*h),dot(v,u)/(d*h)];
  };
  for(const dir of [-1,1])for(const aspect of [.9,.93,1.3,1.8])for(const sec of [0,2.5,4.8,5.2,5.4]){
-  const time=sec/8*M.SHOT_TIME,sequence='extended_free_kick',ball=E.extendedBall(time,sequence,[0,.14,-28.75]);
+  for(const sequence of E.EXTENDED_SEQUENCES.filter(s=>E.extendedKind(s)==='free_kick')){
+  const time=sec/8*M.SHOT_TIME,spot=M.shotContact(sequence),ball=E.extendedBall(time,sequence,spot);
   const cam=E.extendedCamera(sequence,time,dir,aspect,ball),k=E.extendedPosition(0,time,sequence);
-  const points=[[k[0]*dir,1.15,k[1]*dir],[0,.14,-28.75*dir],
+  const points=[[k[0]*dir,1.15,k[1]*dir],[spot[0]*dir,.14,spot[2]*dir],
    ...[-3.72,3.72].flatMap(x=>[-52.5,-54.45].map(z=>[x*dir,2.5,z*dir]))];
-  for(const point of points)assert.ok(Math.max(...project(cam,point,aspect).map(Math.abs))<.94,'freekick crop '+dir+'/'+aspect+'/'+sec+'/'+point);
- }
+  for(const point of points)assert.ok(Math.max(...project(cam,point,aspect).map(Math.abs))<.94,'freekick crop '+sequence+' '+dir+'/'+aspect+'/'+sec+'/'+point);
+ }}
  const src=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(src,/const heading=wall\?Math\.PI/);
+ assert.match(src,/const heading=wall\?extendedWallHeading\(sequence\)/);
  const pose=fs.readFileSync(path.join(root,'3d-extended-match.mjs'),'utf8');
  assert.doesNotMatch(pose,/p\.elbows\[0\]\.rotation\.x=-1/);
 });
