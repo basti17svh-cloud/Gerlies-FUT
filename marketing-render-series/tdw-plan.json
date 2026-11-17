@@ -1,88 +1,6 @@
 [
  {
-  "name": "T10",
-  "xi": "xi-tdw-c.json",
-  "seq": "dream_layoff_volley",
-  "who": "Jude Bellingham",
-  "minute": "17",
-  "club": {
-   "home": {
-    "name": "Real Madrid",
-    "init": "RMA",
-    "color": "#febe10",
-    "secondary": "#00529f",
-    "symbol": "crown",
-    "shape": "round",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#f6f6f6",
-     "shirtSecondary": "#febe10",
-     "shorts": "#f6f6f6",
-     "socks": "#f6f6f6"
-    }
-   },
-   "away": {
-    "name": "Atlético Madrid",
-    "init": "ATM",
-    "color": "#cb3524",
-    "secondary": "#272e61",
-    "symbol": "bear",
-    "shape": "shield",
-    "kit": {
-     "pattern": "stripes",
-     "shirtPrimary": "#cb3524",
-     "shirtSecondary": "#ffffff",
-     "shorts": "#272e61",
-     "socks": "#cb3524"
-    }
-   },
-   "flip": false
-  },
-  "frames": "900"
- },
- {
-  "name": "T09",
-  "xi": "xi-tdw-c.json",
-  "seq": "dream_diving_header_left",
-  "who": "Harry Kane",
-  "minute": "24",
-  "club": {
-   "home": {
-    "name": "FC Bayern München",
-    "init": "FCB",
-    "color": "#dc052d",
-    "secondary": "#0066b2",
-    "symbol": "star",
-    "shape": "round",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#dc052d",
-     "shirtSecondary": "#ffffff",
-     "shorts": "#dc052d",
-     "socks": "#dc052d"
-    }
-   },
-   "away": {
-    "name": "Borussia Dortmund",
-    "init": "BVB",
-    "color": "#fde100",
-    "secondary": "#000000",
-    "symbol": "bolt",
-    "shape": "round",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#fde100",
-     "shirtSecondary": "#000000",
-     "shorts": "#000000",
-     "socks": "#fde100"
-    }
-   },
-   "flip": true
-  },
-  "frames": "900"
- },
- {
-  "name": "T08",
+  "name": "F5",
   "xi": "xi-tdw-c.json",
   "seq": "dream_trivela_right",
   "who": "Bruno Fernandes",
@@ -123,48 +41,7 @@
   "frames": "900"
  },
  {
-  "name": "T07",
-  "xi": "xi-tdw-c.json",
-  "seq": "dream_knuckle_right",
-  "who": "Dominik Szoboszlai",
-  "minute": "41",
-  "club": {
-   "home": {
-    "name": "FC Liverpool",
-    "init": "LFC",
-    "color": "#c8102e",
-    "secondary": "#00b2a9",
-    "symbol": "flame",
-    "shape": "shield",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#c8102e",
-     "shirtSecondary": "#f6eb61",
-     "shorts": "#c8102e",
-     "socks": "#c8102e"
-    }
-   },
-   "away": {
-    "name": "Newcastle United",
-    "init": "NUFC",
-    "color": "#241f20",
-    "secondary": "#ffffff",
-    "symbol": "castle",
-    "shape": "oval",
-    "kit": {
-     "pattern": "stripes",
-     "shirtPrimary": "#f4f4f4",
-     "shirtSecondary": "#241f20",
-     "shorts": "#241f20",
-     "socks": "#241f20"
-    }
-   },
-   "flip": true
-  },
-  "frames": "900"
- },
- {
-  "name": "T06",
+  "name": "F4",
   "xi": "xi-tdw-c.json",
   "seq": "dream_backheel_left",
   "who": "Erling Haaland",
@@ -200,86 +77,45 @@
      "socks": "#ef0107"
     }
    },
-   "flip": false
-  },
-  "frames": "900"
- },
- {
-  "name": "T05",
-  "xi": "xi-tdw-c.json",
-  "seq": "dream_rocket_dip",
-  "who": "Declan Rice",
-  "minute": "60",
-  "club": {
-   "home": {
-    "name": "Arsenal",
-    "init": "AFC",
-    "color": "#ef0107",
-    "secondary": "#063672",
-    "symbol": "target",
-    "shape": "shield",
-    "kit": {
-     "pattern": "sleeves",
-     "shirtPrimary": "#ef0107",
-     "shirtSecondary": "#ffffff",
-     "shorts": "#ffffff",
-     "socks": "#ef0107"
-    }
-   },
-   "away": {
-    "name": "Chelsea",
-    "init": "CFC",
-    "color": "#034694",
-    "secondary": "#dba111",
-    "symbol": "lion",
-    "shape": "round",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#034694",
-     "shirtSecondary": "#ffffff",
-     "shorts": "#034694",
-     "socks": "#ffffff"
-    }
-   },
    "flip": true
   },
   "frames": "900"
  },
  {
-  "name": "T04",
+  "name": "F3",
   "xi": "xi-tdw-c.json",
-  "seq": "dream_backheel_right",
-  "who": "Rafael Leão",
-  "minute": "67",
+  "seq": "dream_diving_header_left",
+  "who": "Harry Kane",
+  "minute": "24",
   "club": {
    "home": {
-    "name": "AC Mailand",
-    "init": "ACM",
-    "color": "#fb090b",
+    "name": "FC Bayern München",
+    "init": "FCB",
+    "color": "#dc052d",
+    "secondary": "#0066b2",
+    "symbol": "star",
+    "shape": "round",
+    "kit": {
+     "pattern": "solid",
+     "shirtPrimary": "#dc052d",
+     "shirtSecondary": "#ffffff",
+     "shorts": "#dc052d",
+     "socks": "#dc052d"
+    }
+   },
+   "away": {
+    "name": "Borussia Dortmund",
+    "init": "BVB",
+    "color": "#fde100",
     "secondary": "#000000",
-    "symbol": "cross",
-    "shape": "oval",
+    "symbol": "bolt",
+    "shape": "round",
     "kit": {
-     "pattern": "stripes",
-     "shirtPrimary": "#fb090b",
-     "shirtSecondary": "#111111",
-     "shorts": "#ffffff",
-     "socks": "#111111"
-    }
-   },
-   "away": {
-    "name": "Juventus",
-    "init": "JUV",
-    "color": "#111111",
-    "secondary": "#ffffff",
-    "symbol": "shieldmark",
-    "shape": "modern",
-    "kit": {
-     "pattern": "stripes",
-     "shirtPrimary": "#f4f4f4",
-     "shirtSecondary": "#111111",
-     "shorts": "#111111",
-     "socks": "#f4f4f4"
+     "pattern": "solid",
+     "shirtPrimary": "#fde100",
+     "shirtSecondary": "#000000",
+     "shorts": "#000000",
+     "socks": "#fde100"
     }
    },
    "flip": false
@@ -287,48 +123,7 @@
   "frames": "900"
  },
  {
-  "name": "T03",
-  "xi": "xi-tdw-c.json",
-  "seq": "dream_robben_cut_left",
-  "who": "Bradley Barcola",
-  "minute": "74",
-  "club": {
-   "home": {
-    "name": "Paris Saint-Germain",
-    "init": "PSG",
-    "color": "#004170",
-    "secondary": "#da291c",
-    "symbol": "fleur",
-    "shape": "round",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#004170",
-     "shirtSecondary": "#da291c",
-     "shorts": "#004170",
-     "socks": "#004170"
-    }
-   },
-   "away": {
-    "name": "Olympique Marseille",
-    "init": "OM",
-    "color": "#2faee0",
-    "secondary": "#ffffff",
-    "symbol": "waves",
-    "shape": "shield",
-    "kit": {
-     "pattern": "solid",
-     "shirtPrimary": "#f4f4f4",
-     "shirtSecondary": "#2faee0",
-     "shorts": "#f4f4f4",
-     "socks": "#f4f4f4"
-    }
-   },
-   "flip": true
-  },
-  "frames": "900"
- },
- {
-  "name": "T02",
+  "name": "F2",
   "xi": "xi-tdw-c.json",
   "seq": "dream_robben_cut_right",
   "who": "Lamine Yamal",
@@ -364,12 +159,12 @@
      "socks": "#f6f6f6"
     }
    },
-   "flip": false
+   "flip": true
   },
   "frames": "900"
  },
  {
-  "name": "T01",
+  "name": "F1",
   "xi": "xi-tdw-c.json",
   "seq": "dream_bicycle_left",
   "who": "Lautaro Martínez",
@@ -405,7 +200,7 @@
      "socks": "#f4f4f4"
     }
    },
-   "flip": true
+   "flip": false
   },
   "frames": "900"
  }
