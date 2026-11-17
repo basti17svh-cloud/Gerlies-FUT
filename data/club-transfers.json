@@ -530,6 +530,18 @@
    "league_name": "Trendyol Süper Lig"
   },
   {
+   "id": "232411",
+   "name": "Christopher Nkunku",
+   "from": "AC Milan",
+   "to": "RB Leipzig",
+   "since": "2026-08-01",
+   "loan": true,
+   "wikidata": "Q21693199",
+   "club_team_id": "112172",
+   "club_logo_url": "https://drop-assets.ea.com/images/6h45zAStsIK7QZ5UQ6ggWo/be342f3814ffbf92297d2e08148376b5/l112172.png",
+   "league_name": "Bundesliga"
+  },
+  {
    "id": "235842",
    "name": "Andrea Pinamonti",
    "from": "Sassuolo",
@@ -1236,6 +1248,18 @@
    "club_team_id": "110556",
    "club_logo_url": "https://drop-assets.ea.com/images/2VHGAP0i6Jtj7shkVqb6y7/32964ae39c99bb9d92e1c3885e5bb165/l110556.png",
    "league_name": "Serie A Enilive"
+  },
+  {
+   "id": "264652",
+   "name": "Bradley Barcola",
+   "from": "Paris SG",
+   "to": "Liverpool",
+   "since": "2026-08-01",
+   "loan": false,
+   "wikidata": "Q99670930",
+   "club_team_id": "9",
+   "club_logo_url": "https://drop-assets.ea.com/images/1yBVvRngv3RWtnaILTKHRD/3b55c3c2108821da9f35dcf9d37b9f76/l9.png",
+   "league_name": "Premier League"
   },
   {
    "id": "264697",
