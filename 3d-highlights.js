@@ -79,7 +79,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21452').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21453').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -419,10 +419,11 @@
   return Object.keys(out).length?Object.freeze(out):null;
  }
  const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick','first_touch_layoff_rocket']);
+ const isLongRange=seq=>LONG_RANGE.has(seq)||/^extended_free_kick/.test(seq);
  function goalStyle(event,key){
   const finish=String(event.finish||'normal'),seq=String(event.sequence||'');
   if(['header','chip','bicycle'].includes(finish)||/^extended_(?:penalty|corner|throw_in)/.test(seq))return null;
-  const n=visualHash(key+':goal-style')%100,far=LONG_RANGE.has(seq)||/(?:distance|rocket|curler|halfvolley)/.test(seq);
+  const n=visualHash(key+':goal-style')%100,far=isLongRange(seq)||/(?:distance|rocket|curler|halfvolley)/.test(seq);
   // Long shots often fly into the top corner; elsewhere these stay special.
   if(far)return n<38?'top_corner':n<50?'crossbar_in':n<58?'post_in':null;
   if(finish==='low_driven')return n<12?'post_in':null;
@@ -481,7 +482,7 @@
     ['low_reflex',low?6*(1+styles(keeper,'footwork')*1.25):.15],
     ['rush_spread',breakaway?5*(1+styles(keeper,'rush-out')*1.3):.14],
     ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14],
-    // V21.452: tipped over the bar (high shots) and punched clear (crosses).
+    // V21.453: tipped over the bar (high shots) and punched clear (crosses).
     ['over_bar',high&&!['low_driven','chip'].includes(finish)?4.5*(1+styles(keeper,'far-reach')*1.2):0],
     ['punch',aerial&&['header','volley','bicycle'].includes(finish)?4*(1+styles(keeper,'cross-claimer','deflector')*1.1):finish==='power'?1.1:0]
    ],':keeper');
@@ -517,7 +518,7 @@
  // V21.445: which simulated chances may show a dream goal, its finishing foot
  // (Robben: left foot from the right) and the technique it always shows.
  const DREAM_RULES=Object.freeze({"dream_robben_cut_right":{"kinds":["dribble","cutback"],"sims":["normal","finesse"],"foot":"Left","finish":"finesse"},"dream_robben_cut_left":{"kinds":["dribble","cutback"],"sims":["normal","finesse"],"foot":"Right","finish":"finesse"},"dream_trivela_left":{"kinds":["combination"],"sims":["normal","finesse"],"foot":"Right","finish":"finesse"},"dream_trivela_right":{"kinds":["combination"],"sims":["normal","finesse"],"foot":"Left","finish":"finesse"},"dream_rocket_dip":{"kinds":["distance"],"sims":["power","normal"],"foot":"","finish":"power"},"dream_knuckle_right":{"kinds":["distance"],"sims":["power","normal"],"foot":"","finish":"power"},"dream_backheel_left":{"kinds":["cutback"],"sims":["normal","low_driven"],"foot":"","finish":"backheel"},"dream_backheel_right":{"kinds":["cutback"],"sims":["normal","low_driven"],"foot":"","finish":"backheel"},"dream_bicycle_right":{"kinds":["cross"],"sims":["header","volley"],"foot":"","finish":"bicycle"},"dream_bicycle_left":{"kinds":["cross"],"sims":["header","volley"],"foot":"","finish":"bicycle"},"dream_diving_header_right":{"kinds":["cross"],"sims":["header"],"foot":"","finish":"header"},"dream_diving_header_left":{"kinds":["cross"],"sims":["header"],"foot":"","finish":"header"},"dream_layoff_volley":{"kinds":["distance"],"sims":["power","normal","volley"],"foot":"","finish":"volley"},"dream_through_chip_right":{"kinds":["through"],"sims":["chip","normal","finesse"],"foot":"","finish":"chip"},"dream_through_chip_left":{"kinds":["through"],"sims":["chip","normal","finesse"],"foot":"","finish":"chip"},"dream_rondo_low_left":{"kinds":["combination"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"low_driven"},"dream_switch_volley_left":{"kinds":["switch"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"volley"},"dream_switch_volley_right":{"kinds":["switch"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"volley"},"dream_near_post_flick_right":{"kinds":["cross"],"sims":["header"],"foot":"","finish":"header"},"dream_near_post_flick_left":{"kinds":["cross"],"sims":["header"],"foot":"","finish":"header"},"dream_slalom_left":{"kinds":["dribble"],"sims":["normal","finesse","low_driven"],"foot":"","finish":"low_driven"},"dream_slalom_right":{"kinds":["dribble"],"sims":["normal","finesse","low_driven"],"foot":"","finish":"low_driven"},"dream_roof_near_right":{"kinds":["dribble","cutback"],"sims":["power","normal","low_driven"],"foot":"","finish":"power"},"dream_roof_near_left":{"kinds":["dribble","cutback"],"sims":["power","normal","low_driven"],"foot":"","finish":"power"},"dream_overlap_drive_left":{"kinds":["cutback"],"sims":["normal","low_driven","power"],"foot":"","finish":"low_driven"},"dream_overlap_drive_right":{"kinds":["cutback"],"sims":["normal","low_driven","power"],"foot":"","finish":"low_driven"},"dream_through_far_curl_right":{"kinds":["through"],"sims":["finesse","normal"],"foot":"Right","finish":"finesse"},"dream_through_far_curl_left":{"kinds":["through"],"sims":["finesse","normal"],"foot":"Left","finish":"finesse"},"dream_counter_sprint":{"kinds":["through"],"sims":["normal","power","low_driven"],"foot":"","finish":"power"},"dream_scoop_volley":{"kinds":["combination","through"],"sims":["normal","volley","finesse"],"foot":"","finish":"volley"},"dream_back_post_header_left":{"kinds":["cross"],"sims":["header","volley"],"foot":"","finish":"header"},"dream_back_post_header_right":{"kinds":["cross"],"sims":["header","volley"],"foot":"","finish":"header"},"dream_switch_curl_right":{"kinds":["switch"],"sims":["finesse","normal"],"foot":"Right","finish":"finesse"},"dream_switch_curl_left":{"kinds":["switch"],"sims":["finesse","normal"],"foot":"Left","finish":"finesse"},"dream_long_lob":{"kinds":["distance"],"sims":["power","normal","finesse"],"foot":"","finish":"chip"},"dream_cutback_sidefoot_left":{"kinds":["cutback"],"sims":["normal","finesse","low_driven"],"foot":"","finish":"finesse"},"dream_cutback_sidefoot_right":{"kinds":["cutback"],"sims":["normal","finesse","low_driven"],"foot":"","finish":"finesse"},"dream_back_post_tap_left":{"kinds":["cutback"],"sims":["normal","low_driven"],"foot":"","finish":"low_driven"},"dream_back_post_tap_right":{"kinds":["cutback"],"sims":["normal","low_driven"],"foot":"","finish":"low_driven"},"dream_third_man_drive":{"kinds":["combination","through"],"sims":["normal","power","low_driven"],"foot":"","finish":"power"},"dream_edge_curl_near_left":{"kinds":["distance","dribble"],"sims":["finesse","normal"],"foot":"Right","finish":"finesse"},"dream_edge_curl_near_right":{"kinds":["distance","dribble"],"sims":["finesse","normal"],"foot":"Left","finish":"finesse"},"dream_far_post_volley_right":{"kinds":["cross"],"sims":["volley","header"],"foot":"","finish":"volley"},"dream_far_post_volley_left":{"kinds":["cross"],"sims":["volley","header"],"foot":"","finish":"volley"},"dream_counter_square_left":{"kinds":["through"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"low_driven"},"dream_counter_square_right":{"kinds":["through"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"low_driven"},"dream_switch_cutback_left":{"kinds":["switch"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"normal"},"dream_switch_cutback_right":{"kinds":["switch"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"normal"},"dream_tiki_square_tap":{"kinds":["combination"],"sims":["normal","low_driven","finesse"],"foot":"","finish":"low_driven"},"dream_dribble_dink_right":{"kinds":["dribble"],"sims":["normal","finesse","chip"],"foot":"","finish":"chip"},"dream_dribble_dink_left":{"kinds":["dribble"],"sims":["normal","finesse","chip"],"foot":"","finish":"chip"},"dream_central_header_right":{"kinds":["cross"],"sims":["header"],"foot":"","finish":"header"},"dream_central_header_left":{"kinds":["cross"],"sims":["header"],"foot":"","finish":"header"},"dream_outside_near_left":{"kinds":["dribble","combination"],"sims":["normal","finesse","low_driven"],"foot":"Right","finish":"finesse"},"dream_outside_near_right":{"kinds":["dribble","combination"],"sims":["normal","finesse","low_driven"],"foot":"Left","finish":"finesse"},"dream_diagonal_run_near_left":{"kinds":["through"],"sims":["normal","low_driven","power"],"foot":"","finish":"low_driven"},"dream_diagonal_run_near_right":{"kinds":["through"],"sims":["normal","low_driven","power"],"foot":"","finish":"low_driven"},"dream_layoff_curl_far_right":{"kinds":["distance","combination"],"sims":["finesse","normal"],"foot":"Right","finish":"finesse"},"dream_layoff_curl_far_left":{"kinds":["distance","combination"],"sims":["finesse","normal"],"foot":"Left","finish":"finesse"},"dream_overlap_header_right":{"kinds":["cross"],"sims":["header","volley"],"foot":"","finish":"header"},"dream_overlap_header_left":{"kinds":["cross"],"sims":["header","volley"],"foot":"","finish":"header"},"dream_box_turn_shot":{"kinds":["combination","through"],"sims":["normal","low_driven","power","finesse"],"foot":"","finish":"normal"}});
- function creatorActor(sequence){return CINEMATIC_PASSERS[sequence]??PLAYBOOK_PASSERS[sequence]??DREAM_PASSERS[sequence]??(sequence==='extended_throw_in'?1:sequence==='extended_keeper_buildout'?6:1)}
+ function creatorActor(sequence){return CINEMATIC_PASSERS[sequence]??PLAYBOOK_PASSERS[sequence]??DREAM_PASSERS[sequence]??(/^extended_throw_in/.test(sequence)?1:/^extended_corner_short/.test(sequence)?6:sequence==='extended_keeper_buildout'?6:1)}
  function signatureMoments(event){
   if(event.type==='ceremony')return [];
   const plus=list=>new Set((Array.isArray(list)?list:[]).filter(s=>s&&s.plus).map(s=>s.id));
@@ -574,12 +575,36 @@
   const phase=['receive','carry','burst','shield','aerial','finish','pass','restart','distribution','defense','save'].includes(m.phase)?m.phase:inferred;
   return Object.freeze({id:m.id,name:SIGNATURE_NAMES[m.id],who,phase});
  }
+ // V21.453 Standards: each restart has several authored variants (near/far post,
+ // short corner, edge volley; free kicks from the side, from distance and at the
+ // box corner; penalty run-ups). Presentation only, never a different result.
+ const RESTART_VARIANTS=Object.freeze({corner:['','near','far','short','edge'],free_kick:['','side','far','edge'],penalty:['','stutter','angled'],throw_in:[''],keeper_buildout:['']});
+ const MIRRORED_RESTARTS=Object.freeze({corner:['','near','far','short','edge'],free_kick:['side','far','edge'],penalty:['angled'],throw_in:['']});
+ // FNV alone leaves the low bits of near-identical keys correlated; finish with an avalanche.
+ const mixHash=input=>{let h=visualHash(input);h^=h>>>16;h=Math.imul(h,0x45d9f3b);h^=h>>>16;return h>>>0};
+ function restartSequence(event,history=[]){
+  const kind=event.sceneKind,finish=event.finish||'normal';
+  const usable=(RESTART_VARIANTS[kind]||['']).filter(v=>kind!=='corner'||(v==='edge'?finish==='volley':v==='near'?!['volley','bicycle'].includes(finish):true));
+  const key=[event.id||'',event.minute||0,event.team||'',event.playerId||'',kind].join('|');
+  const recent=(Array.isArray(history)?history:[]).slice(-4).map(h=>String(h?.sequence||'')).filter(s=>s.startsWith('extended_'+kind));
+  const wanted=typeof event.restartVariant==='string'?event.restartVariant.replace(/^base$/,''):null;
+  let variant;
+  if(wanted!==null&&usable.includes(wanted))variant=wanted;
+  else{
+   const fresh=usable.filter(v=>!recent.some(s=>s.replace(/_right$/,'')==='extended_'+kind+(v?'_'+v:'')));
+   const pool=fresh.length?fresh:usable;variant=pool[mixHash(key+':restart')%pool.length];
+  }
+  // Corners and throw-ins follow the real flank; other restarts alternate visually.
+  const canMirror=(MIRRORED_RESTARTS[kind]||[]).includes(variant);
+  const mirror=canMirror&&(typeof event.restartMirror==='boolean'?event.restartMirror:kind==='corner'?event.restartSide==='right':kind==='throw_in'?event.restartSide==='left':(mixHash(key+':restart-side')&1)===1);
+  return 'extended_'+kind+(variant?'_'+variant:'')+(mirror?'_right':'');
+ }
  function choosePresentation(event,history=[]){
   // Retired: extended_turnover_counter. Its scripted interception left
   // defenders motionless and the final runner offside. Preserve the simulator's
   // real chance outcome but select a normal, continuous 3D attacking play.
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
-  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
+  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:restartSequence(event,history),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const skillStars=Number(event.skillMoves)||0,requestedSkill=event.actionKind==='dribble'&&SKILL_LEVELS[event.skillMove]&&skillStars>=SKILL_LEVELS[event.skillMove]?event.skillMove:'';
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();

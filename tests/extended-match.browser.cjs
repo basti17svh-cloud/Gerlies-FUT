@@ -26,6 +26,7 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
      return{kind,width,retired:true};
     }
     if(event?.sceneKind!==kind)throw Error('Wrong production event '+JSON.stringify({kind,event,shot}));
+    (window.qaRestartEvents||(window.qaRestartEvents={}))[kind]=event;
     const M=await import('../3d-highlights-scene.mjs?v=21445'),T=await import('../vendor/three/three.module.min.js');
     await M.prepareFooteraPlayerModel();
     const host=document.getElementById('matchLiveStage'),canvas=document.createElement('canvas');canvas.id='extended-proof';host.append(canvas);
@@ -49,6 +50,32 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
    if(kind==='turnover_counter'){assert.notEqual(proof.frames[0].phase.team,proof.event.team);assert.equal(proof.frames[3].phase.team,proof.event.team)}
    if(process.env.FOOTERA_EXTENDED_PROOF)await page.locator('#extended-proof').screenshot({path:process.env.FOOTERA_EXTENDED_PROOF+'-'+kind+'.png'});
    await page.evaluate(()=>qaExtendedCleanup());console.log('PASS',kind,width,proof.event.team,proof.event.attackDirection,proof.frames.map(x=>x.visible).join(','));
+  }
+  // V21.453 Standards: every authored variant (and its mirror) renders with
+  // players in view, the ball on screen and the whole goal at the finish.
+  const {EXTENDED_SEQUENCES,extendedKind,extendedVariant}=await import('../3d-extended-match.mjs');
+  const variants=EXTENDED_SEQUENCES.filter(seq=>['corner','free_kick','penalty','throw_in'].includes(extendedKind(seq))&&(extendedVariant(seq)||seq.endsWith('_right')));
+  // Penalty cameras stand close behind the taker: check them on every phone width and both ends.
+  const runs=['extended_penalty',...variants].flatMap(seq=>extendedKind(seq)==='penalty'?[360,390,412].flatMap(w=>[[seq,w,0],[seq,w,1]]):[[seq,0,0]]);
+  for(const [n,[seq,fixed,end]] of runs.entries()){
+   const width=fixed||[360,390,412][n%3],kind=extendedKind(seq);await page.setViewportSize({width,height:844});
+   const frames=await page.evaluate(async({seq,kind,width,end})=>{
+    const base=window.qaRestartEvents[kind],finish=kind==='corner'?(/_edge/.test(seq)?'volley':'header'):base.finish;
+    const event={...base,sequence:seq,finish,type:'goal'};
+    const M=await import('../3d-highlights-scene.mjs?v=21445'),T=await import('../vendor/three/three.module.min.js');
+    const host=document.getElementById('matchLiveStage')||document.body,canvas=document.createElement('canvas');host.append(canvas);
+    const renderer=new T.WebGLRenderer({canvas,antialias:false,preserveDrawingBuffer:true});renderer.setPixelRatio(1);
+    const world=M.makeScene(renderer,event,end,false,true,false,true,true);world.resize(width-16,500);
+    const out=[];for(const time of [0,1.7,3.5,5.2,5.4,6.65]){world.update(time);const x=world.inspect();out.push({time,ball:x.ball,screen:x.ballScreen,visible:x.visibleFieldPlayers,goal:x.goalFrameScreen,shot:x.cameraShot})}
+    world.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();return out;
+   },{seq,kind,width,end:fixed?end===1:n%2===1});
+   for(const f of frames){
+    assert.ok(f.ball.every(Number.isFinite),seq);
+    if(f.time<5.4)assert.ok(f.visible>=1,seq+' actors at '+f.time+' width '+width);
+    if(f.time>=6.65&&f.shot!=='scorer-close-up')for(const g of f.goal)assert.ok(Math.abs(g[0])<1&&Math.abs(g[1])<1,seq+' goal cropped '+width+' '+JSON.stringify(f.goal));
+    if(f.shot!=='scorer-close-up')assert.ok(Math.abs(f.screen[0])<1&&Math.abs(f.screen[1])<1,seq+' ball outside '+JSON.stringify([f.time,width,f.shot,f.screen]));
+   }
+   console.log('PASS',seq,width,frames.map(f=>f.visible).join(','));
   }
   assert.deepEqual(errors,[]);console.log('PASS all six simulation → queue → WebGL paths');
  }finally{await browser.close();server.close()}

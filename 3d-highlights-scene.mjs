@@ -1,8 +1,8 @@
-import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-playstyle-moments.mjs?v=21341';
+import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-playstyle-moments.mjs?v=21453';
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21341';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21445';
+import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21453';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21453';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
@@ -78,9 +78,9 @@ import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21410';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21452';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21453';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
-import {isDreamGoal,dreamGoal,dreamStyle,dreamContact,dreamImpact,dreamFlightPoint,dreamGateParam,dreamFinishPose,dreamFacesAway} from './3d-dream-goals.mjs?v=21452';
+import {isDreamGoal,dreamGoal,dreamStyle,dreamContact,dreamImpact,dreamFlightPoint,dreamGateParam,dreamFinishPose,dreamFacesAway} from './3d-dream-goals.mjs?v=21453';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -503,7 +503,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   if(t<1)return dreamFlightPoint(seq,contact,impact,flight*sGate);
   if(delay>0&&time<IMPACT_TIME+delay)return dreamFlightPoint(seq,contact,impact,sGate+(1-sGate)*clamp((time-IMPACT_TIME)/delay));
  }
- if(t<1){const p=lerp(contact,gate,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
+ if(t<1){const p=lerp(contact,gate,flight),arc=extendedKind(seq)==='free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
  if(delay>0){if(time<IMPACT_TIME+delay)return lerp(gate,impact,(time-IMPACT_TIME)/delay);time-=delay}
  if(type==='goal'&&placement?.style==='crossbar_in'){
   // Off the underside of the bar: down behind the line, one bounce, into the net.
@@ -521,12 +521,12 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'&&keeperAction==='classic')return caughtBallPosition(time,impact,seq,finish,placement);
  if(type==='big_chance_saved'&&keeperAction==='over_bar'){
-  // V21.452: tipped up and over the crossbar, drops behind the goal.
+  // V21.453: tipped up and over the crossbar, drops behind the goal.
   const u=1-Math.pow(1-clamp((time-IMPACT_TIME)/1.3),1.8),sign=Math.sign(impact[0])||1;
   return[mix(impact[0],sign*Math.min(4.6,Math.abs(impact[0])*1.25+.6),u),Math.max(.12,mix(impact[1],.12,u)+2.25*Math.sin(Math.PI*Math.min(1,u*1.08))),mix(impact[2],-57.2,u)];
  }
  if(type==='big_chance_saved'&&keeperAction==='punch'){
-  // V21.452: fisted away high, back out towards the edge of the box.
+  // V21.453: fisted away high, back out towards the edge of the box.
   const u=1-Math.pow(1-clamp((time-IMPACT_TIME)/1.5),2),sign=Math.sign(impact[0])||1,p=lerp(impact,[sign*5.5,.12,-36.5],u);
   p[1]=Math.max(.12,p[1]+3.4*Math.sin(u*Math.PI));return p;
  }
@@ -2572,7 +2572,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence);
      const dx=after[0]-before[0],dz=after[1]-before[1],speed=clamp(Math.hypot(dx,dz)/.04*rate/6.5);
      const wall=extended==='free_kick'&&i>=8&&i<=11&&physical<8.6;
-     const heading=wall?Math.PI:extended==='throw_in'&&i===1&&physical<3.5?Math.PI/2:
+     const heading=wall?extendedWallHeading(sequence):extended==='throw_in'&&i===1&&physical<3.5?Math.PI/2*(extendedMirrored(sequence)?-1:1):
       Math.hypot(dx,dz)>.001?Math.atan2(-dx,-dz):p.root.rotation.y;
      const stride=gaitPhase(i,time),control=carrierIndex===i?carrierState.weight:0;
      pose(p,point[0],point[1],time,speed,heading,0,stride,0,control,Math.hypot(defensiveBall[0]-point[0],defensiveBall[2]-point[1]));
