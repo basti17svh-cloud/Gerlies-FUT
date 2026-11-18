@@ -169,9 +169,9 @@ const hairNormals=new WeakMap();
 function hairStrandNormal(THREE,map){
  const image=map?.image;if(!image||typeof document==='undefined')return null;
  if(hairNormals.has(image))return hairNormals.get(image);
- const w=image.width||512,h=image.height||512,c=document.createElement('canvas');c.width=w;c.height=h;
+ const w=image.width||512,h=image.height||512,c=document.createElement('canvas');const size=Math.min(w,h);c.width=c.height=size;
  const ctx=c.getContext('2d',{willReadFrequently:true});if(!ctx)return null;
- ctx.drawImage(image,0,0);const px=ctx.getImageData(0,0,w,h).data,size=Math.min(w,h),f=new Float32Array(size*size);
+ ctx.drawImage(image,0,0,size,size);const px=ctx.getImageData(0,0,size,size).data,f=new Float32Array(size*size);
  for(let i=0;i<size*size;i++)f[i]=px[i*4]/255*(px[i*4+3]/255);
  const t=new THREE.DataTexture(heightToNormal(f,size,4,false),size,size,THREE.RGBAFormat);
  t.flipY=map.flipY;t.colorSpace=THREE.NoColorSpace;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;
@@ -189,11 +189,24 @@ export function upgradeFooteraHero(THREE,meshes,look,kitMap,layout,seed=1){
   m.userData={...old.userData,footeraBroadcastLook:true,footeraHD:true};
   if(name==='FooteraBody'){
    // Pores repeat ~30 times over the body atlas: about 4 cm per tile.
-   const n=pores.clone(),g=rough.clone();n.repeat.set(30,30);g.repeat.set(30,30);n.needsUpdate=g.needsUpdate=true;owned.push({texture:n},{texture:g});
-   m.normalMap=n;m.normalScale.set(.35,.35);m.roughnessMap=g;m.roughness=1;
-   m.specularIntensity=.55;m.sheen=.2;m.sheenRoughness=.45;
+   // Preserve anatomical relief from the character export. The pore tile is
+   // a fallback for bodies supplied with colour alone.
+   if(!old.normalMap){
+    const normal=pores.clone();
+    normal.repeat.set(30,30);
+    normal.needsUpdate=true;
+    m.normalMap=normal;
+    m.normalScale.set(.35,.35);
+    owned.push({texture:normal});
+   }
+   const gloss=rough.clone();
+   gloss.repeat.set(30,30);
+   gloss.needsUpdate=true;
+   owned.push({texture:gloss});
+   m.roughnessMap=gloss;m.roughness=1;
+   m.specularIntensity=.48;m.sheen=.08;m.sheenRoughness=.45;
    m.sheenColor=new THREE.Color(look.skin).lerp(new THREE.Color('#ffffff'),.55);
-   bakeFooteraCavity(THREE,mesh.geometry);m.vertexColors=true;
+   bakeFooteraCavity(THREE,mesh.geometry,old.normalMap ? .55 : 1);m.vertexColors=true;
    m.envMapIntensity=.45;addSkinScatter(m,look.skinKey?.startsWith('dark')?.7:1);
   }else if(name==='FooteraEyes'){
    m.roughness=.3;m.clearcoat=1;m.clearcoatRoughness=.04;m.envMapIntensity=.25;m.color.multiplyScalar(.82);
@@ -202,7 +215,7 @@ export function upgradeFooteraHero(THREE,meshes,look,kitMap,layout,seed=1){
    if(!folds)folds=sharedFolds||(sharedFolds=footeraFabricNormal(THREE,layout,1024,1));
    m.normalMap=folds;m.normalMapType=THREE.TangentSpaceNormalMap;m.normalScale.set(1,1);
    // Tangents come from the kit UV (channel 0), like the colour canvas.
-   m.sheen=.6;m.sheenRoughness=.35;m.sheenColor=new THREE.Color('#d7dce6');m.roughness=.62;m.envMapIntensity=.35;
+   m.sheen=.3;m.sheenRoughness=.72;m.sheenColor=new THREE.Color('#d7dce6');m.roughness=.78;m.envMapIntensity=.35;
    m.aoMap=old.aoMap;m.aoMapIntensity=1;
   }else if(name==='FooteraSocks'){
    m.sheen=.4;m.sheenRoughness=.6;m.sheenColor=new THREE.Color('#ffffff');m.envMapIntensity=.25;
@@ -213,8 +226,8 @@ export function upgradeFooteraHero(THREE,meshes,look,kitMap,layout,seed=1){
   }else if(/^Footera(Hair|Facial|Brows)-/.test(name)){
    // Strand highlight along the hair cards, softer cut-out edges.
    m.anisotropy=.6;m.anisotropyRotation=Math.PI/2;m.roughness=.58;m.specularIntensity=.38;
-   m.sheen=.5;m.sheenRoughness=.4;m.sheenColor=new THREE.Color(look.hairColor).lerp(new THREE.Color('#ffffff'),.15);m.sheen=.3;
-   const strands=hairStrandNormal(THREE,old.map);if(strands){m.normalMap=strands;m.normalScale.set(1.2,1.2)}
+   m.sheenRoughness=.62;m.sheenColor=new THREE.Color(look.hairColor).lerp(new THREE.Color('#ffffff'),.15);m.sheen=.3;
+   const strands=hairStrandNormal(THREE,old.map);if(strands){m.normalMap=strands;m.normalScale.set(.65,.65)}
    if(name.startsWith('FooteraHair'))m.color.multiplyScalar(1.15);
    m.alphaToCoverage=true;m.alphaTest=name.startsWith('FooteraBrows')?.2:.22;m.envMapIntensity=.2;
   }

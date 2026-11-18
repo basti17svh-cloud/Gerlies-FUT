@@ -6,7 +6,7 @@
 // user changes something in the editor). The rendered portrait is kept on this device only.
 (function(root){
  "use strict";
- const MODULE="./3d-manager.mjs?v=21463",PORTRAIT_KEY="footera-manager-portrait-v2";
+ const MODULE="./3d-manager.mjs?v=21467",PORTRAIT_KEY="footera-manager-portrait-v2";
  const HEX=/^#[0-9a-f]{6}$/i;
  const escText=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -69,7 +69,7 @@
  /* ---------- portrait (device cache) ---------- */
  function keyOf(m,crest){let h=2166136261;for(const ch of JSON.stringify([m,crest.length,crest.slice(0,400)])){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h.toString(36)}
  function cached(){try{const c=JSON.parse(localStorage.getItem(PORTRAIT_KEY)||"null");return c&&typeof c.url==="string"&&c.url.startsWith("data:image/")?c:null}catch(e){return null}}
- // V21.463: v2 = tighter card bust; drop the old v1 picture so the card never shows the small one again.
+ // V21.467: v2 = tighter card bust; drop the old v1 picture so the card never shows the small one again.
  try{localStorage.removeItem("footera-manager-portrait-v1")}catch(e){}
  let mod=null,pending=null,pendingKey="",failed=false;
  function load(){return mod||(mod=import(MODULE).catch(e=>{mod=null;throw e}))}
@@ -164,7 +164,7 @@
  function closeEditor(){clearTimeout(previewTimer);previewSeq++;if(designed())ensurePortrait().then(()=>refreshCards())}
 
  /* ---------- after the walk-out: the manager at the bench, his card in the action frame ---------- */
- // V21.463 (Basti 2026-11-17): replaces the old pop-up before kick-off. Plain copies for the 3D scene;
+ // V21.467 (Basti 2026-11-17): replaces the old pop-up before kick-off. Plain copies for the 3D scene;
  // the default manager stands there too when the user never designed one.
  function forKickoff(){
   try{

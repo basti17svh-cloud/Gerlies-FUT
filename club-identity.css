@@ -114,8 +114,11 @@
 .kit-design-option b{font-size:10px;letter-spacing:.07em}
 .kit-design-option small{font-size:9px;line-height:1.25;text-align:center;color:#a3b6aa;overflow-wrap:anywhere}
 .kit-design-option[aria-pressed="true"] small{color:#e5f5b8}
+/* Alle sechs Bereiche der Vereinsidentität auf jedem Bildschirm sichtbar halten. */
+.identity-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media(max-width:900px){.identity-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.identity-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* V21.406 stadium tab */
-.identity-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
 .stadium-preview{position:relative;height:150px;margin:10px 0 12px;border-radius:14px;overflow:hidden;background:linear-gradient(#0b1620,#13242c);border:1px solid #33473e}
 .stadium-preview-sky{position:absolute;inset:0 0 auto;height:44px}
 .stadium-preview-sky .roof{position:absolute;left:-6%;right:-6%;top:10px;height:16px;border-radius:0 0 50% 50%/0 0 100% 100%;background:#22313a;box-shadow:0 3px 0 #f4f8ffcc}

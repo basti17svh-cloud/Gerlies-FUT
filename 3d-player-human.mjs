@@ -8,7 +8,7 @@
  * existing retarget, mocap layers and foot IK drive it unchanged.
  */
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
-import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21349';
+import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21465';
 
 const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21419',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
@@ -196,7 +196,9 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
   ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();paintFooteraKitTile(ctx,kit,1,1,'shirt');ctx.restore()}
   // Collar trim and a soft side seam.
   ctx.strokeStyle=second;ctx.lineWidth=.014;
-  ctx.beginPath();if(half==='front'){ctx.moveTo(-.075,1.5);ctx.quadraticCurveTo(0,1.44,.075,1.5)}else{ctx.moveTo(-.08,1.52);ctx.quadraticCurveTo(0,1.505,.08,1.52)}ctx.stroke();
+  if(!info?.metahuman){
+   ctx.beginPath();if(half==='front'){ctx.moveTo(-.075,1.5);ctx.quadraticCurveTo(0,1.44,.075,1.5)}else{ctx.moveTo(-.08,1.52);ctx.quadraticCurveTo(0,1.505,.08,1.52)}ctx.stroke();
+  }
   ctx.fillStyle='rgba(0,0,0,.10)';for(const x of [-.205,.19])ctx.fillRect(x,.86,.015,.56);
   ctx.restore();
  }
@@ -334,6 +336,7 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
   const x=hp.getX(i),y=hp.getY(i),z=hp.getZ(i);low=Math.min(low,y);
   const k=key(Math.floor(x/cell),Math.floor(y/cell),Math.floor(z/cell));let list=grid.get(k);if(!list)grid.set(k,list=[]);list.push(x,y,z);
  }
+ let skullTop=-Infinity;for(let i=0;i<bp.count;i++)skullTop=Math.max(skullTop,bp.getY(i));
  const cover=new Float32Array(bp.count);
  for(let v=0;v<bp.count;v++){
   const x=bp.getX(v),y=bp.getY(v),z=bp.getZ(v);if(y<low-reach)continue;
@@ -342,7 +345,11 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
    const list=grid.get(key(gx+dx,gy+dy,gz+dz));if(!list)continue;
    for(let i=0;i<list.length;i+=3){const ex=list[i]-x,ey=list[i+1]-y,ez=list[i+2]-z,d=ex*ex+ey*ey+ez*ez;if(d<best)best=d}
   }
-  const u=Math.min(1,Math.max(0,(Math.sqrt(best)-full)/(reach-full)));cover[v]=1-u*u*(3-2*u);
+  const u=Math.min(1,Math.max(0,(Math.sqrt(best)-full)/(reach-full)));
+  // A sideburn or a long hair card can touch the cheek. Only the scalp
+  // gets the painted underlayer; the visible strands keep their full length.
+  const scalp=Math.max(0,Math.min(1,(y-skullTop+.105)/.03));
+  cover[v]=(1-u*u*(3-2*u))*scalp*scalp*(3-2*scalp);
  }
  // Thin crowns: every cut covers the top of the head, also where its cards
  // leave a gap wider than the reach.
@@ -354,6 +361,24 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
  for(let t=0;t<ix.length;t+=3)if(cover[ix[t]]>.01||cover[ix[t+1]]>.01||cover[ix[t+2]]>.01)out.push(ix[t],ix[t+1],ix[t+2]);
  const result={index:bp.count>65535?Uint32Array.from(out):Uint16Array.from(out),cover};
  perBody.set(hair,result);return result;
+}
+// The MetaHuman export has facial morphs but no build target. Shape skin and
+// garments in the same bind space, tapering out before the joints and head.
+function fitFootballBuild(geometry,build){
+ if(!Number.isFinite(build)||!build)return;
+ const pos=geometry.getAttribute('position');
+ const bell=t=>{const u=Math.max(0,1-t*t);return u*u};
+ for(let i=0;i<pos.count;i++){
+  const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),ax=Math.abs(x);
+  const chest=bell((y-1.38)/.22)*bell(x/.37);
+  const waist=bell((y-1.08)/.21)*bell(x/.27);
+  const centre=.105,thigh=bell((y-.77)/.24)*bell((ax-centre)/.13);
+  const shoulder=bell((y-1.45)/.13)*bell((ax-.19)/.15);
+  const side=Math.sign(x);
+  pos.setXYZ(i,x+build*(x*(.15*chest+.045*waist)+side*(.018*shoulder+(ax-centre)*.21*thigh)),
+   y,z+build*(z-.012)*(.14*chest+.065*waist+.18*thigh));
+ }
+ geometry.computeBoundingBox();geometry.computeBoundingSphere();
 }
 // Bake this player's face into private geometry copies, drop unused haircuts
 // and give every surface its own material. Returns disposables.
@@ -391,6 +416,9 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    geometry.setAttribute('position',new THREE.BufferAttribute(out,3));
    geometry.morphAttributes={};geometry.morphTargetsRelative=false;
   }
+  if(info?.metahuman&&names.build==null&&['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks'].includes(mesh.name)){
+   fitFootballBuild(geometry,look.morphs?.build);
+  }
   mesh.geometry=geometry;mesh.morphTargetInfluences=undefined;mesh.morphTargetDictionary=undefined;
   mesh.frustumCulled=false;mesh.castShadow=true;mesh.receiveShadow=true;
   const material=mesh.material.clone(),name=mesh.name;
@@ -411,7 +439,9 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    if(name.startsWith('FooteraBrows'))material.color.lerp(new THREE.Color(look.skin),.22);
    else material.color.multiplyScalar(name.startsWith('FooteraHair')?1:.85);
    material.roughness=.7;
-   mesh.castShadow=name.startsWith('FooteraHair');
+   // The stadium shadow map cannot resolve a short cut a few millimetres
+   // above the skull. The head casts its silhouette; larger cuts cast theirs.
+   mesh.castShadow=name.startsWith('FooteraHair')&&!['short01','short02','short04','ccshort'].includes(look.hair);
   }
   mesh.material=material;owned.push({geometry,material});
  }

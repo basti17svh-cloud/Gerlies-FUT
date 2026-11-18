@@ -3,7 +3,7 @@
  * the goal replay camera. Presentation only: no match state, no RNG.
  * Field-local metres, ceremonies always use attack direction 1, so the
  * broadcast side (main stand, tunnel) is +x. Heading 0 faces -z. */
-export const CEREMONY_VERSION='21.463-coach';
+export const CEREMONY_VERSION='21.467-coach';
 // V21.444 'trophy': the cup presentation after a won tournament final.
 export const CEREMONY_KINDS=Object.freeze(['kickoff','fulltime','trophy']);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -213,7 +213,7 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 export const CEREMONY_ARENA_SHOT=4;
 export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5,trophy:TROPHY_TIMES.cut});
 export function ceremonyEnd(kind,{coach=false}={}){return kind==='trophy'?TROPHY_TIMES.end:kind==='kickoff'&&coach?COACH_SHOT.end:10.4}
-// V21.463 (Basti 2026-11-17: "Der Trainer soll nach dem Einlaufen der Spieler kurz an der
+// V21.467 (Basti 2026-11-17: "Der Trainer soll nach dem Einlaufen der Spieler kurz an der
 // Auswechselbank eingeblendet werden und dann soll die Karte in dem Rahmen erscheinen"):
 // after the line-up the picture cuts to the user's manager at the bench (main-stand
 // touchline, +x), his Trainerkarte comes up in the action frame at COACH_SHOT.card.

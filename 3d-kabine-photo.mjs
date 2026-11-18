@@ -11,12 +11,12 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {RoomEnvironment} from './vendor/three/RoomEnvironment.mjs';
 import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footeraHumanLook,dressFooteraHuman,
- footeraShirtName,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21441';
+ footeraShirtName,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21466';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
-import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21463';
+import {mountManager,poseManager,measureManagerHead} from './3d-manager.mjs?v=21467';
 
-export const KABINE_PHOTO_VERSION='21.462-kabine-photo';
+export const KABINE_PHOTO_VERSION='21.464-kabine-photo';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 export function photoHash(text){
  let h=2166136261;for(const ch of String(text)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}
@@ -496,7 +496,7 @@ export async function renderKabinePhoto(spec={},opts={}){
   for(const [x,z] of [[-2.2,-1.2],[0,-1.2],[2.2,-1.2],[0,1]]){const l=new THREE.PointLight('#fff1dc',3.2,0,2);l.position.set(x,2.85,z);scene.add(l)}
   const flash=new THREE.SpotLight('#fff8f0',20,0,Math.PI/3,.7,2);
   flash.position.copy(camera.position).add(new THREE.Vector3(.12,.08,0));flash.target.position.set(cx*.25,1.1,-1.6);
-  flash.castShadow=true;flash.shadow.mapSize.set(2048,2048);flash.shadow.bias=-.0004;flash.shadow.normalBias=.02;flash.shadow.radius=4;
+  flash.castShadow=true;flash.shadow.mapSize.set(width<=800?1024:2048,width<=800?1024:2048);flash.shadow.bias=-.0004;flash.shadow.normalBias=.02;flash.shadow.radius=4;
   scene.add(flash,flash.target);
   const key=new THREE.DirectionalLight('#fff0dd',.9);key.position.set(-2,3,2);scene.add(key);
   // the players
@@ -652,7 +652,7 @@ export async function renderSigningPhoto(spec={},opts={}){
   scene.add(new THREE.HemisphereLight('#f4f1ff','#2a2622',.5));
   const flash=new THREE.SpotLight('#ffffff',26,0,Math.PI/4,.8,2);
   flash.position.copy(camera.position).add(new THREE.Vector3(.35,.25,0));flash.target.position.set(0,1.2,-.4);
-  flash.castShadow=true;flash.shadow.mapSize.set(2048,2048);flash.shadow.bias=-.0004;flash.shadow.normalBias=.02;flash.shadow.radius=5;
+  flash.castShadow=true;flash.shadow.mapSize.set(width<=800?1024:2048,width<=800?1024:2048);flash.shadow.bias=-.0004;flash.shadow.normalBias=.02;flash.shadow.radius=5;
   scene.add(flash,flash.target);
   for(const [x,i] of [[-2.1,7],[2.1,5]]){const s=new THREE.SpotLight('#fff3e2',i,0,Math.PI/5,.9,2);s.position.set(x,2.6,1.6);s.target.position.set(0,1.3,-.3);scene.add(s,s.target)}
   const rim=new THREE.DirectionalLight('#cfe2ff',1.6);rim.position.set(-1.5,3,-2.5);rim.target.position.set(0,1.2,-.3);scene.add(rim,rim.target);

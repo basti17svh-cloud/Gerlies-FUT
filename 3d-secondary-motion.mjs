@@ -11,12 +11,15 @@ const STIFF=95,DAMP=9,DRAG=.035,MAX=.14;
 // Pure spring step (testable): s = offset, v = its velocity, a = the head's
 // acceleration, vel = the head's velocity (world, m/s). Returns the offset.
 export function stepSecondarySpring(state,acc,vel,dt){
- const k=Math.min(dt,1/30);
+ const steps=Math.max(1,Math.ceil(dt*120));
+ const k=dt/steps;
+ for(let step=0;step<steps;step++){
  for(let i=0;i<3;i++){
   // The hair is pushed opposite to the head's acceleration and pulled back
   // to a trailing rest position behind the motion (air drag).
   const rest=-vel[i]*DRAG,f=-STIFF*(state.s[i]-rest)-DAMP*state.v[i]-acc[i];
   state.v[i]+=f*k;state.s[i]+=state.v[i]*k;
+ }
  }
  const n=Math.hypot(...state.s);
  if(n>MAX)for(let i=0;i<3;i++)state.s[i]*=MAX/n;

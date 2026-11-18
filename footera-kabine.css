@@ -132,3 +132,9 @@
 .kb-photo-actions{display:flex;justify-content:center;gap:10px}
 .kb-photo-btn{min-height:42px;padding:0 18px;border:0;border-radius:21px;background:#25d366;color:#06281b;font:800 14px/1 Inter,system-ui,sans-serif;cursor:pointer}
 .kb-photo-btn.ghost{background:#2a3942;color:#e9edef}
+
+/* V21.464: bounded chat history and user-triggered photo rendering. */
+.kb-history-more{display:block;max-width:100%;margin:4px auto 16px;padding:10px 16px;border:1px solid #315b4b;border-radius:20px;background:#152e29;color:#b2efcf;font:800 12px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
+.kb-history-more:focus-visible,.kb-photo-wait:focus-visible{outline:2px solid #25d366;outline-offset:2px}
+.kb-photo-wait{width:100%;height:100%;border:0;cursor:pointer;animation:none;touch-action:manipulation;color:#b0d4c3;background:linear-gradient(145deg,#152229,#22363b)}
+.kb-photo-wait:active{background:#23443e}

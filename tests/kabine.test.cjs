@@ -245,3 +245,59 @@ test('after a heavy defeat or a red card the group is serious: no running gags',
   for(const id of r3.ctx.gags){const gag=api._GAGS.find(x=>x.id===id);assert.ok(gag.when==='loss'||gag.calm,'only calm gags after a defeat: '+id)}
  }
 });
+
+
+
+// V21.464 – regressions for the reported crash when opening the squad chat after full time.
+test('broken legacy chat entries do not crash or erase valid messages',()=>{
+ const {api:k,store}=load();
+ store.set('footera-kabine-v1',JSON.stringify({
+  msgs:[null,false,{}, {kind:'msg',text:'ohne Spieler'}, {kind:'sys',ref:'m:safe',id:'safe#0',ts:1,text:'Abpfiff'},
+   {kind:'msg',ref:'m:safe',id:'safe#1',ts:2,text:'Gut gespielt',who:{name:'Kane',uid:'k'}}],
+  refs:['m:safe',null,42],replies:null
+ }));
+ const v=k.read();
+ assert.equal(v.msgs.length,2,'valid chat messages are preserved');
+ assert.deepEqual(Array.from(v.refs),['m:safe'],'invalid refs are discarded');
+ assert.match(k.listHTML(v.msgs),/Gut gespielt/);
+ assert.doesNotThrow(()=>k.openRef(v),'a legacy log must not break the chat footer');
+});
+
+test('opening a long post-match history only mounts the last 60 messages',()=>{
+ const nodes={};
+ const makeNode=()=>({
+  innerHTML:'',textContent:'',scrollHeight:100,scrollTop:0,hidden:false,style:{width:'',setProperty(){}},
+  classList:{active:false,add(){this.active=true},remove(){this.active=false},contains(){return this.active}},
+  querySelector(){return makeNode()},querySelectorAll(){return[]},addEventListener(){},insertAdjacentHTML(){},
+  lastElementChild:{classList:{add(){}}}
+ });
+ let modal=null;
+ const document={
+  readyState:'loading',addEventListener(){},createElement(){return makeNode()},
+  body:{appendChild(el){modal=el}},
+  querySelector(sel){if(sel==='#kabineList')return nodes.list||(nodes.list=makeNode());if(sel==='#kabineFoot')return nodes.foot||(nodes.foot=makeNode());
+   if(sel.startsWith('#kabineModal'))return modal;return null},
+  querySelectorAll(){return[]}
+ };
+ const messages=Array.from({length:220},(_,i)=>({kind:'sys',text:'Chat Zeile '+i,ref:'m:history',id:'h'+i,ts:i+1}));
+ // The device holds the full bounded history. Showing it must not build 220 DOM entries at once.
+ const key='footera-kabine-v1';
+ const {api:kb,store:db}=load({document,matchMedia:()=>({matches:true})});
+ db.set(key,JSON.stringify({msgs:messages,refs:['m:history'],seen:220,mood:60}));
+ assert.doesNotThrow(()=>kb.open(),'opening after a match must never throw');
+ assert.match(nodes.list.innerHTML,/Ältere Nachrichten anzeigen \(160\)/);
+ assert.match(nodes.list.innerHTML,/Chat Zeile 219/);
+ assert.doesNotMatch(nodes.list.innerHTML,/Chat Zeile 0<\/span>/);
+ assert.equal(kb.read().msgs.length,220,'older messages are not lost');
+});
+
+test('3D photos never render automatically when the chat opens',()=>{
+ assert.match(src,/function developPhoto\(id\)/,'user initiated photo generation exists');
+ assert.match(src,/data-kb-photo-develop/,'photo requires an explicit click');
+ const hydrate=src.slice(src.indexOf('function hydratePhotos(){'),src.indexOf('function developPhoto(id)'));
+ assert.ok(hydrate.length>50);
+ assert.doesNotMatch(hydrate,/import\(PHOTO_MODULE\)|renderKabinePhoto|renderSigningPhoto/,'no heavy GPU work when opening the chat');
+ const js=fs.readFileSync(path.join(root,'footera-kabine.js'),'utf8'),css=fs.readFileSync(path.join(root,'footera-kabine.css'),'utf8');
+ assert.match(js,/historyHTML\(v.msgs\)/,'display is limited to the recent chat messages');
+ assert.match(css,/\.kb-history-more/,'previous messages remain accessible');
+});

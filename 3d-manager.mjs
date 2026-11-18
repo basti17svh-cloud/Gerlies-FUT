@@ -17,11 +17,11 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {RoomEnvironment} from './vendor/three/RoomEnvironment.mjs';
 import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footeraHumanLook,dressFooteraHuman,
- footeraKitLayout,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21441';
+ footeraKitLayout,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21466';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 
-export const MANAGER_3D_VERSION='21.463-manager-bench';
+export const MANAGER_3D_VERSION='21.467-manager-bench';
 const hexOr=(v,fb)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v).toLowerCase():fb;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const luminance=hex=>{const c=new THREE.Color(hex);return .2126*c.r+.7152*c.g+.0722*c.b};
@@ -295,7 +295,7 @@ export function dressManager(model,look,m,opts={}){
  return{owned};
 }
 
-/* ---------- the bench (V21.463) ---------- */
+/* ---------- the bench (V21.467) ---------- */
 // Basti 2026-11-17: after the walk-out the manager is shown at the substitutes' bench.
 // A covered dugout along the touchline (the perimeter boards are its back): floor, perspex roof and side
 // panels, eight bucket seats in the club colour. Its front faces -x (the pitch).
@@ -311,8 +311,9 @@ export function mountDugout(parent,{x=36.1,z=-7.2,length=6.4,seat='#971d42',trac
  box(.06,.06,length,frame,-.82,1.75,0);
  const seatMat=mat(/^#[0-9a-f]{6}$/i.test(seat)?seat:'#971d42',{roughness:.45});
  const n=8,step=(length-.6)/n;
- for(let i=0;i<n;i++){const sz=-length/2+.3+step*(i+.5);box(.46,.08,.46,seatMat,.5,.5,sz);const back=box(.08,.5,.46,seatMat,.74,.74,sz);back.rotation.z=.12;box(.06,.45,.06,frame,.5,.24,sz)}
- parent.add(g);return g;
+const seats=[];
+ for(let i=0;i<n;i++){const sz=-length/2+.3+step*(i+.5);seats.push({x:x+.56,y:.6,z:z+sz});box(.46,.08,.46,seatMat,.5,.5,sz);const back=box(.08,.5,.46,seatMat,.74,.74,sz);back.rotation.z=.12;box(.06,.45,.06,frame,.5,.24,sz)}
+  g.userData.seats=seats;parent.add(g);return g;
 }
 
 /* ---------- mounting and posing ---------- */
@@ -389,6 +390,37 @@ export function poseManager(p,{pose='crossed',x=0,y=0,z=0,yaw=0,camera=null,body
  if(Number.isFinite(low))root.position.y+=y-low;
  root.updateMatrixWorld(true);
 }
+/* ---------- substitutes on the bench (V21.467) ---------- */
+// Basti 2026-11-18: "Vielleicht auch Ersatzspieler mit einbinden sonst wirkt das nicht realistisch".
+// Club warm-up tracksuits, seated: thighs forward, shins down, forearms on the thighs.
+const SUB_SKINS=['#e6bf9c','#8a5a3c','#c88f69','#4a2e1f','#dbad88','#a96d4b','#6b4128','#f1d2b3'];
+const SUB_HAIR=['short01','afro01','short02','bald','short04','dreads01','short01','afro01'];
+const SUB_HAIR_COLOR=['#2a1d15','#120d0a','#5a3a22','#1a1410','#7a5a3a','#140f0c','#3b2a1f','#0f0b09'];
+const SUB_BEARD=['none','Full_beard','none','none','Moustache','none','none','Full_beard'];
+export function substituteLook(i,kit={}){
+ const k=((i%8)+8)%8;
+ return{name:'',gender:'male',skin:SUB_SKINS[k],hair:SUB_HAIR[k],hairColor:SUB_HAIR_COLOR[k],beard:SUB_BEARD[k],glasses:'none',age:k%3?'young':'prime',build:k%4===1?'strong':k%4===3?'slim':'normal',
+  outfit:'tracksuit',top:hexOr(kit.top,'#971d42'),trousers:hexOr(kit.trousers,'#16191d'),accent:hexOr(kit.accent,'#f3f4ee')};
+}
+export function poseSeated(p,{x=0,y=.6,z=0,heading=-Math.PI/2,spread=.08,look=0}={}){
+ const {root,bones,holder}=p;
+ root.position.set(x,0,z);root.rotation.y=heading;root.updateMatrixWorld(true);
+ const fwd=V().set(0,0,1).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion())).setY(0).normalize(),left=V().crossVectors(UP,fwd).normalize();
+ const dir=(side,[o,u,w])=>left.clone().multiplyScalar(side==='l'?o:-o).addScaledVector(UP,u).addScaledVector(fwd,w).normalize();
+ for(const s of ['l','r']){
+  const th=bones.get('thigh_'+s),ca=bones.get('calf_'+s),ft=bones.get('foot_'+s);
+  if(th&&ca)pointBone(th,ca,dir(s,[spread,.05,1]));
+  if(ca&&ft)pointBone(ca,ft,dir(s,[.03,-1,.12]));
+  const up=bones.get('upperarm_'+s),lo=bones.get('lowerarm_'+s),hand=bones.get('hand_'+s);
+  if(up&&lo)pointBone(up,lo,dir(s,[.14,-.86,.42]));
+  if(lo&&hand)pointBone(lo,hand,dir(s,[-.18,-.32,.93]));
+  curlFingers(bones,s,.45);
+ }
+ const neck=bones.get('neck_01');if(neck&&look){neck.rotateY(look);neck.updateMatrixWorld(true)}
+ root.updateMatrixWorld(true);
+ const pelvis=bones.get('pelvis');if(pelvis){const py=pelvis.getWorldPosition(V()).y;root.position.y+=y-py+.04;root.updateMatrixWorld(true)}
+}
+export function mountSubstitute(parent,i,kit={},opts={}){return mountManager(parent,substituteLook(i,kit),opts)}
 // Measure the head's forward axis before any pose (model faces +Z).
 export function measureManagerHead(p){
  p.root.updateMatrixWorld(true);

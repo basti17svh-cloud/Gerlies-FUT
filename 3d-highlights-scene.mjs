@@ -8,15 +8,15 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21452';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21441';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21466';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21466';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
-import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
+import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera} from './3d-ceremony.mjs?v=21463';
-// V21.463: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
-import {mountManager,poseManager,measureManagerHead,mountDugout,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21463';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera} from './3d-ceremony.mjs?v=21467';
+// V21.467: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
+import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21467';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
 import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21461';
@@ -1215,7 +1215,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // scorer sprints there first; his own celebration starts at GESTURE_START and
  // the scene runs that much longer (SCENE_END), so nothing of it is cut.
  const celebrationPlan=celebrationActive?celebrationRoute(celebrationKind,celebrationKey,stagedPlayerPosition(0,CELEBRATION_START),direction,globalThis.__FOOTERA_QA_CELEBRATION_SPOT||null):null;
- // V21.463: the walk-out ends at the bench with the user's manager and his Trainerkarte.
+ // V21.467: the walk-out ends at the bench with the user's manager and his Trainerkarte.
  const coachShot=ceremony==='kickoff'&&!!event.coach?.manager;
  const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=ceremony==='trophy'?ceremonyEnd('trophy'):coachShot?ceremonyEnd('kickoff',{coach:true}):DURATION+CELEBRATION_APPROACH;
  const celebrationRun=celebrationPlan?celebrationPlan.run:(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
@@ -1655,14 +1655,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(crowdLife)crowdLife.build(crowdSpecs,{choreo:customChoreo,drawChoreo:globalThis.FooteraChoreo?.draw,crestImage:customChoreo?.crest?footeraCrestImageNow(event.teamCrestHTML):null});
   // V21.444 Pokalübergabe: winners' stage, pedestal, the cup, confetti and fountains.
   const trophyStage=trophyNight?createTrophyStage({scene,parent:field,renderer,event,weak,track,hash}):null;
-  // V21.463 the bench: a covered dugout on the main-stand touchline and the user's manager in front of it,
+  // V21.467 the bench: a covered dugout on the main-stand touchline and the user's manager in front of it,
   // arms crossed, looking at the camera's end position. Without a ready human body the bench shot still runs.
-  const coachBench=coachShot?{figure:null,next:0}:null;
-  if(coachBench)try{mountDugout(field,{x:DUGOUT_SPOT[0],z:DUGOUT_SPOT[1],seat:event.homeColor,track})}catch(_){}
+  const coachBench=coachShot?{figure:null,next:0,seats:[],subs:[]}:null;
+  if(coachBench)try{coachBench.seats=mountDugout(field,{x:DUGOUT_SPOT[0],z:DUGOUT_SPOT[1],seat:'#1d2228',track}).userData.seats||[]}catch(_){}
+  // V21.467 (Basti: "Ersatzspieler mit einbinden"): substitutes in club warm-up tracksuits on the bench, one mounted per try.
+  const SUB_SEATS=weak?[1,3,6]:[0,1,3,4,6,7],subKit={top:event.homeColor,trousers:event.homeShorts,accent:event.homeSecondary};
   // The body may still be loading when the walk-out starts (first scene of the match):
   // try now and again while the camera is elsewhere, until shortly before the cut.
   function mountCoach(time){
-   if(!coachBench||coachBench.figure||time<coachBench.next||time>COACH_SHOT.start-.2)return;
+   if(!coachBench||time<coachBench.next||time>COACH_SHOT.start-.2)return;
+   if(coachBench.figure){mountSub(time);return}
    coachBench.next=time+.6;let figure=null;
    try{
     figure=mountManager(field,event.coach.manager,{detail:!weak,crest:footeraCrestImageNow(event.teamCrestHTML)});
@@ -1673,6 +1676,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      coachBench.figure=figure;
     }
    }catch(_){if(figure){try{field.remove(figure.root);disposeManagerParts(figure.owned)}catch(__){}}}
+  }
+  function mountSub(time){
+   const k=coachBench.subs.length;if(k>=SUB_SEATS.length||coachBench.subsFailed)return;
+   const seat=coachBench.seats[SUB_SEATS[k]];if(!seat){coachBench.subsFailed=true;return}
+   coachBench.next=time+.25;let sub=null;
+   try{sub=mountSubstitute(field,k+3,subKit,{detail:false,crest:footeraCrestImageNow(event.teamCrestHTML)});
+    if(!sub){coachBench.subsFailed=true;return}
+    poseSeated(sub,{x:seat.x,y:seat.y,z:seat.z,look:((k*37)%7-3)*.08});coachBench.subs.push(sub);
+   }catch(_){if(sub){try{field.remove(sub.root);disposeManagerParts(sub.owned)}catch(__){}}coachBench.subsFailed=true}
   }
   mountCoach(0);
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
@@ -2014,7 +2026,28 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     table[j]=Math.hypot(x,z)>.02?Math.atan2(-x,-z):j?table[j-1]:raw[0]}
   }
   const facingAt=(index,time)=>{const x=clamp(time/SCENE_END)*160,j=Math.min(159,Math.floor(x));return angleMix(facingTables[index][j],facingTables[index][j+1],x-j)};
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=SCENE_END/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];steps[j*2]=next[0]-previous[0];steps[j*2+1]=next[1]-previous[1];previous=next}smoothFacing(facingTables[index]);return a});
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(gaitSamples+1));
+  const gaitTables=RUNS.map((_,index)=>{
+   const phases=new Float32Array(gaitSamples+1),facing=facingTables[index],dt=SCENE_END/gaitSamples;
+   let previous=stagedPlayerPosition(index,0),shownPrevious=actorPosition(index,0);
+   for(let j=1;j<=gaitSamples;j++){
+    const time=j*dt,next=stagedPlayerPosition(index,time),shown=actorPosition(index,j*dt);
+    const dx=next[0]-previous[0],dz=next[1]-previous[1];
+    const travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]);
+    const physicalDt=extended&&time<SHOT_TIME?dt*extendedTiming(sequence).shot/5.4:dt;
+    const speed=clamp(travel/physicalDt/6.5);
+    const strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));
+    // A full cycle contains two footfalls. Lengthen the stride at pace
+    // before playing a jog or sprint capture at several times its cadence.
+    const cycles=Math.min(travel/strideLength,physicalDt*(1.02+1.05*Math.sqrt(speed)));
+    phases[j]=phases[j-1]+cycles*Math.PI*2;
+    facing[j]=Math.hypot(dx,dz)>.00001?Math.atan2(-dx,-dz):facing[j-1];
+    if(j===1)facing[0]=facing[j];
+    steps[j*2]=dx;steps[j*2+1]=dz;
+    previous=next;shownPrevious=shown;
+   }
+   smoothFacing(facing);return phases;
+  });
   // Huggers leave their authored run: keep the legs cycling with the real
   // distance they cover on the way to the scorer.
   const hugStrides=new Map();
@@ -2174,7 +2207,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
   }
   function updateCeremony(time){
-   // V21.463: a calm breath for the manager at the bench (the pose itself is fixed).
+   // V21.467: a calm breath for the manager at the bench (the pose itself is fixed).
    mountCoach(time);const coachFigure=coachBench?.figure;if(coachFigure&&time>=COACH_SHOT.start-.5){coachFigure.holder.position.y=.004*Math.sin(time*2.1);coachFigure.holder.rotation.y=.025*Math.sin(time*.7)}
    players.forEach((p,i)=>poseCeremonyActor(p,i,time,i===0?importedMotionFrame:squadMotionFrames[i]));
    poseCeremonyActor(keeper,16,time,keeperMotionFrame);
@@ -2833,6 +2866,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function dispose(){
    boardLogo.onload=null;
    if(coachBench?.figure)try{disposeManagerParts(coachBench.figure.owned)}catch(_){}
+   for(const sub of coachBench?.subs||[])try{disposeManagerParts(sub.owned)}catch(_){}
    for(const glb of importedPlayers)glb?.dispose();
    importedKeeper?.dispose();
    for(const actor of [...players,keeper])if(actor.skeletonMotion){
@@ -3123,7 +3157,7 @@ export function play(event,signal){
        detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
-     // V21.463: at the cut to the bench the line-up card goes; the manager's Trainerkarte comes up in the action frame.
+     // V21.467: at the cut to the bench the line-up card goes; the manager's Trainerkarte comes up in the action frame.
      const coachHud=coachEvent&&world.duration>DURATION,inCoach=coachHud&&displayTime>=COACH_SHOT.start-.25;
      if(inCoach&&displayTime>=COACH_SHOT.start+.2&&!hud.dataset.coach){hud.dataset.coach='1';hud.classList.remove('fh3d-hud-ceremony');hud.classList.add('fh3d-hud-coach');
       if(event.coach.cardHTML)card.innerHTML=event.coach.cardHTML;headline.textContent=event.coach.label||'DEIN TRAINER';name.textContent=event.coach.name||'Trainer';detail.textContent=event.coach.detail||'';
