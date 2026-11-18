@@ -258,15 +258,26 @@ export function createCrowdLife(THREE,{scene,track=o=>o,weak=false,high=false,mo
   // A few on the long stands too, where the broadcast camera looks all match long.
   const sideCount=weak?1:mobileStandard?3:4;
   for(let k=0;k<sideCount;k++){const row=1+k%3,z=hostEnd*(18+k*9),x=-(39.3+row*1.42);spots.push({team:hostTeam,x,y:stepY(row),z,k:k+20})}
-  const c=canvas(256,128),ctx=c.getContext('2d');
-  [[hostTeam,0],[guestTeam,64]].forEach(([t,y],n)=>{
-   const kit=kitOf(t);ctx.fillStyle=kit.shirt;ctx.fillRect(0,y,256,64);
-   ctx.fillStyle=kit.shirtSecondary;ctx.beginPath();ctx.moveTo(0,y+64);ctx.lineTo(256,y);ctx.lineTo(256,y+22);ctx.lineTo(38,y+64);ctx.closePath();ctx.fill();
-   ctx.fillStyle='#ffffff';ctx.globalAlpha=.9;ctx.fillRect(0,y+28,256,4);ctx.globalAlpha=1;
-  });
+  const c=canvas(512,512),ctx=c.getContext('2d');
+  for(let row=0;row<2;row++)for(let col=0;col<2;col++){
+   const team=row?guestTeam:hostTeam,kit=kitOf(team);
+   const name=shortName(team==='home'?homeName:awayName,row?'GÄSTE':'FOOTERA');
+   ctx.save();ctx.translate(col*256,row*256);
+   ctx.fillStyle=kit.shirt;ctx.fillRect(0,0,256,256);ctx.fillStyle=kit.shirtSecondary;
+   if(col){
+    for(let x=0;x<256;x+=64)ctx.fillRect(x,0,32,256);
+   }else{
+    ctx.fillRect(0,72,256,112);ctx.fillRect(0,12,256,5);ctx.fillRect(0,239,256,5);
+   }
+   ctx.fillStyle='rgba(8,13,15,.73)';ctx.fillRect(12,102,232,52);
+   ctx.font='900 38px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle='#f8f3e8';ctx.fillText(name,128,130,216);
+   ctx.strokeStyle='rgba(255,255,255,.28)';ctx.strokeRect(5.5,5.5,245,245);
+   ctx.restore();
+  }
   // Geometry: cloth (8x3 grid) + a thin pole; aFlag.x = 1 for cloth.
   const pos=[],uv=[],nrm=[],isCloth=[],idx=[];const L=2.1,Hc=1.35,top=3.25;
-  const SX=8,SY=3;for(let j=0;j<=SY;j++)for(let i=0;i<=SX;i++){pos.push(i/SX*L,top-Hc+j/SY*Hc,0);uv.push(i/SX,j/SY);nrm.push(0,0,1);isCloth.push(1)}
+  const SX=weak?8:12,SY=weak?3:6;for(let j=0;j<=SY;j++)for(let i=0;i<=SX;i++){pos.push(i/SX*L,top-Hc+j/SY*Hc,0);uv.push(i/SX,j/SY);nrm.push(0,0,1);isCloth.push(1)}
   for(let j=0;j<SY;j++)for(let i=0;i<SX;i++){const a=j*(SX+1)+i,b=a+1,cc=a+SX+1,dd=cc+1;idx.push(a,b,dd,a,dd,cc)}
   const base=pos.length/3,r=.035;
   for(const [x,z] of [[-r,-r],[r,-r],[r,r],[-r,r]])for(const y of [-.35,top]){pos.push(x,y,z);uv.push(0,0);nrm.push(Math.sign(x),0,Math.sign(z));isCloth.push(0)}
@@ -278,23 +289,25 @@ export function createCrowdLife(THREE,{scene,track=o=>o,weak=false,high=false,mo
   const m=track(new THREE.MeshStandardMaterial({map:tex(THREE,track,c),side:THREE.DoubleSide,roughness:.88}));
   m.onBeforeCompile=shader=>{
    Object.assign(shader.uniforms,uniforms);
-   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uLifeOn;uniform float uLifeTime;uniform vec2 uFlagEnergy;attribute vec4 aLife;attribute float aFlag;attribute float aFlagTeam;varying float vFlag;')
-    .replace('#include <uv_vertex>','#include <uv_vertex>\n#ifdef USE_MAP\n vMapUv.y=vMapUv.y*.5+(aFlagTeam>.5?0.:.5);\n#endif')
+   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uLifeOn;uniform float uLifeTime;uniform vec2 uFlagEnergy;attribute vec4 aLife;attribute float aFlag;attribute float aFlagTeam;varying float vFlag;varying float vFold;')
+    .replace('#include <uv_vertex>','#include <uv_vertex>\n#ifdef USE_MAP\n vMapUv=vMapUv*.48+vec2(.01+.5*step(.5,fract(aLife.x*11.)),aFlagTeam>.5?.01:.51);\n#endif')
     .replace('#include <begin_vertex>',`#include <begin_vertex>
  vFlag=aFlag;
  float fe=uLifeOn*(aFlagTeam>.5?uFlagEnergy.y:uFlagEnergy.x);
  float ft=uLifeTime*(1.9+fe*1.3)+aLife.x*40.;
  // Cloth ripples away from the pole, more the faster it is swung.
  float along=transformed.x/2.1;
- transformed.z+=aFlag*sin(transformed.x*2.7-uLifeTime*(7.+fe*4.)+aLife.x*9.)*(.1+.22*fe)*along;
+ float phase=transformed.x*3.5-uLifeTime*(5.5+fe*2.7)+aLife.x*9.+transformed.y*.55;
+ vFold=cos(phase)*along;
+ transformed.z+=aFlag*sin(phase)*(.13+.20*fe)*along;
  transformed.y-=aFlag*along*along*(.45-.3*min(fe,1.));
  // The whole flag swings in an arc round the bearer's hands (local z faces the pitch).
  float sw=sin(ft)*(.35+.6*min(fe,1.3));float cs=cos(sw),sn=sin(sw);
  transformed=vec3(transformed.x*cs-transformed.y*sn,transformed.x*sn+transformed.y*cs,transformed.z);
 `);
-   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vFlag;').replace('#include <map_fragment>','#include <map_fragment>\n if(vFlag<.5)diffuseColor.rgb=vec3(.8,.82,.8);');
+   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vFlag;varying float vFold;').replace('#include <map_fragment>','#include <map_fragment>\n if(vFlag<.5)diffuseColor.rgb=vec3(.8,.82,.8);else diffuseColor.rgb*=.94+.20*vFold;');
   };
-  m.customProgramCacheKey=()=>'footera-crowd-life-flag';
+  m.customProgramCacheKey=()=>'footera-crowd-life-woven-flag';
   const mesh=new THREE.InstancedMesh(geometry,m,spots.length),d=new THREE.Object3D();
   spots.forEach((s,i)=>{data.set([hash(s.k*37+(s.team==='home'?5:9)),0,0,0],i*4);teams[i]=s.team===hostTeam?0:1;
    const yaw=Math.atan2(-s.x,-s.z);d.position.set(s.x,s.y+1.05,s.z);d.rotation.set(0,yaw,0);d.scale.setScalar(1);d.updateMatrix();mesh.setMatrixAt(i,d.matrix)});

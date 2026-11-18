@@ -1,3 +1,4 @@
+import {mergeGeometries} from './vendor/three/BufferGeometryUtils.mjs';
 import {createSurroundings,mixHex} from './3d-stadium.mjs?v=21459';
 // Footera V21.382 "Flutlicht-Arena": the floodlit night stadium around the
 // existing pitch and stands. Purely visual and fully deterministic (time in,
@@ -17,9 +18,9 @@ const GRADE_MARK='/*footera-arena-grade*/';
 const GRADE_GLSL=`vec3 CustomToneMapping( vec3 color ) { ${GRADE_MARK}
 	vec3 c = ACESFilmicToneMapping( color );
 	float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
-	c = mix( vec3( l ), c, 1.06 );
-	c = mix( c, c * c * ( 3.0 - 2.0 * c ), 0.32 );
-	c *= mix( vec3( 0.955, 1.0, 1.06 ), vec3( 1.035, 1.0, 0.955 ), smoothstep( 0.12, 0.78, l ) );
+	c = mix( vec3( l ), c, 1.025 );
+	c = mix( c, c * c * ( 3.0 - 2.0 * c ), 0.24 );
+	c *= mix( vec3( 0.974, 0.99, 1.025 ), vec3( 1.018, 1.0, 0.983 ), smoothstep( 0.12, 0.78, l ) );
 	return clamp( c, 0.0, 1.0 );
 }`;
 export function installArenaGrade(THREE,renderer){
@@ -68,13 +69,13 @@ export function onHostEnd(p,hostEnd=-1){return p.z*hostEnd>CORNER_Z+.5&&Math.abs
 // edges, skip(p,q) leaves out the piece between two inner points.
 // shape(m) -> {dr0,dy0,dr1,dy1} moves the inner/outer edge out and up at that
 // point of the bowl (Fanwand: the bowl swells into one huge end).
-function loftBand(THREE,r0,y0,r1,y1,uScale,{splits=1,lift=null,skip=null,shape=null}={}){
+function loftBand(THREE,r0,y0,r1,y1,uScale,{splits=1,lift=null,skip=null,shape=null,v0=0,v1=1}={}){
  const a=arenaPerimeter(r0,splits),b=arenaPerimeter(r1,splits),n=a.points.length,position=[],uv=[],index=[];
  const mid=arenaPerimeter((r0+r1)/2,splits);
  for(let i=0;i<n;i++){
   const p=a.points[i],q=b.points[i],u=mid.points[i].u/uScale,m=mid.points[i],up=lift?lift(m.x,m.z):0,sh=shape?shape(m):null;
   const d0=sh?.dr0||0,d1=sh?.dr1||0;
-  position.push(p.x+p.nx*d0,y0+up+(sh?.dy0||0),p.z+p.nz*d0,q.x+q.nx*d1,y1+up+(sh?.dy1||0),q.z+q.nz*d1);uv.push(u,0,u,1);
+  position.push(p.x+p.nx*d0,y0+up+(sh?.dy0||0),p.z+p.nz*d0,q.x+q.nx*d1,y1+up+(sh?.dy1||0),q.z+q.nz*d1);uv.push(u,v0,u,v1);
   if(i<n-1&&!(skip&&skip(p,a.points[i+1]))){const k=i*2;index.push(k,k+1,k+2,k+1,k+3,k+2)}
  }
  const g=new THREE.BufferGeometry();
@@ -105,24 +106,31 @@ const TURF_FRAGMENT_PARS=`varying vec3 vArenaWorld;uniform sampler2D uArenaBlade
 // Runs right after the base map: blades, mowing and light pooling all scale
 // the albedo, so shadows and weather tints keep working unchanged.
 const TURF_FRAGMENT=`{
-	vec2 w=vArenaWorld.xz;
-	float inside=step(abs(w.x),34.0)*step(abs(w.y),52.5);
-	// Blade detail: two scales so neither close-ups nor the TV view tile.
-	float blades=texture2D(uArenaBlades,w*0.55).g*0.62+texture2D(uArenaBlades,w*0.071+vec2(0.37,0.11)).g*0.38;
-	diffuseColor.rgb*=(0.48+1.04*blades)*mix(vec3(0.94,1.0,0.90),vec3(1.10,1.02,0.86),blades);
-	// Mowing: 5.83 m bands mown across the pitch and a cross cut along it.
-	// Grass leans with the mower, so a band is light seen one way and dark
-	// the other: the pattern follows the camera like on real turf.
-	float band=step(0.5,fract((w.y+52.5)/11.6667));
-	float cross=step(0.5,fract((w.x+34.0)/11.3333));
-	vec2 view=normalize(cameraPosition.xz-w+vec2(0.0001));
-	float mow=((band*2.0-1.0)*(0.03+0.10*view.x)+(cross*2.0-1.0)*0.06*view.y)*inside*uArenaMow;
-	diffuseColor.rgb*=1.0+mow;
-	// Floodlight pooling: brightest in the middle third, falling off to the
-	// corners and the track behind the lines.
-	vec2 e=abs(w)/vec2(39.0,59.5);
-	float pool=1.0-0.20*smoothstep(0.35,1.05,length(e*e));
-	diffuseColor.rgb*=pool*vec3(0.86,0.80,1.04);
+ vec2 p=vArenaWorld.xz;
+ float inPlay=(1.0-smoothstep(33.8,35.0,abs(p.x)))*(1.0-smoothstep(52.1,53.3,abs(p.y)));
+ // Fine grass fibres at two scales. The coarser map persists at broadcast distance.
+ float fibre=texture2D(uArenaBlades,p*0.52).g;
+ float fine=texture2D(uArenaBlades,p*0.087+vec2(0.37,0.11)).g;
+ float detail=mix(fine,fibre,0.56);
+ diffuseColor.rgb*=mix(vec3(0.87,0.92,0.82),vec3(1.12,1.08,0.98),detail);
+ // Camera-relative pitch stripes approximate the different grazing angles
+ // of alternating cuts, without changing hue every time the camera moves.
+ vec2 view=normalize(cameraPosition.xz-p+vec2(0.0001));
+ float stripe=mod(floor((p.y+52.5)/5.83333),2.0)*2.0-1.0;
+ float cross=mod(floor((p.x+34.0)/11.33333),2.0)*2.0-1.0;
+ float mowing=(stripe*(0.032+0.042*abs(view.y))+cross*0.012*abs(view.x))*inPlay*uArenaMow;
+ diffuseColor.rgb*=1.0+mowing;
+ // The busiest parts of a real pitch are the goalmouth and the penalty spot.
+ // The muted ochre tint stays subtle; there are no new decals or draw calls.
+ float goalmouth=smoothstep(46.5,50.8,abs(p.y))*(1.0-smoothstep(2.0,8.0,abs(p.x)));
+ vec2 penalty=vec2(p.x,(abs(p.y)-41.5)*1.1);
+ float spot=exp(-dot(penalty,penalty)*0.33);
+ float wear=clamp(goalmouth*0.23+spot*0.085,0.0,0.26)*inPlay;
+ diffuseColor.rgb*=mix(vec3(1.0),vec3(1.20,0.98,0.78),wear);
+ // Neutral white floodlight falloff, rather than a blue/purple stadium wash.
+ float corner=length(p/vec2(43.0,65.0));
+ float falloff=1.0-0.095*smoothstep(0.45,1.25,corner);
+ diffuseColor.rgb*=falloff*vec3(0.99,1.0,0.97);
 }`;
 
 // ---- V21.460 six new builds -------------------------------------------------
@@ -278,7 +286,7 @@ export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,we
    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+TURF_VERTEX_PARS).replace('#include <begin_vertex>','#include <begin_vertex>\n'+TURF_VERTEX);
    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+TURF_FRAGMENT_PARS).replace('#include <map_fragment>','#include <map_fragment>\n'+TURF_FRAGMENT);
   };
-  const base=key?key.call(m):'';m.customProgramCacheKey=()=>base+'|footera-arena-turf';
+  const base=key?key.call(m):'';m.customProgramCacheKey=()=>base+'|footera-arena-turf-broadcast1';
   m.userData.footeraArenaTurf=uniforms;m.needsUpdate=true;info.turf=true;
  }
 
@@ -293,7 +301,7 @@ export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,we
   ctx.putImageData(img,0,0);
  });
  const shadowGeometry=track(new THREE.PlaneGeometry(1,1));shadowGeometry.rotateX(-Math.PI/2);shadowGeometry.translate(0,0,.5);
- const shadowMaterial=track(new THREE.MeshBasicMaterial({map:shadowTexture,transparent:true,opacity:weak?.28:.25,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,fog:false}));
+ const shadowMaterial=track(new THREE.MeshBasicMaterial({map:shadowTexture,transparent:true,opacity:weak?.23:.19,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,fog:false}));
  const SHADOW_CAPACITY=24*FLOODLIGHTS.length;
  const shadows=new THREE.InstancedMesh(shadowGeometry,shadowMaterial,SHADOW_CAPACITY);
  shadows.name='FooteraArenaShadows';shadows.instanceMatrix.setUsage(THREE.DynamicDrawUsage);shadows.frustumCulled=false;shadows.renderOrder=2;shadows.count=0;field.add(shadows);track(shadows);
@@ -309,7 +317,7 @@ export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,we
     // An airborne player's shadow slides away from the boots along the ray.
     const slide=lift*s.length/1.8;
     dummy.position.set(x+s.dirX*slide,.022,z+s.dirZ*slide);dummy.rotation.set(0,Math.atan2(s.dirX,s.dirZ),0);
-    dummy.scale.set(.8+.05*s.length,1,s.length+.25);dummy.updateMatrix();shadows.setMatrixAt(n++,dummy.matrix);
+    dummy.scale.set(.72+.07*s.length,1,s.length+.25);dummy.updateMatrix();shadows.setMatrixAt(n++,dummy.matrix);
    }
   }
   shadows.count=n;shadows.instanceMatrix.needsUpdate=true;info.shadows=n;
@@ -347,34 +355,64 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  const seatRows=spooky?['#15101f','#15101f']:look?.tierSeat||['#16222a','#1b2931'];
  info.style=look?.style||'arena';info.upperTier=!!upperTier;info.roof=hasRoof;
  const TIER_REPEATS=6;
- // V21.460: hostShare > .16 paints a terrace full of home fans (Fanwand).
- const makeTierTexture=(hostShare=.16,rows=22,seats=seatRows)=>tex(weak?512:1024,weak?128:256,(ctx,w,h)=>{
-  ctx.fillStyle=spooky?'#15101f':'#101a20';ctx.fillRect(0,0,w,h);
-  const cols=weak?84:168,rh=h/rows,cw=w/cols,neutral=['#c9ccd0','#8f98a3','#39424c','#b79a84','#5b6b7c','#d9d2c2','#2c3540','#a9b4bd'];
+ const terraceRows=22;
+ const makeTierTexture=(hostShare=.25,rows=terraceRows,seats=seatRows)=>tex(weak?512:high?2048:1024,weak?128:high?512:256,(ctx,w,h)=>{
+  const cols=weak?126:168,rh=h/rows,cw=w/cols;
+  const neutral=['#b8bdc0','#75828d','#343e49','#a28466','#5b6b7c','#ccc3ae','#323942','#9aa8b1'];
+  const skins=['#d6ac8d','#bd8b69','#8d6248','#f0cfb4','#624638'];
   for(let r=0;r<rows;r++){
-   ctx.fillStyle=r%2?seats[0]:seats[1];ctx.fillRect(0,r*rh,w,rh*.9);
+   const y=r*rh;
+   ctx.fillStyle=seats[r%2];ctx.fillRect(0,y,w,rh);
+   ctx.fillStyle='#171d22';ctx.fillRect(0,y+rh*.86,w,rh*.14);
    for(let c=0;c<cols;c++){
-    const k=r*977+c*131;if(hash(k)>.95||c%42<2)continue;
-    const pick=hash(k+5);
-    ctx.fillStyle=pick<hostShare?home:pick<hostShare+.14?away:neutral[Math.floor(hash(k+9)*neutral.length)];
-    ctx.globalAlpha=.5+.4*hash(k+3);
-    ctx.fillRect(c*cw+cw*.2,r*rh+rh*.3,cw*.6,rh*.6);
-    ctx.globalAlpha=.8;ctx.fillStyle=['#e8c3a0','#c99670','#8d5a3c','#f0d5ba'][Math.floor(hash(k+15)*4)];
-    ctx.fillRect(c*cw+cw*.32,r*rh+rh*.04,cw*.36,rh*.3);
+    const k=r*977+c*131;
+    if(c%42<2||hash(k)>.98)continue;
+    const pick=hash(k+5),x=(c+.5+(hash(k+8)-.5)*.38)*cw,top=y+rh*(.06+hash(k+2)*.18);
+    const shirt=pick<hostShare?home:pick<hostShare+.13?away:neutral[Math.floor(hash(k+9)*neutral.length)];
+    const raised=hash(k+18)<.24;
+    ctx.fillStyle=shirt;ctx.globalAlpha=.64+.34*hash(k+3);
+    ctx.beginPath();ctx.ellipse(x,top+rh*.49,cw*.42,rh*.25,0,0,Math.PI*2);ctx.fill();
+    ctx.lineWidth=cw*.18;ctx.strokeStyle=shirt;ctx.lineCap='round';ctx.beginPath();
+    ctx.moveTo(x+cw*.24,top+rh*.46);ctx.lineTo(x+cw*.48,top+rh*(raised?.14:.62));ctx.stroke();
+    ctx.fillStyle=skins[Math.floor(hash(k+15)*skins.length)];
+    ctx.beginPath();ctx.ellipse(x,top+rh*.14,cw*.20,rh*.15,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=hash(k+6)>.68?'#998575':'#262423';
+    ctx.beginPath();ctx.ellipse(x,top+rh*.095,cw*.2,rh*.095,0,Math.PI,Math.PI*2);ctx.fill();
    }
   }
   ctx.globalAlpha=1;
-  const shade=ctx.createLinearGradient(0,0,0,h);shade.addColorStop(0,'rgba(0,0,0,.6)');shade.addColorStop(.5,'rgba(0,0,0,.15)');shade.addColorStop(1,'rgba(0,0,0,0)');
+  const shade=ctx.createLinearGradient(0,0,0,h);
+  shade.addColorStop(0,'rgba(5,9,14,.48)');shade.addColorStop(.5,'rgba(7,12,16,.17)');shade.addColorStop(1,'rgba(11,15,20,0)');
   ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
  },true);
- const tierTexture=makeTierTexture();
- tierTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
  const openEnd=look?.openHostEnd?(p,q)=>onHostEnd(p,hostEnd)&&onHostEnd(q,hostEnd):null;
  const perimeterLength=arenaPerimeter(27).length;
  const basic=(opts)=>track(new THREE.MeshBasicMaterial({side:THREE.DoubleSide,...opts}));
  const add=(geometry,material,name)=>{const o=new THREE.Mesh(track(geometry),material);o.name=name;o.frustumCulled=false;group.add(o);return o};
- // Upper tier: the canvas top is the highest row, in the roof's shade.
- const tier=upperTier?add(loftBand(THREE,upperTier.r0,upperTier.y0,upperTier.r1,upperTier.y1,perimeterLength/TIER_REPEATS,{skip:openEnd,shape:tierShape,...sweep}),basic({map:tierTexture,color:spooky?'#b8a6d8':'#c4ccd2'}),'FooteraArenaUpperTier'):null;
+ // Build treads and risers as one batch. The atlas maps one crowd row to
+ // each riser and its tread, including the taller home end of the Fanwand.
+ const terraces=[];
+ if(upperTier){
+  const {r0,r1,y0,y1}=upperTier,rows=weak?11:22,span=(r1-r0)/rows,rise=(y1-y0)/rows;
+  for(let row=0;row<rows;row++){
+   const f0=row/rows,f1=(row+1)/rows,r=r0+span*row,y=y0+rise*row,v=1/rows;
+   const profile=m=>{const sh=tierShape?.(m);return{dr0:(sh?.dr1||0)*f0,dy0:(sh?.dy1||0)*f0,dr1:(sh?.dr1||0)*f1,dy1:(sh?.dy1||0)*f1}};
+   const riser=m=>{const sh=profile(m);return{dr0:sh.dr0,dy0:sh.dy0,dr1:sh.dr0,dy1:sh.dy1}};
+   const tread=m=>{const sh=profile(m);return{...sh,dy0:sh.dy1}};
+   const u=perimeterLength/TIER_REPEATS,v0=f0+.16*v;
+   terraces.push(loftBand(THREE,r,y,r,y+rise,u,{...sweep,skip:openEnd,shape:riser,v0,v1:f1-.1*v}),
+    loftBand(THREE,r,y+rise,r+span,y+rise,u,{...sweep,skip:openEnd,shape:tread,v0:f1-.1*v,v1:f1}));
+  }
+ }
+ let upperDeck=null;
+ if(terraces.length){
+  const tierTexture=makeTierTexture();
+  tierTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+  const geometry=mergeGeometries(terraces);
+  terraces.forEach(g=>g.dispose());
+  upperDeck=add(geometry,basic({map:tierTexture,color:spooky?'#ae9ac4':'#c9d2d9'}),'FooteraArenaUpperTier');
+ }
+ info.terraceRows=terraces.length/2;
  // V21.406/407: closed outer facade (seen in the stadium shot before kick-off):
  // fins, glowing bands in the seat colour and the stadium's name, and around
  // it plaza, ring road, street lights, fans on their way in, trees and parking.
@@ -443,9 +481,44 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  // Ring, the lit balcony edge and the dark back wall share one unlit draw call.
  const wallColour=new THREE.Color(spooky?'#0e0a16':'#0c1418');
  const trim=[[loftBand(THREE,21.1,12.5,21.1,12.72,1),new THREE.Color(spooky?'#ff8a3c':'#dfeaf2')]];
- if(hasRoof)trim.push([loftBand(THREE,roofDims.r0-.1,roofDims.y0-.85,roofDims.r0,roofDims.y0,1,{...roofOpts,shape:sw?m=>{const t=tierTop(m.x,m.z);return{dy0:t.roof,dy1:t.roof}}:null}),ringColour]);
+ if(hasRoof)trim.push([loftBand(THREE,roofDims.r0-.1,roofDims.y0-.32,roofDims.r0,roofDims.y0,1,{...roofOpts,shape:sw?m=>{const t=tierTop(m.x,m.z);return{dy0:t.roof,dy1:t.roof}}:null}),new THREE.Color('#667982')]);
  if(upperTier)trim.push([loftBand(THREE,upperTier.r1,upperTier.y1,upperTier.r1+.5,hasRoof?roofDims.y1+.4:upperTier.y1+1.6,1,{...roofOpts,shape:sw?m=>{const t=tierTop(m.x,m.z);return{dr0:t.dr,dy0:t.dy,dr1:t.dr,dy1:t.roof+t.roofDr*.12}}:null}),wallColour]);
  // Open grounds (Traditionsstadion): four floodlight masts behind the corners.
+ // Real depth at the mezzanine: a concrete overhang, dark recesses,
+ // entry frames and safety rails. Their geometry shares the existing trim batch.
+ const steel=new THREE.Color('#53646d'),concrete=new THREE.Color('#34424a'),recess=new THREE.Color('#101922'),lampGlass=new THREE.Color('#e1e7e8');
+ const part=(x,y,z,w,h,d,yaw,colour)=>{
+  const geometry=new THREE.BoxGeometry(w,h,d);
+  geometry.rotateY(yaw);geometry.translate(x,y,z);trim.push([geometry,colour]);
+ };
+ const ledge=loftBand(THREE,20.55,10.35,21.2,10.35,1);
+ trim.push([ledge,concrete],[loftBand(THREE,20.55,10.35,20.55,10.63,1),steel]);
+ for(const sign of [-1,1])for(const axis of ['x','z']){
+  const at=standFrame(axis,sign),outer=(axis==='x'?CORNER_X:CORNER_Z)+20.7;
+  const limit=axis==='x'?52:31,yaw=axis==='x'?Math.PI/2:0;
+  for(let along=-limit;along<=limit;along+=weak?13:8.5){
+   part(...at(outer,9.45,along),2.75,1.7,.35,yaw,recess);
+   part(...at(outer-.15,10.34,along),3.15,.18,.9,yaw,steel);
+   for(const side of [-1,1])part(...at(outer-.18,9.45,along+side*1.42),.16,1.8,.55,yaw,concrete);
+  }
+ }
+ if(hasRoof){
+  const perimeter=arenaPerimeter(roofDims.r0);
+  for(let i=1,next=2;i<perimeter.points.length;i++){
+   const a=perimeter.points[i-1],b=perimeter.points[i];
+   for(;next<=b.u;next+=weak?13:7.5){
+    const f=(next-a.u)/(b.u-a.u),x=a.x+(b.x-a.x)*f,z=a.z+(b.z-a.z)*f;
+    if(openEnd&&onHostEnd({x,z},hostEnd))continue;
+    const n=new THREE.Vector2(a.nx+(b.nx-a.nx)*f,a.nz+(b.nz-a.nz)*f).normalize();
+    const y=roofDims.y0+(wave?waveRoofLift(x,z):0)+tierTop(x,z).roof;
+    const yaw=Math.atan2(n.x,n.y);
+    part(x,y-.65,z,2.35,.48,1.1,yaw,steel);
+    part(x,y-.87,z,1.96,.12,.76,yaw,lampGlass);
+    const span=Math.min(11,roofDims.r1-roofDims.r0);
+    part(x+n.x*span/2,y-.26,z+n.y*span/2,.29,.52,span,yaw,concrete);
+   }
+  }
+ }
  const masts=hasRoof&&!look?.masts?[]:FLOODLIGHTS.map(([x,y,z])=>[x*1.13,y+5,z*1.1]);
  // V21.460: the six new builds add their own pieces (arch, dome, stands, ...).
  const extras=look?buildStadiumExtras(THREE,{look,hostEnd,trim,group,track,weak,spooky,hash,makeTierTexture,add,basic,roofDims}):null;
@@ -468,11 +541,11 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  // Lamp glow: additive sprites every few metres along the ring, a denser,
  // brighter cluster in the four corners where the shadow-casting banks sit.
  const lampPositions=[],lampSizes=[];
- if(hasRoof){const ring=arenaPerimeter(roofDims.r0-.2),step=weak?13:7.5;let next=0;
+ if(hasRoof){const ring=arenaPerimeter(roofDims.r0-.2),step=weak?13:7.5;let next=2;
   for(let i=1;i<ring.points.length;i++){
    const a=ring.points[i-1],b=ring.points[i],span=b.u-a.u;
    while(next<=b.u){const t=span?(next-a.u)/span:0,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;
-    if(!(openEnd&&onHostEnd({x,z},hostEnd))){lampPositions.push(x,roofDims.y0-.6+(wave?waveRoofLift(x,z):0)+tierTop(x,z).roof,z);lampSizes.push(1)}next+=step}
+    if(!(openEnd&&onHostEnd({x,z},hostEnd))){lampPositions.push(x,roofDims.y0-.93+(wave?waveRoofLift(x,z):0)+tierTop(x,z).roof,z);lampSizes.push(.62)}next+=step}
   }
   for(const [x,y,z] of FLOODLIGHTS){if(openEnd&&z*hostEnd>0)continue;lampPositions.push(x,y-1.6+(roofDims.y0-29.2)+(wave?waveRoofLift(x,z):0)+tierTop(x,z).roof,z);lampSizes.push(2.6)}}
  for(const [x,y,z] of extras?.lamps||[]){lampPositions.push(x,y,z);lampSizes.push(1.6)}
@@ -481,12 +554,12 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
   for(let i=0;i<3;i++)for(let j=0;j<2;j++){const o=(i-1)*2.1;lampPositions.push(x+cx*o-Math.sin(a)*.4,y+.2+j*1.6,z+sx*o-Math.cos(a)*.4);lampSizes.push(1.9)}}
  const lampGeometry=track(new THREE.BufferGeometry());
  lampGeometry.setAttribute('position',new THREE.Float32BufferAttribute(lampPositions,3));lampGeometry.setAttribute('aSize',new THREE.Float32BufferAttribute(lampSizes,1));
- const lampUniforms={uColor:{value:ringColour.clone()},uScale:{value:1},uSize:{value:weak?7:9}};
+ const lampUniforms={uColor:{value:ringColour.clone()},uScale:{value:1},uSize:{value:weak?3.5:4.2}};
  const lamps=new THREE.Points(lampGeometry,track(new THREE.ShaderMaterial({uniforms:lampUniforms,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false,
   vertexShader:`attribute float aSize;uniform float uScale,uSize;void main(){vec4 mv=modelViewMatrix*vec4(position,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=min(160.0,uSize*aSize*uScale/max(1.0,-mv.z));}`,
   fragmentShader:`uniform vec3 uColor;void main(){vec2 p=gl_PointCoord*2.0-1.0;float r=length(p);if(r>1.0)discard;
- float core=smoothstep(0.22,0.0,r),halo=pow(1.0-r,2.6),streak=pow(max(0.0,1.0-abs(p.y)*9.0),2.0)*(1.0-abs(p.x));
- gl_FragColor=vec4(uColor*(core*1.1+halo*0.34+streak*0.22),1.0);}`})));
+ float core=(1.0-smoothstep(0.0,0.22,r)),halo=pow(1.0-r,2.6),streak=pow(max(0.0,1.0-abs(p.y)*9.0),2.0)*(1.0-abs(p.x));
+ gl_FragColor=vec4(uColor*(core*1.0+halo*0.28+streak*0.12),1.0);}`})));
  lamps.name='FooteraArenaLamps';lamps.frustumCulled=false;lamps.renderOrder=24;group.add(lamps);info.lamps=lampSizes.length;
 
  // ---- Camera flashes -------------------------------------------------------
@@ -529,6 +602,6 @@ void main(){float cycle=fract(uTime*(0.55+aSeed.x*0.5)+aSeed.y*17.0);
    lampUniforms.uScale.value=scale*Math.max(.3,Math.min(1,1-(camera.position.y-30)/45));flashUniforms.uScale.value=scale;
   }
  }
- return {group,info,update,tier,uniforms:{flash:flashUniforms,lamp:lampUniforms,sky:skyUniforms},
+ return {group,info,update,tier:upperDeck,uniforms:{flash:flashUniforms,lamp:lampUniforms,sky:skyUniforms},
   dispose(){group.removeFromParent();shadows.removeFromParent()}};
 }

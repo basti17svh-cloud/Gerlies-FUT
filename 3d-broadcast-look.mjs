@@ -52,14 +52,14 @@ export function applyBroadcastLook(scene,renderer,{high=false}={}){
  // shape (cheekbones, folds) instead of the flat look.
  if(hemi)hemi.intensity*=.66;
  if(sun){
-  sun.color.set('#ffecd2');sun.intensity*=1.2;
+  sun.color.set('#f5f0e4');sun.intensity*=1.1;
   sun.shadow.mapSize.set(high?4096:2048,high?4096:2048);sun.shadow.radius=3;sun.shadow.normalBias=.012;
   sun.shadow.map?.dispose();sun.shadow.map=null;
  }
- if(fill){fill.color.set('#b9d3ff');fill.intensity*=.7}
+ if(fill){fill.color.set('#d2e3f5');fill.intensity*=.62}
  // Cool floodlight from the far stand outlines shoulders, hair and kit edges.
- const rim=new THREE.DirectionalLight('#cfe0ff',1.6);
- rim.name='FooteraBroadcastRim';rim.position.set(-60,28,0);scene.add(rim);
+ const rim=new THREE.DirectionalLight('#dceaff',high?1.1:.82);
+ rim.name='FooteraBroadcastRim';rim.position.set(-48,34,25);scene.add(rim);
  let upgraded=0;const created=new Set();
  scene.traverse(o=>{
   if(!o.isMesh||!o.material)return;
