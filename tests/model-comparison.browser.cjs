@@ -40,6 +40,13 @@ await page.route('**/render-fixture',route=>route.fulfill({contentType:'text/htm
  const root=sc.getObjectByName('FooteraScorerRoot');const body=root.getObjectByName('FooteraBody');if(!body?.material.userData.footeraHD)throw Error('no HD scorer');
  const head=root.getObjectByName('Head'); const aim=head.getWorldPosition(new T.Vector3());const c=new T.PerspectiveCamera(30,780/560,.03,120);
  const pos=root.localToWorld(new T.Vector3(.3,0,-.85)).sub(root.getWorldPosition(new T.Vector3()));c.position.copy(aim).add(pos);c.lookAt(aim);draw(sc,c);const portrait=save();
+ const feet=root.getWorldPosition(new T.Vector3()),target=feet.clone();target.y+=1.02;
+ const sideView=new T.PerspectiveCamera(29,780/560,.03,120);
+ sideView.position.copy(target).add(new T.Vector3(2.6,.25,3.15));sideView.lookAt(target);draw(sc,sideView);
+ const duel=save();
+ const chest=body.geometry.getAttribute('position');
+ let left=Infinity,right=-Infinity;
+ for(let i=0;i<chest.count;i++){const x=chest.getX(i),y=chest.getY(i);if(y>1.39&&y<1.41&&Math.abs(x)<.23){left=Math.min(x,left);right=Math.max(x,right)}}
  const arms=['upperarm_l','lowerarm_l','upperarm_r','lowerarm_r'].map(name=>root.getObjectByName(name));
  const angles=[];
  for(let i=0;i<66;i++){
@@ -47,8 +54,10 @@ await page.route('**/render-fixture',route=>route.fulfill({contentType:'text/htm
   angles.push(arms.map(b=>b.quaternion.toArray()));
   await window.saveFrame(i,r.domElement.toDataURL('image/jpeg',.91).split(',')[1]);
  }
- return [match,portrait,angles] },[human,scene]);
+ return [match,portrait,angles,duel,right-left] },[human,scene]);
  for(const [i,k] of ['Match','Nahaufnahme'].entries())fs.writeFileSync(path.join(out,revision+'-'+k+'.png'),Buffer.from(images[i],'base64'));
+ fs.writeFileSync(path.join(out,revision+'-Breite.json'),JSON.stringify(images[4]));
+ fs.writeFileSync(path.join(out,revision+'-Duell.png'),Buffer.from(images[3],'base64'));
  fs.writeFileSync(path.join(out,revision+'-Gelenke.json'),JSON.stringify(images[2]));
  await page.close();
  }

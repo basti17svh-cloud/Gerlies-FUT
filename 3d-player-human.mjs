@@ -362,6 +362,24 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
  const result={index:bp.count>65535?Uint32Array.from(out):Uint16Array.from(out),cover};
  perBody.set(hair,result);return result;
 }
+// The MetaHuman export has facial morphs but no build target. Shape skin and
+// garments in the same bind space, tapering out before the joints and head.
+function fitFootballBuild(geometry,build){
+ if(!Number.isFinite(build)||!build)return;
+ const pos=geometry.getAttribute('position');
+ const bell=t=>{const u=Math.max(0,1-t*t);return u*u};
+ for(let i=0;i<pos.count;i++){
+  const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),ax=Math.abs(x);
+  const chest=bell((y-1.38)/.22)*bell(x/.37);
+  const waist=bell((y-1.08)/.21)*bell(x/.27);
+  const centre=.105,thigh=bell((y-.77)/.24)*bell((ax-centre)/.13);
+  const shoulder=bell((y-1.45)/.13)*bell((ax-.19)/.15);
+  const side=Math.sign(x);
+  pos.setXYZ(i,x+build*(x*(.15*chest+.045*waist)+side*(.018*shoulder+(ax-centre)*.21*thigh)),
+   y,z+build*(z-.012)*(.14*chest+.065*waist+.18*thigh));
+ }
+ geometry.computeBoundingBox();geometry.computeBoundingSphere();
+}
 // Bake this player's face into private geometry copies, drop unused haircuts
 // and give every surface its own material. Returns disposables.
 export function dressFooteraHuman(THREE,model,look,kit,opts={}){
@@ -398,6 +416,9 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    geometry.setAttribute('position',new THREE.BufferAttribute(out,3));
    geometry.morphAttributes={};geometry.morphTargetsRelative=false;
   }
+  if(info?.metahuman&&names.build==null&&['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks'].includes(mesh.name)){
+   fitFootballBuild(geometry,look.morphs?.build);
+  }
   mesh.geometry=geometry;mesh.morphTargetInfluences=undefined;mesh.morphTargetDictionary=undefined;
   mesh.frustumCulled=false;mesh.castShadow=true;mesh.receiveShadow=true;
   const material=mesh.material.clone(),name=mesh.name;
@@ -418,7 +439,9 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    if(name.startsWith('FooteraBrows'))material.color.lerp(new THREE.Color(look.skin),.22);
    else material.color.multiplyScalar(name.startsWith('FooteraHair')?1:.85);
    material.roughness=.7;
-   mesh.castShadow=name.startsWith('FooteraHair');
+   // The stadium shadow map cannot resolve a short cut a few millimetres
+   // above the skull. The head casts its silhouette; larger cuts cast theirs.
+   mesh.castShadow=name.startsWith('FooteraHair')&&!['short01','short02','short04','ccshort'].includes(look.hair);
   }
   mesh.material=material;owned.push({geometry,material});
  }
