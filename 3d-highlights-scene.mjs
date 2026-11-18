@@ -5,7 +5,7 @@ import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,ext
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21455';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21470';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21471';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21466';
@@ -76,7 +76,7 @@ import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACK
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
-import {createArena} from './3d-arena.mjs?v=21470';
+import {createArena} from './3d-arena.mjs?v=21471';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception} from './3d-playbook.mjs?v=21455';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
