@@ -22,5 +22,6 @@ test('Graphic revision is consistently loaded from HTML and offline shell',()=>{
  assert.ok(script.includes('./3d-highlights-scene.mjs?v=21468'));
  for(const dep of ['3d-arena.mjs','3d-broadcast-look.mjs','3d-advertising.mjs'])assert.ok(scene.includes('./'+dep+'?v=21468'),dep);
  assert.ok(app.includes('const GFUT_BUILD="V21.468"'));assert.ok(shell.includes('footera-v21-468-broadcast'));
+ assert.ok(app.includes('service-worker.js?v=21468'));
  const manifest=JSON.parse(read('manifest.webmanifest'));assert.equal(manifest.start_url,'./index.html?v=21.468');
 });
