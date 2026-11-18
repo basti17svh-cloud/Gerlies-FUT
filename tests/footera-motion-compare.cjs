@@ -60,7 +60,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    const name=baseline?'footera-v21.37-reference':'footera-v21.41-pilot';
    ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block',recordVideo:{dir:out,size:{width:390,height:844}}});
    // Software WebGL runs at 1-2 fps: keep wall-clock highlight pace in CI.
-   await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;globalThis.FOOTERA_TEST_REALTIME_3D=true;Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
+   await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;globalThis.FOOTERA_TEST_REALTIME_3D=true;localStorage.setItem('footera-3d-player-model','quaternius');Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());
    await page.goto(url);await fixture(page);

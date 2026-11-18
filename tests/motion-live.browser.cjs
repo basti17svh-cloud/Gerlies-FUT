@@ -18,6 +18,9 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    await ctx.addInitScript(({memory,cores,preference})=>{
     Object.defineProperty(navigator,'deviceMemory',{get:()=>memory});
     Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>cores});
+    // Software WebGL is not a premium-body performance target. Exercise the
+    // real GLB skeleton and motion in both routes without decoding MetaHuman.
+    localStorage.setItem('footera-3d-player-model','quaternius');
     if(preference==='legacy')localStorage.setItem('footera-3d-motion-mode','legacy');
     // Software WebGL runs at 1-2 fps: keep wall-clock highlight pace in CI.
     globalThis.FOOTERA_TEST_REALTIME_3D=true;
