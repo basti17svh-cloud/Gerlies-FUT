@@ -5,13 +5,13 @@ import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,ext
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21455';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21468';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21466';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21466';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
+import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21468';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21444';
@@ -76,7 +76,7 @@ import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACK
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
-import {createArena} from './3d-arena.mjs?v=21459';
+import {createArena} from './3d-arena.mjs?v=21468';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception} from './3d-playbook.mjs?v=21455';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
@@ -1345,12 +1345,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const pixels=ctx.createImageData(w,h),data=pixels.data;
    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const wx=x/w*78-39,wz=(1-y/h)*119-59.5,inside=Math.abs(wx)<34&&Math.abs(wz)<52.5;
-    const stripe=inside?(arenaOn?0:Math.floor((wz+52.5)/7.5)%2?5:-5):-9;
-    const broad=Math.sin(x*.018+y*.011)*1.0+Math.sin(y*.053-x*.021)*1.1;
-    const fibre=(hash(y*w+x)-.5)*10,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*2.4;
+    const stripe=inside?(arenaOn?0:Math.floor((wz+52.5)/5.83333)%2?6:-6):-8;
+    const broad=Math.sin(x*.018+y*.011)*1.3+Math.sin(y*.053-x*.021)*1.15;
+    const fibre=(hash(y*w+x)-.5)*12,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*3.2;
     const wear=Math.exp(-((Math.abs(wz)-50.2)**2/6+wx*wx/22))*4;
     const n=stripe+broad+fibre+tuft-wear,i=(y*w+x)*4;
-    data[i]=63+n*.67;data[i+1]=120+n;data[i+2]=38+n*.45;data[i+3]=255;
+    data[i]=64+n*.67;data[i+1]=128+n;data[i+2]=47+n*.45;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1,color:spooky?'#dcd8e6':'#ffffff'})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
@@ -1384,7 +1384,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    frame.push(-3.66,.045,-1.95,3.66,.045,-1.95);
    const fg=track(new THREE.BufferGeometry());fg.setAttribute('position',new THREE.Float32BufferAttribute(frame,3));g.add(new THREE.LineSegments(fg,track(new THREE.LineBasicMaterial({color:'#e2e5db'}))));
    const ng=track(new THREE.BufferGeometry());ng.setAttribute('position',new THREE.Float32BufferAttribute(net,3));const base=new Float32Array(net);
-   const nm=track(new THREE.LineBasicMaterial({color:'#edf0e7',transparent:true,opacity:weak?.46:.56,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
+   const nm=track(new THREE.LineBasicMaterial({color:'#f4f6f1',transparent:true,opacity:weak?.52:.66,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
    return{geometry:ng,base,bar,uprights};
   }
   const net=goal(-52.5,-1);goal(52.5,1);
