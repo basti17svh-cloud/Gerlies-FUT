@@ -105,24 +105,31 @@ const TURF_FRAGMENT_PARS=`varying vec3 vArenaWorld;uniform sampler2D uArenaBlade
 // Runs right after the base map: blades, mowing and light pooling all scale
 // the albedo, so shadows and weather tints keep working unchanged.
 const TURF_FRAGMENT=`{
-	vec2 w=vArenaWorld.xz;
-	float inside=step(abs(w.x),34.0)*step(abs(w.y),52.5);
-	// Blade detail: two scales so neither close-ups nor the TV view tile.
-	float blades=texture2D(uArenaBlades,w*0.55).g*0.62+texture2D(uArenaBlades,w*0.071+vec2(0.37,0.11)).g*0.38;
-	diffuseColor.rgb*=(0.48+1.04*blades)*mix(vec3(0.94,1.0,0.90),vec3(1.10,1.02,0.86),blades);
-	// Mowing: 5.83 m bands mown across the pitch and a cross cut along it.
-	// Grass leans with the mower, so a band is light seen one way and dark
-	// the other: the pattern follows the camera like on real turf.
-	float band=step(0.5,fract((w.y+52.5)/11.6667));
-	float cross=step(0.5,fract((w.x+34.0)/11.3333));
-	vec2 view=normalize(cameraPosition.xz-w+vec2(0.0001));
-	float mow=((band*2.0-1.0)*(0.03+0.10*view.x)+(cross*2.0-1.0)*0.06*view.y)*inside*uArenaMow;
-	diffuseColor.rgb*=1.0+mow;
-	// Floodlight pooling: brightest in the middle third, falling off to the
-	// corners and the track behind the lines.
-	vec2 e=abs(w)/vec2(39.0,59.5);
-	float pool=1.0-0.20*smoothstep(0.35,1.05,length(e*e));
-	diffuseColor.rgb*=pool*vec3(0.86,0.80,1.04);
+ vec2 p=vArenaWorld.xz;
+ float inPlay=(1.0-smoothstep(33.8,35.0,abs(p.x)))*(1.0-smoothstep(52.1,53.3,abs(p.y)));
+ // Fine grass fibres at two scales. The coarser map persists at broadcast distance.
+ float fibre=texture2D(uArenaBlades,p*0.52).g;
+ float fine=texture2D(uArenaBlades,p*0.087+vec2(0.37,0.11)).g;
+ float detail=mix(fine,fibre,0.56);
+ diffuseColor.rgb*=mix(vec3(0.87,0.92,0.82),vec3(1.12,1.08,0.98),detail);
+ // Camera-relative pitch stripes approximate the different grazing angles
+ // of alternating cuts, without changing hue every time the camera moves.
+ vec2 view=normalize(cameraPosition.xz-p+vec2(0.0001));
+ float stripe=mod(floor((p.y+52.5)/5.83333),2.0)*2.0-1.0;
+ float cross=mod(floor((p.x+34.0)/11.33333),2.0)*2.0-1.0;
+ float mowing=(stripe*(0.032+0.042*abs(view.y))+cross*0.012*abs(view.x))*inPlay*uArenaMow;
+ diffuseColor.rgb*=1.0+mowing;
+ // The busiest parts of a real pitch are the goalmouth and the penalty spot.
+ // The muted ochre tint stays subtle; there are no new decals or draw calls.
+ float goalmouth=smoothstep(46.5,50.8,abs(p.y))*(1.0-smoothstep(2.0,8.0,abs(p.x)));
+ vec2 penalty=vec2(p.x,(abs(p.y)-41.5)*1.1);
+ float spot=exp(-dot(penalty,penalty)*0.33);
+ float wear=clamp(goalmouth*0.23+spot*0.085,0.0,0.26)*inPlay;
+ diffuseColor.rgb*=mix(vec3(1.0),vec3(1.20,0.98,0.78),wear);
+ // Neutral white floodlight falloff, rather than a blue/purple stadium wash.
+ float corner=length(p/vec2(43.0,65.0));
+ float falloff=1.0-0.095*smoothstep(0.45,1.25,corner);
+ diffuseColor.rgb*=falloff*vec3(0.99,1.0,0.97);
 }`;
 
 // ---- V21.460 six new builds -------------------------------------------------
@@ -278,7 +285,7 @@ export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,we
    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+TURF_VERTEX_PARS).replace('#include <begin_vertex>','#include <begin_vertex>\n'+TURF_VERTEX);
    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+TURF_FRAGMENT_PARS).replace('#include <map_fragment>','#include <map_fragment>\n'+TURF_FRAGMENT);
   };
-  const base=key?key.call(m):'';m.customProgramCacheKey=()=>base+'|footera-arena-turf';
+  const base=key?key.call(m):'';m.customProgramCacheKey=()=>base+'|footera-arena-turf-broadcast1';
   m.userData.footeraArenaTurf=uniforms;m.needsUpdate=true;info.turf=true;
  }
 
