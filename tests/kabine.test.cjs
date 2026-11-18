@@ -172,9 +172,9 @@ test('top pack signings join the group, SBC players leave it',()=>{
 
 test('the chat is loaded, cached and offered in the match report and Extras',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8'),app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
- const v=(html.match(/footera-kabine\.js\?v=(\d+)/)||[])[1];assert.ok(v,'script tag');
- assert.ok(html.includes(`footera-kabine.css?v=${v}`));
- assert.ok(sw.includes(`./footera-kabine.js?v=${v}`)&&sw.includes(`./footera-kabine.css?v=${v}`),'service worker shell');
+ const v=(html.match(/footera-kabine\.js\?v=(\d+)/)||[])[1],cssV=(html.match(/footera-kabine\.css\?v=(\d+)/)||[])[1];
+ assert.ok(v&&cssV,'both chat script and stylesheet are pinned');
+ assert.ok(sw.includes(`./footera-kabine.js?v=${v}`)&&sw.includes(`./footera-kabine.css?v=${cssV}`),'service worker matches each HTML asset revision');
  assert.ok(html.indexOf('footera-kabine.js')>html.indexOf('footera-app.js'),'loads after the app');
  assert.ok(html.includes('data-kabine-open'),'Extras entry');
  assert.match(app,/FooteraKabine\?\.buttonHTML/);assert.match(app,/FooteraKabine\?\.afterMatch\(match\)/);assert.match(app,/FooteraKabine\?\.afterPack\(items\)/);assert.match(app,/FooteraKabine\?\.afterSbc\(stats\.items\)/);

@@ -79,13 +79,25 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21466').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21467').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
    // V21.193 human squad: fetched once while idle, then cached by the service worker.
    if(m.footeraHumanPlayersWanted?.())return m.prepareFooteraHumanModel?.();
   }).catch(()=>{})}
+  // The wait races a short cap AND the abort signal; timeout listeners are
+  // removed even if the GLB keeps downloading for the next highlight.
+  async function boundedModelReady(promise,signal,budgetMs){
+   if(!promise||signal.aborted)return;
+   await new Promise(resolve=>{
+    let timer=null,settled=false;
+    const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);signal.removeEventListener('abort',finish);resolve()};
+    signal.addEventListener('abort',finish,{once:true});
+    timer=setTimeout(finish,budgetMs);
+    Promise.resolve(promise).then(finish,finish);
+   });
+  }
   if(root.document&&mode!=='off'){
    const schedule=()=>{if(typeof root.requestIdleCallback==='function')root.requestIdleCallback(prewarm,{timeout:2500});else root.setTimeout(prewarm,1100)};
    if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
@@ -112,13 +124,22 @@
       if(model==='makehuman')root.localStorage?.removeItem('footera-3d-player-model');
     }catch(_){}
     if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
-    // V21.441: the human squad is ready as soon as its own body has loaded;
-    // the MetaHuman body follows in the background.
-    if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
+    // V21.467: prewarm is already running while idle. On a cold launch give
+    // the real human body one bounded chance to arrive BEFORE the scene clones
+    // its players. Never block a match for a large GLB or a failed network.
+    if(!disabled&&module.footeraHumanPlayersWanted?.()){
+     const ready=module.prepareFooteraHumanModel?.();
+     await boundedModelReady(ready,signal,950);
+     if(!signal.aborted&&module.isFooteraHumanModelReady?.()&&
+        module.footeraHumanModelStatus?.().body==='makehuman')
+      await boundedModelReady(module.footeraRealBodyLoaded?.(),signal,450);
+    }
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
     if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
-   remove();return signal.aborted?'skipped':module.play(event,signal);
+   // Keep the loader visible behind the hidden scene until the first WebGL frame
+    // gains fh3d-ready. Removing it now leaves a blank pitch on slow GPUs.
+    return signal.aborted?'skipped':module.play(event,signal);
   })}
   finally{remove();signal.removeEventListener('abort',remove)}
  }

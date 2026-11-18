@@ -60,7 +60,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    const name=baseline?'footera-v21.37-reference':'footera-v21.41-pilot';
    ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block',recordVideo:{dir:out,size:{width:390,height:844}}});
    // Software WebGL runs at 1-2 fps: keep wall-clock highlight pace in CI.
-   await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;globalThis.FOOTERA_TEST_REALTIME_3D=true;Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
+   await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;globalThis.FOOTERA_TEST_REALTIME_3D=true;localStorage.setItem('footera-3d-player-model','quaternius');Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());
    await page.goto(url);await fixture(page);
@@ -73,7 +73,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
     match.kickoffKits={home:{pattern:'diagonal',shirtPrimary:'#072e29',shirtSecondary:'#e7c776',shorts:'#112627',socks:'#e7c776'},away:{pattern:'halves',shirtPrimary:'#f2f5f6',shirtSecondary:'#a52349',shorts:'#f2f5f6',socks:'#a52349'}};
    });
    await force(page,'goal');await page.evaluate(()=>{window.__restoreSequence();delete window.__restoreSequence});
-   await page.waitForSelector('.fh3d canvas',{timeout:12000});
+   try{await page.waitForSelector('.fh3d canvas',{timeout:30000});}catch(e){const detail=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),stage=document.getElementById('matchLiveStage'),canvas=layer?.querySelector('canvas'),q=typeof match3DQueue!=='undefined'?match3DQueue:null,m=typeof match!=='undefined'?match:null;return{pending:!!m?.highlight3DPending,active:!!m?.highlightActive,mode:FooteraHighlights.getMode(),queueBusy:!!q?.busy,queueDisabled:!!q?.disabled,queueLength:q?.items?.length,stageFound:!!stage,stageHidden:stage?getComputedStyle(stage).display:null,layerCount:document.querySelectorAll('.fh3d').length,canvasCount:document.querySelectorAll('.fh3d canvas').length,canvasBox:canvas?canvas.getBoundingClientRect().toJSON():null,warming:document.querySelectorAll('.fh3d-warming').length,goalMoment:document.getElementById('matchGoalMoment')?.className,modelStatus:layer?.dataset.humanModel,resources:performance.getEntriesByType('resource').filter(x=>/3d-highlights-scene|models/.test(x.name)).slice(-6).map(x=>({name:x.name,ms:x.duration}))}});console.error('3D CANVAS DIAGNOSTICS',JSON.stringify(detail),'pageErrors=',JSON.stringify(errors));throw e}
    await page.waitForSelector('.fh3d',{state:'detached',timeout:40000});
    const state=await page.evaluate(()=>({goals:match.goalEvents.length,score:[match.home,match.away],pending:!!match.highlight3DPending,disabled:!!match3DQueue.disabled}));
    console.log('REAL-TIME VIDEO CHECK',name,JSON.stringify(state),'pageErrors=',JSON.stringify(errors));

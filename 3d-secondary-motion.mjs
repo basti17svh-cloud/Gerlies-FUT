@@ -1,12 +1,12 @@
-/* Footera V21.370: secondary motion. Hair and the loose shirt follow the body
+/* Footera V21.467: secondary motion. Hair and the loose shirt follow the body
  * a moment late: they trail against the run, bounce with each stride and
  * swing out in turns; the shirt hem flutters with pace. Vertex shader only
  * (after skinning), so bones, IK, contacts and the match stay untouched.
  * Per player: one damped spring driven by the head's world motion. */
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
-export const SECONDARY_MOTION_VERSION='21.370-hair-shirt';
+export const SECONDARY_MOTION_VERSION='21.467-damped-hair-shirt';
 // Spring of the hanging hair (ponytail / braid swing about 1.6 Hz).
-const STIFF=95,DAMP=9,DRAG=.035,MAX=.14;
+const STIFF=95,DAMP=13,DRAG=.028,MAX=.11;
 
 // Pure spring step (testable): s = offset, v = its velocity, a = the head's
 // acceleration, vel = the head's velocity (world, m/s). Returns the offset.
@@ -80,10 +80,19 @@ export function createSecondaryMotion(THREE,meshes,head){
   if(hair)patch(hair,'hair',hairU);if(shirt)patch(shirt,'shirt',shirtU);
   head.getWorldPosition(p);
   const dt=state.time==null?0:time-state.time;state.time=time;
-  // A seek (scrub, replay jump, new scene) restarts the spring at rest.
-  if(!(dt>1/240&&dt<.2)||!state.last){state.last=p.toArray();state.lastVel=[0,0,0];state.s=[0,0,0];state.v=[0,0,0]}
-  else{
-   const vel=[0,1,2].map(i=>(p.getComponent(i)-state.last[i])/dt),acc=vel.map((v,i)=>clamp((v-state.lastVel[i])/dt,-60,60));
+  // Replays, jumps across an authored route and WebGL frame stalls must never
+  // turn a new head location into a giant cloth/hair impulse. A running player
+  // can travel ~8 m/s; only discontinuities above 12 m/s are treated as seeks.
+  const moved=state.last?Math.hypot(...[0,1,2].map(i=>p.getComponent(i)-state.last[i])):0;
+  if(!(dt>1/240&&dt<.2)||!state.last||moved>Math.max(.26,dt*12)){
+   state.last=p.toArray();state.lastVel=[0,0,0];state.s=[0,0,0];state.v=[0,0,0];state.phase=0;
+  }else{
+   // Filter numerical jitter from the interpolated skeleton before deriving
+   // acceleration. The blend stays time-based at 30, 60 and 120 fps.
+   const alpha=1-Math.exp(-14*dt);
+   const raw=[0,1,2].map(i=>clamp((p.getComponent(i)-state.last[i])/dt,-12,12));
+   const vel=raw.map((v,i)=>state.lastVel[i]+(v-state.lastVel[i])*alpha);
+   const acc=vel.map((v,i)=>clamp((v-state.lastVel[i])/dt,-35,35));
    stepSecondarySpring(state,acc,vel,dt);state.last=p.toArray();state.lastVel=vel;
    state.phase+=dt*(1+3*clamp(speed));
   }
@@ -91,7 +100,7 @@ export function createSecondaryMotion(THREE,meshes,head){
   // World offset into the mesh's own (scaled) space.
   inv.copy(target.matrixWorld).invert();local.fromArray(state.s).applyMatrix3(m3.setFromMatrix4(inv));
   sway.value.copy(local);
-  flutter.value.set(.006*clamp(speed),state.phase);
+  flutter.value.set(.0035*clamp(speed),state.phase);
  }
  return{update,state};
 }

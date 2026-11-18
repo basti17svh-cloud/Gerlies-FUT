@@ -13,7 +13,7 @@ import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {createSecondaryMotion} from './3d-secondary-motion.mjs?v=21465';
+import {createSecondaryMotion} from './3d-secondary-motion.mjs?v=21467';
 import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21466';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
