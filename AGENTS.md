@@ -26,3 +26,10 @@ Footera ist Bastis Herzensprojekt. Arbeite konzentriert, präzise und mit der So
 - Viele bestandene Tests ersetzen weder reale Ablaufprüfungen noch einen Nachweis für hunderte gleichzeitige Spieler.
 - Belege Performance-Aussagen durch passende Messungen. Das Ende einer Fehlerschleife ist noch kein gemessener neuer CPU-Prozentwert.
 - Berichte klar: Ursache, Änderung, tatsächlich durchgeführte Prüfung und wesentliche offene Punkte. Keine unbelegten Zusicherungen oder behaupteten Hintergrundarbeiten.
+
+## Sound hören (Earshot)
+
+- Wer Sounds ändert oder beurteilt (`footera-sound.js`, `3d-stadium-sound.mjs`, `assets/sounds/`), hört sie vorher und nachher mit Earshot an, statt nur den Code zu lesen: `bash scripts/sound/hear.sh` (alle Cues) oder `bash scripts/sound/hear.sh kick-shot net` (nur diese). Ergebnis: `test-artifacts/sound/earshot-report.md` mit Beschreibung, Treffer gegen die gewünschte Beschreibung (strong / plausible / weak / no match) und Messwerten, dazu die WAVs.
+- `scripts/sound/render-game-sounds.cjs` spielt jeden Cue mit dem echten `footera-sound.js` in Chromium in einen OfflineAudioContext über den Master-Bus des Spiels. Neue Sounds dort als Cue mit englischer Soll-Beschreibung und Verwechslungen (`alts`) eintragen.
+- `scripts/sound/earshot-setup.sh` installiert Earshot (MIT, github.com/Leonxlnx/earshot, auf v0.4.1 gepinnt) samt zwei CPU-Modellen (~2,5 GB, beim ersten Mal ca. 10 min). Nie in CI einbauen. Die Cloud-Umgebung erlaubt dafür download.pytorch.org, download-r2.pytorch.org, huggingface.co und dessen CDN-Hosts; fehlt ein Host, meldet das Skript das.
+- Earshot-Urteile sind Hinweise eines Modells, keine Abnahme. Synthetische Sounds (Pfiff, Pfosten) werden oft als „no match" erkannt; das ist ein Grund, genauer hinzuhören, aber Basti entscheidet, wie es klingt. Vorher/Nachher immer mit denselben Cues vergleichen.
