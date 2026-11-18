@@ -80,7 +80,7 @@ async function open(browser,url,width,low){
 async function saveFrame(page,name){
  const clip=await page.locator('.fh3d').boundingBox();
  assert.ok(clip,'the production highlight is visible');
- await page.screenshot({path:resolve(out,name),clip,timeout:90000});
+ await page.screenshot({path:resolve(out,name),clip,timeout:90000,animations:'disabled'});
 }
 
 async function capture(browser,url,width,label,poses){
@@ -134,7 +134,7 @@ async function capture(browser,url,width,label,poses){
    rows.push({name,width,label,...stats});
   }
   if(poses&&width===390){
-   await page.evaluate(()=>{globalThis.qaFixedCamera=null;globalThis.qaReplay=true;qaAdvance(16)});
+   await page.evaluate(()=>{globalThis.qaFixedCamera=null;globalThis.qaReplay=true;qaAdvance(16);document.querySelector('.fh3d-hud').classList.remove('visible')});
    await saveFrame(page,'nachher-390-tv-kamera.png');
   }
   await page.evaluate(()=>{document.querySelector('.fh3d-skip').click();qaResume()});

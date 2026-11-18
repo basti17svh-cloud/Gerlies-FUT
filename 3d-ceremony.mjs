@@ -253,7 +253,7 @@ export function replayCamera(direction,shooter,ball,aspect=1.3){
  // Mount the camera outside the post and look diagonally across the goal.
  // The mount stays fixed while the pan follows the shot into the net.
  const net=smooth((-ball[2]-46)/6.5);
- return{position:world([4.4,5.4,-66.2]),
+ return{position:world([4.1,8.2,-62.4]),
   target:world([mix(mix(shooter[0],ball[0],.54),.15,net),mix(1.15,ball[1],.25),mix(mix(shooter[1],ball[2],.57),-52.3,net*.82)]),
-  fov:aspect<.9?54:46,phase:'replay'};
+  fov:aspect<.9?60:52,phase:'replay'};
 }
