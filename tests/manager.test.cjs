@@ -75,7 +75,10 @@ test('kick-off shows the manager with his card; files are pinned and cached',()=
  assert.match(app,/queueMatchCeremony3D\("kickoff"\);\n \/\/ V21\.462[^\n]*\n try\{window\.FooteraManager\?\.kickoff\(match\)\}catch\(e\)\{\}/);
  const index=read('index.html'),sw=read('service-worker.js'),v=(read('footera-manager.js').match(/3d-manager\.mjs\?v=(\d+)/)||[])[1];
  assert.ok(v);
- for(const f of ['footera-manager.js','footera-manager.css'])assert.ok(index.includes(`./${f}?v=${v}`)&&sw.includes(`"./${f}?v=${v}"`),f);
+ const cssV=(index.match(/footera-manager\.css\?v=(\d+)/)||[])[1];
+ assert.ok(cssV,'manager stylesheet is pinned');
+ for(const [f,version] of [['footera-manager.js',v],['footera-manager.css',cssV]])
+  assert.ok(index.includes(`./${f}?v=${version}`)&&sw.includes(`"./${f}?v=${version}"`),f);
  assert.ok(sw.includes(`"./3d-manager.mjs?v=${v}"`));
  assert.ok(read('3d-kabine-photo.mjs').includes(`./3d-manager.mjs?v=${v}`),'one module URL');
  assert.ok(index.indexOf('footera-coach-card.js')<index.indexOf('footera-manager.js'));
