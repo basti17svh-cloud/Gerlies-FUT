@@ -245,11 +245,15 @@ function trophyCamera(time){
  return{position:[cx+Math.cos(a)*r,mix(1.05,1.35,smooth(u/4)),cz+Math.sin(a)*r],target:[cx-.8,mix(1.75,2.1,smooth(u/1.2)),cz+Math.sin(a)*.5],fov:46,phase:'trophy-lift'};
 }
 
-// ---- goal replay: high behind the goal, through the net, at half speed.
+// ---- goal replay: an offset goal-line camera at half speed.
 export const REPLAY_RATE=.55;
 export function replayWindow(shotTime,goalArrival){return{from:shotTime-.9,to:goalArrival+.7}}
-export function replayCamera(direction,shooter,ball){
- const d=direction===-1?-1:1,w=p=>[p[0]*d,p[1],p[2]*d];
- return{position:w([mix(shooter[0]*.25,ball[0]*.3,.5),5.6,-61]),target:w([mix(shooter[0],ball[0],.45),mix(.9,ball[1],.3),mix(shooter[1],-52.5,.3)]),fov:33,phase:'replay'};
+export function replayCamera(direction,shooter,ball,aspect=1.3){
+ const d=direction===-1?-1:1,world=p=>[p[0]*d,p[1],p[2]*d];
+ // Mount the camera outside the post and look diagonally across the goal.
+ // The mount stays fixed while the pan follows the shot into the net.
+ const net=smooth((-ball[2]-46)/6.5);
+ return{position:world([4.4,5.4,-66.2]),
+  target:world([mix(mix(shooter[0],ball[0],.54),.15,net),mix(1.15,ball[1],.25),mix(mix(shooter[1],ball[2],.57),-52.3,net*.82)]),
+  fov:aspect<.9?54:46,phase:'replay'};
 }
-

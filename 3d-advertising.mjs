@@ -81,10 +81,10 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
  }
  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
  const instagram=kind==='instagram',tiktok=kind==='tiktok';
- ctx.fillStyle=instagram?'#fffaf8':tiktok?'#121212':'#0d1b24';
+ ctx.fillStyle=instagram?'#fffaf8':tiktok?'#121212':'#071713';
  ctx.fillRect(0,0,WIDTH,HEIGHT);
- ctx.fillStyle=instagram?'#e83191':tiktok?'#25f4ee':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
- ctx.fillStyle=instagram?'#d6d9db':tiktok?'#fe2c55':'#374955';ctx.fillRect(0,249,WIDTH,7);
+ ctx.fillStyle=instagram?'#e83191':tiktok?'#25f4ee':'#63f874';ctx.fillRect(0,0,WIDTH,7);
+ ctx.fillStyle=instagram?'#d6d9db':tiktok?'#fe2c55':'#1a5536';ctx.fillRect(0,249,WIDTH,7);
  ctx.textBaseline='middle';ctx.textAlign='center';
  if(instagram){
   // Equal spacing: logo / handle / logo, readable from the match camera.
@@ -99,6 +99,8 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
   ctx.fillStyle='#ffffff';ctx.font='800 174px Arial, sans-serif';
   ctx.fillText('footera_official',WIDTH/2,136,1440);
  }else{
+  ctx.strokeStyle='#26693d';ctx.lineWidth=8;
+  for(let x=-120;x<WIDTH+120;x+=190){ctx.beginPath();ctx.moveTo(x,230);ctx.lineTo(x+98,25);ctx.stroke()}
   if(footeraLogo?.complete&&footeraLogo.naturalWidth>0){
    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
    ctx.drawImage(footeraLogo,24,12,232,232);

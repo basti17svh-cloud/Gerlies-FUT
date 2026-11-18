@@ -6,7 +6,7 @@
  * attack direction 1, so field space = world space; main stand = +x). */
 import * as THREE from './vendor/three/three.module.min.js';
 import {RoomEnvironment} from './vendor/three/RoomEnvironment.mjs';
-import {TROPHY_TIMES,TROPHY_PEDESTAL,TROPHY_BACKDROP,TROPHY_LANE,trophyGrip} from './3d-ceremony.mjs?v=21444';
+import {TROPHY_TIMES,TROPHY_PEDESTAL,TROPHY_BACKDROP,TROPHY_LANE,trophyGrip} from './3d-ceremony.mjs?v=21469';
 
 export const TROPHY_STAGE_VERSION='21.444-trophy-stage';
 export const TROPHY_TONES=Object.freeze({

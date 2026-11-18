@@ -5,19 +5,19 @@ import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,ext
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21455';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21469';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21466';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21466';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
+import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21469';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21444';
-import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21469';
+import {createTrophyStage} from './3d-trophy-stage.mjs?v=21469';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
-import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21461';
+import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21469';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21445';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraHumanModelStatus,footeraRealBodyLoaded};
@@ -76,7 +76,7 @@ import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACK
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
-import {createArena} from './3d-arena.mjs?v=21459';
+import {createArena} from './3d-arena.mjs?v=21469';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception} from './3d-playbook.mjs?v=21455';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
@@ -1345,12 +1345,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const pixels=ctx.createImageData(w,h),data=pixels.data;
    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const wx=x/w*78-39,wz=(1-y/h)*119-59.5,inside=Math.abs(wx)<34&&Math.abs(wz)<52.5;
-    const stripe=inside?(arenaOn?0:Math.floor((wz+52.5)/7.5)%2?5:-5):-9;
-    const broad=Math.sin(x*.018+y*.011)*1.0+Math.sin(y*.053-x*.021)*1.1;
-    const fibre=(hash(y*w+x)-.5)*10,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*2.4;
+    const stripe=inside?(arenaOn?0:Math.floor((wz+52.5)/5.83333)%2?6:-6):-8;
+    const broad=Math.sin(x*.018+y*.011)*1.3+Math.sin(y*.053-x*.021)*1.15;
+    const fibre=(hash(y*w+x)-.5)*12,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*3.2;
     const wear=Math.exp(-((Math.abs(wz)-50.2)**2/6+wx*wx/22))*4;
     const n=stripe+broad+fibre+tuft-wear,i=(y*w+x)*4;
-    data[i]=63+n*.67;data[i+1]=120+n;data[i+2]=38+n*.45;data[i+3]=255;
+    data[i]=64+n*.67;data[i+1]=128+n;data[i+2]=47+n*.45;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1,color:spooky?'#dcd8e6':'#ffffff'})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
@@ -1373,21 +1373,46 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(weak){const edges=track(new THREE.BufferGeometry());edges.setAttribute('position',new THREE.Float32BufferAttribute(markingCenters,3));field.add(new THREE.LineSegments(edges,track(new THREE.LineBasicMaterial({color:'#eff1db'}))))}
   function goal(z,sign){
    const g=new THREE.Group();field.add(g);g.position.z=z;g.rotation.y=sign===-1?0:Math.PI;
-   const posts=mat('#f7faf7'),uprights=[];for(const x of [-3.66,3.66]){const p=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,12)),posts,g);p.position.set(x,1.22,0);p.castShadow=!weak;uprights.push(p)}
-   const bar=mesh(geo('bar',()=>new THREE.CylinderGeometry(.06,.06,7.44,12)),posts,g);bar.position.y=2.44;bar.rotation.z=Math.PI/2;bar.castShadow=!weak;
-   const net=[],seg=(a,b)=>net.push(...a,...b);
-   for(let x=-3.66;x<=3.67;x+=.244){seg([x,0,-1.9],[x,2.44,-1.9]);seg([x,2.44,-1.9],[x,2.44,0])}
-   for(let y=0;y<=2.45;y+=.2033){seg([-3.66,y,-1.9],[3.66,y,-1.9]);for(const x of [-3.66,3.66])seg([x,y,-1.9],[x,y,0])}
-   for(let z=-1.9;z<=.001;z+=.2375){for(const x of [-3.66,3.66])seg([x,0,z],[x,2.44,z]);seg([-3.66,2.44,z],[3.66,2.44,z])}
-   // Ground frame, rear stanchions and tension stays make the net a volume.
-   const frame=[];for(const x of [-3.66,3.66]){frame.push(x,.045,0,x,.045,-1.95,x,.045,-1.95,x,2.47,-1.95,x,2.47,-1.95,x,2.44,0)}
-   frame.push(-3.66,.045,-1.95,3.66,.045,-1.95);
-   const fg=track(new THREE.BufferGeometry());fg.setAttribute('position',new THREE.Float32BufferAttribute(frame,3));g.add(new THREE.LineSegments(fg,track(new THREE.LineBasicMaterial({color:'#e2e5db'}))));
-   const ng=track(new THREE.BufferGeometry());ng.setAttribute('position',new THREE.Float32BufferAttribute(net,3));const base=new Float32Array(net);
-   const nm=track(new THREE.LineBasicMaterial({color:'#edf0e7',transparent:true,opacity:weak?.46:.56,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
+   const posts=track(new THREE.MeshStandardMaterial({color:'#f4f4ed',roughness:.34,metalness:.12}));
+   const uprights=[];
+   for(const x of [-3.66,3.66]){
+    const post=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,16)),posts,g);
+    post.position.set(x,1.22,0);post.castShadow=!weak;uprights.push(post);
+   }
+   const bar=mesh(geo('bar',()=>new THREE.CylinderGeometry(.06,.06,7.44,16)),posts,g);
+   bar.position.y=2.44;bar.rotation.z=Math.PI/2;bar.castShadow=!weak;
+   // Sample each mesh opening so the whole net can flex continuously at impact.
+   // The roof and sides share their edges with the rear panel.
+   const width=3.66,height=2.44,depth=1.9,net=[];
+   const back=(u,v)=>[(2*u-1)*width,height*v,-depth-.115*Math.sin(Math.PI*u)*Math.sin(Math.PI*v)];
+   const roof=(u,v)=>[(2*u-1)*width,height-.09*Math.sin(Math.PI*u)*Math.sin(Math.PI*v),-depth*v];
+   const side=x=>(u,v)=>[x+Math.sign(x)*.075*Math.sin(Math.PI*u)*Math.sin(Math.PI*v),height*v,-depth*u];
+   function panel(sample,columns,rows,edgeColumns){
+    for(let i=edgeColumns?0:1;i<columns;i++)for(let j=0;j<rows;j++)net.push(...sample(i/columns,j/rows),...sample(i/columns,(j+1)/rows));
+    for(let j=1;j<rows;j++)for(let i=0;i<columns;i++)net.push(...sample(i/columns,j/rows),...sample((i+1)/columns,j/rows));
+   }
+   panel(back,weak?30:42,weak?10:14,false);
+   panel(roof,weak?30:42,weak?8:11,true);
+   for(const x of [-width,width])panel(side(x),weak?8:11,weak?10:14,false);
+   const frame=[];
+   for(const x of [-width,width])frame.push(x,.045,0,x,.045,-depth,x,.045,-depth,x,height,-depth,x,height,-depth,x,height,0);
+   frame.push(-width,.045,-depth,width,.045,-depth,-width,height,-depth,width,height,-depth);
+   const fg=track(new THREE.BufferGeometry());
+   fg.setAttribute('position',new THREE.Float32BufferAttribute(frame,3));
+   g.add(new THREE.LineSegments(fg,track(new THREE.LineBasicMaterial({color:'#dedfd8'}))));
+   const ng=track(new THREE.BufferGeometry()),base=new Float32Array(net);
+   const strands=new THREE.Float32BufferAttribute(net,3).setUsage(THREE.DynamicDrawUsage);
+   ng.setAttribute('position',strands);ng.computeBoundingSphere();ng.boundingSphere.radius+=.3;
+   const nm=track(new THREE.LineBasicMaterial({color:'#f4f5eb',transparent:true,opacity:weak?.48:.58,depthWrite:false}));
+   g.add(new THREE.LineSegments(ng,nm));
    return{geometry:ng,base,bar,uprights};
   }
-  const net=goal(-52.5,-1);goal(52.5,1);
+  const net=goal(-52.5,-1);goal(52.5,1);let netFlexed=false;
+  const netFlexWeights=event.type==='goal'?new Float32Array(net.base.length/3):null;
+  if(netFlexWeights)for(let i=0;i<netFlexWeights.length;i++){
+   const j=i*3,x=net.base[j],y=net.base[j+1],z=net.base[j+2];
+   netFlexWeights[i]=Math.exp(-.85*((x-netPoint[0])**2+(y-netPoint[1])**2))*clamp((-z-.65)/1.25);
+  }
 
   // V21.18 — broadcast crowd/stadium pass. Humans stay instanced and deterministic;
   // darker tiering, irregular spacing and segmented flags add depth without extra per-fan draw calls.
@@ -1398,7 +1423,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const stadium=event.stadium?cleanStadium(event.stadium):null,look=stadium?stadiumLook(stadium):null;
   const hostTeam=event.venue==='away'?'away':'home',guestTeam=hostTeam==='home'?'away':'home',hostEnd=hostTeam==='home'?-1:1;
   const stepColours=look&&!spooky?[look.steps[0],look.steps[1]]:['#172126','#202c31'];
-  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?8:mobileStandard?10:high?12:12,sideCols=weak?94:mobileStandard?144:high?204:170,endCols=weak?64:mobileStandard?102:high?148:120;
+  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?6:mobileStandard?8:12,sideCols=weak?94:mobileStandard?120:high?204:170,endCols=weak?64:mobileStandard?84:high?148:120;
   const sideSupporter=z=>z*hostEnd<-38?guestTeam:Math.abs(z)<14?'neutral':hostTeam;
   for(const side of [-1,1]){
    for(let row=0;row<12;row++){
@@ -1438,7 +1463,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    box(2,.14,119,'#202c31',side*55.9,9.55,0,scene);box(79,.14,2,'#202c31',0,9.55,side*76.1,scene);
   }
-  const animatedShare=weak?.22:mobileStandard?.44:high?.76:.62;
+  const animatedShare=weak?.22:mobileStandard?.38:high?.68:.54;
   const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.25+hash(i*37+5)*.38,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   // V21.406: instances in a scattered order, so the slow-frame reduction (which
   // draws only the first share) thins every stand evenly instead of emptying
@@ -1459,8 +1484,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
    // V21.358: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
-   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),crowdLife?crowdLife.material('torso'):mat('#ffffff'),specs.length);
-   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
+   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.16,.11],[-.06,.21,.13],[.16,.24,.145],[.242,.185,.114],[.295,.078,.071]],weak?7:9)),crowdLife?crowdLife.material('torso'):mat('#ffffff'),specs.length);
+   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,weak?7:9,6),p=g.attributes.position,c=[];g.scale(.91,1.13,.95);for(let i=0;i<p.count;i++){const shade=mix(1,.16,smooth((p.getY(i)-.035-p.getZ(i)*.4)/.052));c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
    const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),crowdLife?crowdLife.material('arm'):mat('#ffffff'),specs.length*2);
    const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6,1,true)),crowdLife?crowdLife.material('leg'):mat('#ffffff'),specs.length*2);
    for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
@@ -1477,7 +1502,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,yaw,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
    crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,yaw,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
    const despair=negative;
-   const idleRaise=spec.loop===2?.20+.18*(wave+1):spec.loop===1?.08+.12*(wave+1):.025;
+   const idleRaise=spec.loop===2?.15+.18*(wave+1):spec.loop===1?.06+.11*(wave+1):.025;
    const raise=clamp(reaction.suspense*.42+positive*1.05+despair*.62+idleRaise);
    const shoulderY=bodyY+.1*spec.height;
    for(const side of [-1,1]){
@@ -2627,7 +2652,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(placement.style==='crossbar_in')net.bar.position.y=2.44+.035*shake;
     else{const post=net.uprights[(Math.sign(eventShotImpact('goal')[0])||1)>0?1:0];post.position.x=Math.sign(post.position.x)*3.66+.03*shake}
    }
-   if(event.type==='goal'&&!labDuelPreview&&time>=netArrival&&time<netArrival+1.5){const t=time-netArrival;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=netPoint[1],netX=netPoint[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   const netAge=time-netArrival,flex=event.type==='goal'&&!labDuelPreview&&netAge>=0&&netAge<1.5;
+   if(flex||netFlexed){
+    const amplitude=flex?Math.sin(netAge*16)*Math.exp(-netAge*3)*.31:0;
+    for(let i=0;i<netFlexWeights.length;i++){
+     const z=i*3+2;
+     positions.array[z]=net.base[z]-amplitude*netFlexWeights[i];
+    }
+    positions.needsUpdate=true;netFlexed=flex;
+   }
    if(extended){
     // Keep the same grounded gait as ordinary play; never disable the GLB
     // locomotion while moving sixteen footballers across the pitch.
@@ -2793,8 +2826,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     camTarget.set(root.x,root.y+.6+lift,root.z);camera.fov=30;
    }
    if(replay){
-    // V21.226 replay: the same seconds again from high behind the goal.
-    const shooter=actorPosition(0,SHOT_TIME),cam=replayCamera(direction,shooter,bp);
+    // Replay: the same seconds from the goal-line camera.
+    const shooter=actorPosition(0,SHOT_TIME),cam=replayCamera(direction,shooter,bp,camera.aspect);
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;currentCameraPhase='replay';
    }
    // Preview QA only: a portrait camera on one player's head.
