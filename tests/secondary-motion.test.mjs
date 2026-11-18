@@ -20,8 +20,8 @@ test('a sudden stop swings the hair forward, never further than the cap',()=>{
  for(let i=0;i<60;i++)stepSecondarySpring(st,[0,0,0],[0,0,6],1/60);
  stepSecondarySpring(st,[0,0,-60],[0,0,0],1/60);
  for(let i=0;i<30;i++){stepSecondarySpring(st,[0,0,0],[0,0,0],1/60);max=Math.max(max,st.s[2])}
- assert.ok(max>.02,'swings forward past rest: '+max);
- for(let i=0;i<200;i++){stepSecondarySpring(st,[60,-60,60],[30,30,30],1/20);assert.ok(Math.hypot(...st.s)<=.1401)}
+ assert.ok(max>.005,'damped stop still swings forward, without the previous exaggerated whip: '+max);
+ for(let i=0;i<200;i++){stepSecondarySpring(st,[60,-60,60],[30,30,30],1/20);assert.ok(Math.hypot(...st.s)<=.11001)}
 });
 
 test('only players with hair or a shirt get the effect; update is safe',()=>{
