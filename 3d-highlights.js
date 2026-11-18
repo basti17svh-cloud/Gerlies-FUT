@@ -38,7 +38,7 @@
    signature:cleanSignature(event.signature),signatures:Object.freeze((Array.isArray(event.signatures)?event.signatures:event.signature?[event.signature]:[]).map(cleanSignature).filter(Boolean).slice(0,10)),
    creatorActor:Number.isInteger(event.creatorActor)&&event.creatorActor>=1&&event.creatorActor<=7?event.creatorActor:creatorActor(event.sequence),defensePhase:String(event.defensePhase||''),tightLateGame:event.tightLateGame===true,weather:cleanWeather(event.weather),
    buildKeeperStyles:Object.freeze((Array.isArray(event.buildKeeperStyles)?event.buildKeeperStyles:[]).map(s=>Object.freeze({id:String(s.id||''),plus:!!s.plus}))),
-   playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
+   playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),attackCrestHTML:String(event.attackCrestHTML||''),
    scoreBeforeHome:Number.isFinite(Number(event.scoreBeforeHome))?Number(event.scoreBeforeHome):null,
    scoreBeforeAway:Number.isFinite(Number(event.scoreBeforeAway))?Number(event.scoreBeforeAway):null,
    scorerSlot:String(event.scorerSlot||''),creatorSlot:String(event.creatorSlot||''),homeColor:String(event.homeColor||'#961e43'),awayColor:String(event.awayColor||'#e9ecf3'),
@@ -124,7 +124,7 @@
     // the MetaHuman body follows in the background.
     if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
-    if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
+    if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.attackCrestHTML?module.loadFooteraCrestImage(event.attackCrestHTML):null,event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
    remove();return signal.aborted?'skipped':module.play(event,signal);
   })}

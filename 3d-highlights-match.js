@@ -216,6 +216,10 @@ function queueMatch3D(event){
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
  const presentation={...event,...match3DPresentationMeta(event,current)};
+ // V21.471: the shirts wear their own club's crest. teamCrestHTML follows the
+ // shown card (the keeper's side on a save), so both crests go by team.
+ {const shirtCrest=side=>match3DPresentationMeta({type:'goal',team:side,playerName:''},current).teamCrestHTML;
+  presentation.attackCrestHTML=shirtCrest(event.team);presentation.defendCrestHTML=shirtCrest(event.team==='home'?'away':'home')}
  // Retire the faulty scripted possession -> interception -> offside counter
  // only in the 3D presentation. The authoritative match event is unchanged.
  const retiredCounter=event.sceneKind==='turnover_counter'||event.sequence==='extended_turnover_counter';

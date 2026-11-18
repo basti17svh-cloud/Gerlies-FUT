@@ -293,8 +293,20 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
 // The crest editor renders a self-contained SVG; CSS variables are resolved
 // so it also works as a plain image on the shirt.
 export function footeraCrestSVG(html=''){
- const svg=String(html).match(/<svg class="club-crest-art"[\s\S]*?<\/svg><\/span>/)?.[0]?.replace(/<\/span>$/,'');
- if(!svg)return null;
+ let svg=String(html).match(/<svg class="club-crest-art"[\s\S]*?<\/svg><\/span>/)?.[0]?.replace(/<\/span>$/,'');
+ if(!svg){
+  // V21.471: opponents without their own club identity (computer teams)
+  // show their initials badge on the shirt instead of an empty shield.
+  const initials=String(html).match(/class="fh3d-opponent-crest"[^>]*>([^<]{1,4})</)?.[1];
+  if(!initials)return null;
+  svg='<svg class="club-crest-art" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">'+
+   '<path d="M22 18H178V103C178 151 149 186 100 206C51 186 22 151 22 103Z" fill="#f4f2ec" stroke="#1b2128" stroke-width="10"/>'+
+   '<path d="M40 34H160V100C160 138 138 166 100 183C62 166 40 138 40 100Z" fill="none" stroke="#1b2128" stroke-width="3" opacity=".55"/>'+
+   '<text x="100" y="'+(initials.length>2?128:134)+'" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="'+(initials.length>2?52:68)+'" text-anchor="middle" fill="#1b2128">'+initials+'</text></svg>';
+ }
+ // V21.471: explicit pixel size, so every browser (Safari draws an SVG
+ // without width/height as nothing) rasterises the crest sharp and upright.
+ svg=svg.replace(/^<svg class="club-crest-art" /,'<svg class="club-crest-art" width="400" height="440" ');
  const vars={};for(const [,k,v] of String(html).matchAll(/--crest-([a-z]+):(#[0-9a-f]{6})/gi))vars[k]=v;
  return svg.replace(/var\(--crest-([a-z]+)\)/g,(m,k)=>vars[k]||'#ffffff');
 }

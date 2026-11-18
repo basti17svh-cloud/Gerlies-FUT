@@ -19,7 +19,7 @@ import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREM
 import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21471';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
-import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21461';
+import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21471';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21445';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraHumanModelStatus,footeraRealBodyLoaded};
@@ -1874,8 +1874,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const humanSquad=allowImported&&!baselineRig&&modelVariant==='human'&&isFooteraHumanModelReady();
   const squadVariant=humanSquad?'human':'quaternius';
   const allQuaternius=humanSquad||allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
-  // Real names only on real players; the club crest on the scoring team's chest.
-  const squadCrest=footeraCrestImageNow(event.teamCrestHTML),opponentCrest=ceremony?footeraCrestImageNow(event.defendCrestHTML):null;
+  // Real names only on real players; every shirt wears its own club's crest
+  // (V21.471: the defending side and its keeper too, not a blank shield).
+  const squadCrest=footeraCrestImageNow(event.attackCrestHTML||event.teamCrestHTML),opponentCrest=footeraCrestImageNow(event.defendCrestHTML);
   const humanLook=(i,number,skinTone)=>({number,skinTone:resolvePlayerSkinTone(skinTone),custom:event.playerLooks?.[i]||null,
    shirtName:/^footballer /.test(squadNames[i]||'')?'':undefined,crest:RUNS[i]?.team==='attack'?squadCrest:opponentCrest,
    captain:Array.isArray(event.captainActors)&&event.captainActors.includes(i)});
@@ -1916,7 +1917,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const keeperKit={shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper};
      importedKeeper=mountFooteraPlayerModel(keeper.root,keeper,keeperKit,event.keeperName||'Goalkeeper',
       !weak,squadVariant,null,{number:Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,
-       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417',custom:event.keeperLook||null,keeper:true,captain:event.keeperCaptain===true});
+       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417',crest:opponentCrest,custom:event.keeperLook||null,keeper:true,captain:event.keeperCaptain===true});
      if(!importedKeeper)throw new Error('GLB unavailable on goalkeeper');
      staged.push(importedKeeper);
      players.forEach(p=>hideOriginal(p));
