@@ -1334,10 +1334,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    });map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
    const material=track(new THREE.MeshStandardMaterial({map,roughness:.92,metalness:0}));shirtMaterials.set(key,material);return material;
   }
-  const hemi=spooky?new THREE.HemisphereLight('#a596d6','#241a12',1.0):new THREE.HemisphereLight('#dce9f7','#31422a',1.3);scene.add(hemi);
-  const sun=new THREE.DirectionalLight(spooky?'#ffe2c2':'#fff5df',spooky?2.7:2.75);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
+  // V21.471 Zielbild: less flat ambient, a stronger floodlight key, so kits and bodies read in 3D.
+  const hemi=spooky?new THREE.HemisphereLight('#a596d6','#241a12',1.0):new THREE.HemisphereLight('#d6e4f5','#26341f',1.05);scene.add(hemi);
+  const sun=new THREE.DirectionalLight(spooky?'#ffe2c2':'#fff5df',spooky?2.7:3.05);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
   sun.shadow.mapSize.set(high?2048:1024,high?2048:1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:160});sun.shadow.bias=-.00018;sun.shadow.normalBias=.018;
   const fill=new THREE.DirectionalLight(spooky?'#a070ff':'#c6ddff',(weak?.24:.48)*(spooky?1.6:1));fill.position.set(40,18,-50);scene.add(fill);
+  // Cool rim from the far floodlights: a bright edge on shoulders, heads and posts.
+  if(!spooky&&!weak){const rim=new THREE.DirectionalLight('#dfe9ff',.7);rim.position.set(-30,24,-70*direction);scene.add(rim)}
 
   // One 1024px map covers the playing surface: visible mowing, broad soil/grass
   // variation and fine blade noise survive mip filtering without extra planes.
@@ -1346,11 +1349,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const wx=x/w*78-39,wz=(1-y/h)*119-59.5,inside=Math.abs(wx)<34&&Math.abs(wz)<52.5;
     const stripe=inside?(arenaOn?0:Math.floor((wz+52.5)/7.5)%2?5:-5):-9;
-    const broad=Math.sin(x*.018+y*.011)*1.0+Math.sin(y*.053-x*.021)*1.1;
+    const broad=Math.sin(x*.018+y*.011)*1.6+Math.sin(y*.053-x*.021)*1.5+Math.sin(x*.0071-y*.0043)*2.4;
     const fibre=(hash(y*w+x)-.5)*10,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*2.4;
     const wear=Math.exp(-((Math.abs(wz)-50.2)**2/6+wx*wx/22))*4;
     const n=stripe+broad+fibre+tuft-wear,i=(y*w+x)*4;
-    data[i]=78+n*.7;data[i+1]=134+n;data[i+2]=46+n*.45;data[i+3]=255;
+    data[i]=80+n*.75;data[i+1]=130+n;data[i+2]=38+n*.4;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1,color:spooky?'#dcd8e6':'#ffffff'})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
@@ -1384,7 +1387,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    frame.push(-3.66,.045,-1.95,3.66,.045,-1.95);
    const fg=track(new THREE.BufferGeometry());fg.setAttribute('position',new THREE.Float32BufferAttribute(frame,3));g.add(new THREE.LineSegments(fg,track(new THREE.LineBasicMaterial({color:'#e2e5db'}))));
    const ng=track(new THREE.BufferGeometry());ng.setAttribute('position',new THREE.Float32BufferAttribute(net,3));const base=new Float32Array(net);
-   const nm=track(new THREE.LineBasicMaterial({color:'#edf0e7',transparent:true,opacity:weak?.46:.56,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
+   const nm=track(new THREE.LineBasicMaterial({color:'#ffffff',transparent:true,opacity:weak?.52:.74,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
    return{geometry:ng,base,bar,uprights};
   }
   const net=goal(-52.5,-1);goal(52.5,1);
@@ -1392,6 +1395,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.18 — broadcast crowd/stadium pass. Humans stay instanced and deterministic;
   // darker tiering, irregular spacing and segmented flags add depth without extra per-fan draw calls.
   box(100,.1,143,'#172126',0,-.15,0,scene);
+  // V21.471 Zielbild: a grey concrete apron behind the boards, between the
+  // grass and the stands (one merged mesh, receives the floodlight shadows).
+  {const q=[],quad=(x0,x1,z0,z1)=>q.push(x0,0,z0,x1,0,z0,x1,0,z1,x0,0,z0,x1,0,z1,x0,0,z1);
+   for(const s of [-1,1]){quad(Math.min(s*37.25,s*39.1),Math.max(s*37.25,s*39.1),-59.5,59.5);quad(-37.25,37.25,Math.min(s*57.25,s*59.4),Math.max(s*57.25,s*59.4))}
+   const g=track(new THREE.BufferGeometry());g.setAttribute('position',new THREE.Float32BufferAttribute(q,3));g.computeVertexNormals();
+   const apron=mesh(g,track(new THREE.MeshStandardMaterial({color:spooky?'#3a3640':'#5b605d',roughness:.96,side:THREE.DoubleSide})),scene);apron.position.y=-.015;apron.receiveShadow=true}
   // V21.406 stadiums (Basti: "Es sollen überall Fans sein", individual grounds).
   // The host's fans fill both long sides and their end; the guests get their
   // end and the block next to it. Without stadium data: the Footera arena.
