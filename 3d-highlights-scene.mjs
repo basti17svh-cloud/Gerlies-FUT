@@ -8,8 +8,8 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21465';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21465';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21466';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21466';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
@@ -1990,7 +1990,28 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     table[j]=Math.hypot(x,z)>.02?Math.atan2(-x,-z):j?table[j-1]:raw[0]}
   }
   const facingAt=(index,time)=>{const x=clamp(time/SCENE_END)*160,j=Math.min(159,Math.floor(x));return angleMix(facingTables[index][j],facingTables[index][j+1],x-j)};
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=SCENE_END/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];steps[j*2]=next[0]-previous[0];steps[j*2+1]=next[1]-previous[1];previous=next}smoothFacing(facingTables[index]);return a});
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(gaitSamples+1));
+  const gaitTables=RUNS.map((_,index)=>{
+   const phases=new Float32Array(gaitSamples+1),facing=facingTables[index],dt=SCENE_END/gaitSamples;
+   let previous=stagedPlayerPosition(index,0),shownPrevious=actorPosition(index,0);
+   for(let j=1;j<=gaitSamples;j++){
+    const time=j*dt,next=stagedPlayerPosition(index,time),shown=actorPosition(index,j*dt);
+    const dx=next[0]-previous[0],dz=next[1]-previous[1];
+    const travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]);
+    const physicalDt=extended&&time<SHOT_TIME?dt*extendedTiming(sequence).shot/5.4:dt;
+    const speed=clamp(travel/physicalDt/6.5);
+    const strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));
+    // A full cycle contains two footfalls. Lengthen the stride at pace
+    // before playing a jog or sprint capture at several times its cadence.
+    const cycles=Math.min(travel/strideLength,physicalDt*(1.02+1.05*Math.sqrt(speed)));
+    phases[j]=phases[j-1]+cycles*Math.PI*2;
+    facing[j]=Math.hypot(dx,dz)>.00001?Math.atan2(-dx,-dz):facing[j-1];
+    if(j===1)facing[0]=facing[j];
+    steps[j*2]=dx;steps[j*2+1]=dz;
+    previous=next;shownPrevious=shown;
+   }
+   smoothFacing(facing);return phases;
+  });
   // Huggers leave their authored run: keep the legs cycling with the real
   // distance they cover on the way to the scorer.
   const hugStrides=new Map();

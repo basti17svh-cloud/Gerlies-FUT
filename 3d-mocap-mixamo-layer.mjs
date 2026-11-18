@@ -353,10 +353,14 @@ export function createGaitCaptureLayer(bones,playerRoot,seed=0){
   state.clip='none';state.weight=0;
   const k=clamp(share);if(k<=.001)return state;
   const w=gaitCaptureWeights(speed);let top=0;
+  // Blend adjacent captures to their requested shares. Repeated absolute
+  // weights would leak the underlying arm pose back in midway through a fade.
+  let accumulated=1-k*strides.reduce((sum,[r,,key])=>sum+(r?w[key]:0),0);
   for(const [r,name,key] of strides){
    const weight=w[key]*k;if(!r||weight<=.001)continue;
    const clip=r.clips[name];
-   r.pose(name,cyclePhase(clip,stride)*(clip.frames-1),{body:weight,legs:0},0,GAIT_SKIP);
+   accumulated+=weight;
+   r.pose(name,cyclePhase(clip,stride)*(clip.frames-1),{body:weight/accumulated,legs:0},0,GAIT_SKIP);
    if(w[key]>top){top=w[key];state.clip=name;state.weight=weight}
   }
   if(w.idle*k>.001){

@@ -9,12 +9,12 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21437';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21445';
 import {athleticBody,athleticSeed} from './3d-athletic-body.mjs?v=21391';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createCelebrateCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21452';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createCelebrateCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21466';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
 import {createSecondaryMotion} from './3d-secondary-motion.mjs?v=21465';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21465';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21466';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -238,7 +238,12 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const bones=new Map(),meshes=[];
  model.traverse(node=>{
   if(node.isBone)bones.set(node.name,node);
-  if(node.isSkinnedMesh){node.frustumCulled=false;node.castShadow=true;node.receiveShadow=true;meshes.push(node)}
+  if(node.isSkinnedMesh){
+   node.frustumCulled=false;
+   // The dresser knows which surfaces are transparent scalp overlays or lashes.
+   if(!dressed){node.castShadow=true;node.receiveShadow=true}
+   meshes.push(node);
+  }
  });
  if(makehuman&&bones.has('head'))bones.set('Head',bones.get('head'));
  // V21.370: hair and the loose shirt swing a moment behind the body.
