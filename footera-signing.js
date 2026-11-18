@@ -6,7 +6,7 @@
 // also posts his presentation photo in the Kabinen-Chat.
 (function(root){
  "use strict";
- const MODAL_ID="playerSigningModal",KIND="player-signing",MODULE="./3d-kabine-photo.mjs?v=21467";
+ const MODAL_ID="playerSigningModal",KIND="player-signing",MODULE="./3d-kabine-photo.mjs?v=21470";
  // Typical shirt numbers by position, used when the card has no squad number yet.
  const NUMBERS={GK:1,RB:2,RWB:2,LB:3,LWB:3,CB:4,CDM:6,CM:8,RM:7,RW:7,LM:11,LW:11,CAM:10,CF:9,ST:9};
  let busy=false,current=null;

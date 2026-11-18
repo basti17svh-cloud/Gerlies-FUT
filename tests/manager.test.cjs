@@ -1,5 +1,5 @@
 // V21.462 Manager als Person: the user designs his manager next to the Trainerkarte (footera-manager.js),
-// rendered as one of our own 3D humans (3d-manager.mjs), on his card, on the Siegerfoto and (V21.467) at the bench after the walk-out.
+// rendered as one of our own 3D humans (3d-manager.mjs), on his card, on the Siegerfoto and (V21.470) at the bench after the walk-out.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
 const {pathToFileURL}=require('url');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
@@ -71,7 +71,7 @@ test('Siegerfoto: the manager stands on the floor beside the team, inside the pi
 });
 
 test('after the walk-out the manager stands at the bench, his card comes up in the action frame; files are pinned and cached',async()=>{
- // V21.467: the old pop-up before kick-off is gone
+ // V21.470: the old pop-up before kick-off is gone
  const app=read('footera-app.js');assert.doesNotMatch(app,/FooteraManager\?\.kickoff/);assert.doesNotMatch(read('footera-manager.css'),/mg-intro/);
  assert.match(read('3d-highlights-match.js'),/coach:kind==='kickoff'\?/);assert.match(read('3d-highlights.js'),/coach:event\.ceremony==='kickoff'\?cleanCoach\(event\.coach\):null/);
  const C=await import(pathToFileURL(path.join(root,'3d-ceremony.mjs')).href);

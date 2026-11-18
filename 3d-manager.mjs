@@ -21,7 +21,7 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 
-export const MANAGER_3D_VERSION='21.467-manager-bench';
+export const MANAGER_3D_VERSION='21.470-manager-bench';
 const hexOr=(v,fb)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v).toLowerCase():fb;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const luminance=hex=>{const c=new THREE.Color(hex);return .2126*c.r+.7152*c.g+.0722*c.b};
@@ -295,7 +295,7 @@ export function dressManager(model,look,m,opts={}){
  return{owned};
 }
 
-/* ---------- the bench (V21.467) ---------- */
+/* ---------- the bench (V21.470) ---------- */
 // Basti 2026-11-17: after the walk-out the manager is shown at the substitutes' bench.
 // A covered dugout along the touchline (the perimeter boards are its back): floor, perspex roof and side
 // panels, eight bucket seats in the club colour. Its front faces -x (the pitch).
@@ -390,7 +390,7 @@ export function poseManager(p,{pose='crossed',x=0,y=0,z=0,yaw=0,camera=null,body
  if(Number.isFinite(low))root.position.y+=y-low;
  root.updateMatrixWorld(true);
 }
-/* ---------- substitutes on the bench (V21.467) ---------- */
+/* ---------- substitutes on the bench (V21.470) ---------- */
 // Basti 2026-11-18: "Vielleicht auch Ersatzspieler mit einbinden sonst wirkt das nicht realistisch".
 // Club warm-up tracksuits, seated: thighs forward, shins down, forearms on the thighs.
 const SUB_SKINS=['#e6bf9c','#8a5a3c','#c88f69','#4a2e1f','#dbad88','#a96d4b','#6b4128','#f1d2b3'];
