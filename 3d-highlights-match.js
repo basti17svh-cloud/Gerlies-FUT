@@ -323,7 +323,9 @@ function queueMatchCeremony3D(kind){
   teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,
   // V21.427 Fan-Choreo: the fans' own tifo at the walk-out of a home match (device-local design).
   ...(kind==='trophy'?match3DTrophy(current):{}),
-  choreo:kind==='kickoff'&&typeof FooteraChoreo!=='undefined'?FooteraChoreo.forMatch(current):null,keeperName:goalie?.name||'',
+  choreo:kind==='kickoff'&&typeof FooteraChoreo!=='undefined'?FooteraChoreo.forMatch(current):null,
+  // V21.470: the manager at the bench with his Trainerkarte after the walk-out.
+  coach:kind==='kickoff'?(()=>{try{return globalThis.FooteraManager?.forKickoff?.()||null}catch(e){return null}})():null,keeperName:goalie?.name||'',
   shirtNumbers:numbers.shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:numbers.captainActors,keeperCaptain:numbers.keeperCaptain,...match3DSkinTones(base),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
