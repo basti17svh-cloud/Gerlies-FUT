@@ -5,7 +5,7 @@ import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,ext
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21455';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21470';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21466';
@@ -76,7 +76,7 @@ import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACK
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
-import {createArena} from './3d-arena.mjs?v=21459';
+import {createArena} from './3d-arena.mjs?v=21470';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception} from './3d-playbook.mjs?v=21455';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
@@ -1350,7 +1350,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const fibre=(hash(y*w+x)-.5)*10,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*2.4;
     const wear=Math.exp(-((Math.abs(wz)-50.2)**2/6+wx*wx/22))*4;
     const n=stripe+broad+fibre+tuft-wear,i=(y*w+x)*4;
-    data[i]=63+n*.67;data[i+1]=120+n;data[i+2]=38+n*.45;data[i+3]=255;
+    data[i]=78+n*.7;data[i+1]=134+n;data[i+2]=46+n*.45;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1,color:spooky?'#dcd8e6':'#ffffff'})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
@@ -1405,11 +1405,22 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     box(2.0,.64,119,row%2?stepColours[0]:stepColours[1],side*(39.3+row*1.42),.52+row*.72,0,scene);
     box(79,.64,2.0,row%2?stepColours[0]:stepColours[1],0,.52+row*.72,side*(59.4+row*1.42),scene);
     if(row<crowdRows){
+     // V21.467 Zielbild: a packed stand. Off LOW a second, staggered fan
+     // stands on the back half of every step, so no grey tread shows between
+     // the rows. Those fans are static instances; the GPU crowd layer moves them.
+     const packed=!weak,front=packed?-.2:0,back=.3,sideStep=112/Math.max(1,sideCols-1),endStep=74/Math.max(1,endCols-1);
      for(let col=0;col<sideCols;col++){
-      const z=-56+col*(112/Math.max(1,sideCols-1));
-      if(col%28>1)crowd.push({x:side*(39.3+row*1.42),y:1.13+row*.72,z,team:sideSupporter(z),row,zone:'side'});
+      const z=-56+col*sideStep;
+      if(col%28>1){
+       crowd.push({x:side*(39.3+row*1.42+front),y:1.13+row*.72,z,team:sideSupporter(z),row,zone:'side'});
+       if(packed&&col%28<27)crowd.push({x:side*(39.3+row*1.42+back),y:1.13+row*.72,z:z+sideStep*.5,team:sideSupporter(z),row,zone:'side',packed:true});
+      }
      }
-     for(let col=0;col<endCols;col++)if(col%26>1)crowd.push({x:-37+col*(74/Math.max(1,endCols-1)),y:1.13+row*.72,z:side*(59.4+row*1.42),team:side<0?'home':'away',row,zone:'end'});
+     for(let col=0;col<endCols;col++)if(col%26>1){
+      const x=-37+col*endStep;
+      crowd.push({x,y:1.13+row*.72,z:side*(59.4+row*1.42+front),team:side<0?'home':'away',row,zone:'end'});
+      if(packed&&col%26<25)crowd.push({x:x+endStep*.5,y:1.13+row*.72,z:side*(59.4+row*1.42+back),team:side<0?'home':'away',row,zone:'end',packed:true});
+     }
     }
    }
    box(5,.3,122,'#132025',side*57,10.2,0,scene);box(112,.3,7,'#132025',0,10.2,side*80,scene);
@@ -1439,7 +1450,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    box(2,.14,119,'#202c31',side*55.9,9.55,0,scene);box(79,.14,2,'#202c31',0,9.55,side*76.1,scene);
   }
   const animatedShare=weak?.22:mobileStandard?.44:high?.76:.62;
-  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.25+hash(i*37+5)*.38,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
+  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.25+hash(i*37+5)*.38,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:!p.packed&&hash(i*53+17)<animatedShare}));
   // V21.406: instances in a scattered order, so the slow-frame reduction (which
   // draws only the first share) thins every stand evenly instead of emptying
   // whole stands. The fan wall behind keeps the seats full.

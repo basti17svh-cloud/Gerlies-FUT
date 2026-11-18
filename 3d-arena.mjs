@@ -116,7 +116,9 @@ const TURF_FRAGMENT=`{
 	float band=step(0.5,fract((w.y+52.5)/11.6667));
 	float cross=step(0.5,fract((w.x+34.0)/11.3333));
 	vec2 view=normalize(cameraPosition.xz-w+vec2(0.0001));
-	float mow=((band*2.0-1.0)*(0.03+0.10*view.x)+(cross*2.0-1.0)*0.06*view.y)*inside*uArenaMow;
+	// V21.467 Zielbild: clear TV stripes from every angle, the cross cut only faint.
+	float lean=0.08*clamp(view.x*2.5,-1.0,1.0)+0.06*view.x;
+	float mow=((band*2.0-1.0)*lean+(cross*2.0-1.0)*0.025*view.y)*inside*uArenaMow;
 	diffuseColor.rgb*=1.0+mow;
 	// Floodlight pooling: brightest in the middle third, falling off to the
 	// corners and the track behind the lines.
