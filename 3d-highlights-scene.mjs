@@ -1407,19 +1407,20 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(row<crowdRows){
      // V21.467 Zielbild: a packed stand. Off LOW a second, staggered fan
      // stands on the back half of every step, so no grey tread shows between
-     // the rows. Those fans are static instances; the GPU crowd layer moves them.
+     // the rows (phones: every second gap, to keep the frame budget). Those fans
+     // are static instances; the GPU crowd layer moves them.
      const packed=!weak,front=packed?-.2:0,back=.3,sideStep=112/Math.max(1,sideCols-1),endStep=74/Math.max(1,endCols-1);
      for(let col=0;col<sideCols;col++){
       const z=-56+col*sideStep;
       if(col%28>1){
        crowd.push({x:side*(39.3+row*1.42+front),y:1.13+row*.72,z,team:sideSupporter(z),row,zone:'side'});
-       if(packed&&col%28<27)crowd.push({x:side*(39.3+row*1.42+back),y:1.13+row*.72,z:z+sideStep*.5,team:sideSupporter(z),row,zone:'side',packed:true});
+       if(packed&&col%28<27&&(!mobileStandard||col%2===0))crowd.push({x:side*(39.3+row*1.42+back),y:1.13+row*.72,z:z+sideStep*.5,team:sideSupporter(z),row,zone:'side',packed:true});
       }
      }
      for(let col=0;col<endCols;col++)if(col%26>1){
       const x=-37+col*endStep;
       crowd.push({x,y:1.13+row*.72,z:side*(59.4+row*1.42+front),team:side<0?'home':'away',row,zone:'end'});
-      if(packed&&col%26<25)crowd.push({x:x+endStep*.5,y:1.13+row*.72,z:side*(59.4+row*1.42+back),team:side<0?'home':'away',row,zone:'end',packed:true});
+      if(packed&&col%26<25&&(!mobileStandard||col%2===0))crowd.push({x:x+endStep*.5,y:1.13+row*.72,z:side*(59.4+row*1.42+back),team:side<0?'home':'away',row,zone:'end',packed:true});
      }
     }
    }
