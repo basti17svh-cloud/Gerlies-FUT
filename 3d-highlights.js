@@ -137,7 +137,9 @@
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
     if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
-   remove();return signal.aborted?'skipped':module.play(event,signal);
+   // Keep the loader visible behind the hidden scene until the first WebGL frame
+    // gains fh3d-ready. Removing it now leaves a blank pitch on slow GPUs.
+    return signal.aborted?'skipped':module.play(event,signal);
   })}
   finally{remove();signal.removeEventListener('abort',remove)}
  }
