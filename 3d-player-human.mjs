@@ -196,7 +196,9 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
   ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();paintFooteraKitTile(ctx,kit,1,1,'shirt');ctx.restore()}
   // Collar trim and a soft side seam.
   ctx.strokeStyle=second;ctx.lineWidth=.014;
-  ctx.beginPath();if(half==='front'){ctx.moveTo(-.075,1.5);ctx.quadraticCurveTo(0,1.44,.075,1.5)}else{ctx.moveTo(-.08,1.52);ctx.quadraticCurveTo(0,1.505,.08,1.52)}ctx.stroke();
+  if(!info?.metahuman){
+   ctx.beginPath();if(half==='front'){ctx.moveTo(-.075,1.5);ctx.quadraticCurveTo(0,1.44,.075,1.5)}else{ctx.moveTo(-.08,1.52);ctx.quadraticCurveTo(0,1.505,.08,1.52)}ctx.stroke();
+  }
   ctx.fillStyle='rgba(0,0,0,.10)';for(const x of [-.205,.19])ctx.fillRect(x,.86,.015,.56);
   ctx.restore();
  }
@@ -334,6 +336,7 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
   const x=hp.getX(i),y=hp.getY(i),z=hp.getZ(i);low=Math.min(low,y);
   const k=key(Math.floor(x/cell),Math.floor(y/cell),Math.floor(z/cell));let list=grid.get(k);if(!list)grid.set(k,list=[]);list.push(x,y,z);
  }
+ let skullTop=-Infinity;for(let i=0;i<bp.count;i++)skullTop=Math.max(skullTop,bp.getY(i));
  const cover=new Float32Array(bp.count);
  for(let v=0;v<bp.count;v++){
   const x=bp.getX(v),y=bp.getY(v),z=bp.getZ(v);if(y<low-reach)continue;
@@ -342,7 +345,11 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
    const list=grid.get(key(gx+dx,gy+dy,gz+dz));if(!list)continue;
    for(let i=0;i<list.length;i+=3){const ex=list[i]-x,ey=list[i+1]-y,ez=list[i+2]-z,d=ex*ex+ey*ey+ez*ez;if(d<best)best=d}
   }
-  const u=Math.min(1,Math.max(0,(Math.sqrt(best)-full)/(reach-full)));cover[v]=1-u*u*(3-2*u);
+  const u=Math.min(1,Math.max(0,(Math.sqrt(best)-full)/(reach-full)));
+  // A sideburn or a long hair card can touch the cheek. Only the scalp
+  // gets the painted underlayer; the visible strands keep their full length.
+  const scalp=Math.max(0,Math.min(1,(y-skullTop+.105)/.03));
+  cover[v]=(1-u*u*(3-2*u))*scalp*scalp*(3-2*scalp);
  }
  // Thin crowns: every cut covers the top of the head, also where its cards
  // leave a gap wider than the reach.

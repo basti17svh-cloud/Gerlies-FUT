@@ -238,7 +238,12 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const bones=new Map(),meshes=[];
  model.traverse(node=>{
   if(node.isBone)bones.set(node.name,node);
-  if(node.isSkinnedMesh){node.frustumCulled=false;node.castShadow=true;node.receiveShadow=true;meshes.push(node)}
+  if(node.isSkinnedMesh){
+   node.frustumCulled=false;
+   // The dresser knows which surfaces are transparent scalp overlays or lashes.
+   if(!dressed){node.castShadow=true;node.receiveShadow=true}
+   meshes.push(node);
+  }
  });
  if(makehuman&&bones.has('head'))bones.set('Head',bones.get('head'));
  // V21.370: hair and the loose shirt swing a moment behind the body.
