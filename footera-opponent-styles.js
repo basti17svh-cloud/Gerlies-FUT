@@ -105,7 +105,7 @@
  function say(match,kind,text,tone="analysis"){
   const brain=match.aiBrain,minute=Math.min(120,Math.floor(match.minute));
   brain.decisions.push({minute,kind,text});if(brain.decisions.length>16)brain.decisions.shift();
-  const ticker=fn("matchCommentaryTicker");if(ticker)ticker("🧠 "+text,tone);
+  const ticker=fn("matchCommentaryTicker");if(ticker)ticker((kind==="sub"?"↔ ":kind==="flank"?"🛡 ":"🧠 ")+text,tone);
   const log=fn("addLog");if(log)log(text);
  }
  function desiredMode(match,id){
