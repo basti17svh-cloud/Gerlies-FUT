@@ -69,7 +69,15 @@
     seatPrimary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatPrimary||''))?String(event.stadium.seatPrimary):'#d8ff3e',seatSecondary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatSecondary||''))?String(event.stadium.seatSecondary):'#173627'}):null,
    // V21.427 Fan-Choreo (walk-out tifo): plain values only.
    choreo:cleanChoreo(event.choreo),
+   // V21.470: the user's manager at the bench after the walk-out (plain look values and his card markup).
+   coach:event.ceremony==='kickoff'?cleanCoach(event.coach):null,
    replay:event.replay!==false});
+ }
+ function cleanCoach(c){
+  if(!c||typeof c!=='object'||!c.manager||typeof c.manager!=='object')return null;
+  const manager={};for(const [k,v] of Object.entries(c.manager).slice(0,24))if(typeof v==='string')manager[k]=v.replace(/[<>]/g,'').slice(0,40);
+  const text=(v,n)=>String(v||'').replace(/[<>]/g,'').slice(0,n);
+  return Object.freeze({manager:Object.freeze(manager),cardHTML:String(c.cardHTML||'').slice(0,1500000),label:text(c.label,24),name:text(c.name,24),detail:text(c.detail,60)});
  }
  function cleanChoreo(c){
   if(!c||typeof c!=='object')return null;
@@ -79,7 +87,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21466').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21470').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});

@@ -21,7 +21,7 @@ import {prepareFooteraHumanModel,footeraRealBodyLoaded,footeraHumanSource,footer
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 
-export const MANAGER_3D_VERSION='21.462-manager';
+export const MANAGER_3D_VERSION='21.470-manager-bench';
 const hexOr=(v,fb)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v).toLowerCase():fb;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const luminance=hex=>{const c=new THREE.Color(hex);return .2126*c.r+.7152*c.g+.0722*c.b};
@@ -295,6 +295,27 @@ export function dressManager(model,look,m,opts={}){
  return{owned};
 }
 
+/* ---------- the bench (V21.470) ---------- */
+// Basti 2026-11-17: after the walk-out the manager is shown at the substitutes' bench.
+// A covered dugout along the touchline (the perimeter boards are its back): floor, perspex roof and side
+// panels, eight bucket seats in the club colour. Its front faces -x (the pitch).
+// Pure presentation; every geometry and material goes through track() for disposal.
+export function mountDugout(parent,{x=36.1,z=-7.2,length=6.4,seat='#971d42',track=o=>o}={}){
+ const g=new THREE.Group();g.name='FooteraDugout';g.position.set(x,0,z);
+ const mat=(c,o={})=>track(new THREE.MeshStandardMaterial({color:c,roughness:.6,metalness:.1,...o}));
+ const box=(w,h,d,m,px,py,pz)=>{const b=new THREE.Mesh(track(new THREE.BoxGeometry(w,h,d)),m);b.position.set(px,py,pz);b.castShadow=true;b.receiveShadow=true;g.add(b);return b};
+ const frame=mat('#2a3138',{metalness:.6,roughness:.35}),glass=mat('#bcd6e6',{transparent:true,opacity:.28,roughness:.08,metalness:.2,depthWrite:false});
+ box(1.7,.1,length,mat('#3a4048'),.1,.05,0);
+ const roof=box(1.9,.04,length+.1,glass,.05,1.86,0);roof.rotation.z=-.12;roof.castShadow=false;
+ for(const sz of [-1,1]){const side=box(1.7,1.7,.04,glass,.1,.95,sz*length/2);side.castShadow=false;box(1.8,.06,.06,frame,.06,1.84,sz*length/2)}
+ box(.06,.06,length,frame,-.82,1.75,0);
+ const seatMat=mat(/^#[0-9a-f]{6}$/i.test(seat)?seat:'#971d42',{roughness:.45});
+ const n=8,step=(length-.6)/n;
+const seats=[];
+ for(let i=0;i<n;i++){const sz=-length/2+.3+step*(i+.5);seats.push({x:x+.56,y:.6,z:z+sz});box(.46,.08,.46,seatMat,.5,.5,sz);const back=box(.08,.5,.46,seatMat,.74,.74,sz);back.rotation.z=.12;box(.06,.45,.06,frame,.5,.24,sz)}
+  g.userData.seats=seats;parent.add(g);return g;
+}
+
 /* ---------- mounting and posing ---------- */
 function bonesOf(model){const bones=new Map();model.traverse(n=>{if(n.isBone)bones.set(n.name,n)});return bones}
 // A ready figure under its own root, feet on y=0, facing +Z.
@@ -369,6 +390,37 @@ export function poseManager(p,{pose='crossed',x=0,y=0,z=0,yaw=0,camera=null,body
  if(Number.isFinite(low))root.position.y+=y-low;
  root.updateMatrixWorld(true);
 }
+/* ---------- substitutes on the bench (V21.470) ---------- */
+// Basti 2026-11-18: "Vielleicht auch Ersatzspieler mit einbinden sonst wirkt das nicht realistisch".
+// Club warm-up tracksuits, seated: thighs forward, shins down, forearms on the thighs.
+const SUB_SKINS=['#e6bf9c','#8a5a3c','#c88f69','#4a2e1f','#dbad88','#a96d4b','#6b4128','#f1d2b3'];
+const SUB_HAIR=['short01','afro01','short02','bald','short04','dreads01','short01','afro01'];
+const SUB_HAIR_COLOR=['#2a1d15','#120d0a','#5a3a22','#1a1410','#7a5a3a','#140f0c','#3b2a1f','#0f0b09'];
+const SUB_BEARD=['none','Full_beard','none','none','Moustache','none','none','Full_beard'];
+export function substituteLook(i,kit={}){
+ const k=((i%8)+8)%8;
+ return{name:'',gender:'male',skin:SUB_SKINS[k],hair:SUB_HAIR[k],hairColor:SUB_HAIR_COLOR[k],beard:SUB_BEARD[k],glasses:'none',age:k%3?'young':'prime',build:k%4===1?'strong':k%4===3?'slim':'normal',
+  outfit:'tracksuit',top:hexOr(kit.top,'#971d42'),trousers:hexOr(kit.trousers,'#16191d'),accent:hexOr(kit.accent,'#f3f4ee')};
+}
+export function poseSeated(p,{x=0,y=.6,z=0,heading=-Math.PI/2,spread=.08,look=0}={}){
+ const {root,bones,holder}=p;
+ root.position.set(x,0,z);root.rotation.y=heading;root.updateMatrixWorld(true);
+ const fwd=V().set(0,0,1).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion())).setY(0).normalize(),left=V().crossVectors(UP,fwd).normalize();
+ const dir=(side,[o,u,w])=>left.clone().multiplyScalar(side==='l'?o:-o).addScaledVector(UP,u).addScaledVector(fwd,w).normalize();
+ for(const s of ['l','r']){
+  const th=bones.get('thigh_'+s),ca=bones.get('calf_'+s),ft=bones.get('foot_'+s);
+  if(th&&ca)pointBone(th,ca,dir(s,[spread,.05,1]));
+  if(ca&&ft)pointBone(ca,ft,dir(s,[.03,-1,.12]));
+  const up=bones.get('upperarm_'+s),lo=bones.get('lowerarm_'+s),hand=bones.get('hand_'+s);
+  if(up&&lo)pointBone(up,lo,dir(s,[.14,-.86,.42]));
+  if(lo&&hand)pointBone(lo,hand,dir(s,[-.18,-.32,.93]));
+  curlFingers(bones,s,.45);
+ }
+ const neck=bones.get('neck_01');if(neck&&look){neck.rotateY(look);neck.updateMatrixWorld(true)}
+ root.updateMatrixWorld(true);
+ const pelvis=bones.get('pelvis');if(pelvis){const py=pelvis.getWorldPosition(V()).y;root.position.y+=y-py+.04;root.updateMatrixWorld(true)}
+}
+export function mountSubstitute(parent,i,kit={},opts={}){return mountManager(parent,substituteLook(i,kit),opts)}
 // Measure the head's forward axis before any pose (model faces +Z).
 export function measureManagerHead(p){
  p.root.updateMatrixWorld(true);
@@ -423,7 +475,16 @@ export async function renderManagerPortrait(spec={},opts={}){
   camera.position.set(.3,full?h*.55:h*.86,full?4.15:2.5);
   measureManagerHead(p);
   poseManager(p,{pose:opts.pose||'crossed',camera,yaw:opts.yaw??-.18,body:opts.body??'',frame:opts.frame??20});
-  camera.lookAt(0,full?h*.5:h*.8,0);camera.updateMatrixWorld(true);
+  if(full)camera.lookAt(0,h*.5,0);
+  else{
+   // Card bust (Basti 2026-11-17 "wirkt so klein"): frame from the real head like the EA/POTM cards,
+   // crown just under the window top, crossed arms at the bottom, shoulders across most of the width.
+   const head=p.bones.get('Head'),hy=head?head.getWorldPosition(V()).y:h*.9;
+   const top=hy+(opts.headroom??.25),bottom=hy-(opts.chest??.56),mid=(top+bottom)/2,half=(top-bottom)/2;
+   const dist=half/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+   camera.position.set(dist*.09,mid+.04,dist);camera.lookAt(0,mid,0);
+  }
+  camera.updateMatrixWorld(true);
   st.renderer.render(st.scene,camera);
   return st.canvas.toDataURL('image/png');
  }finally{st.scene.remove(p.root);disposeOwned(p.owned)}
