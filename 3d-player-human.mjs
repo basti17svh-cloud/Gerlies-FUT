@@ -419,7 +419,7 @@ function stitchCrewNeck(THREE,geometry){
  const indices=Array.from(geometry.index.array);
  for(let row=0;row<rows-1;row++)for(let i=0;i<rim;i++){
   const a=base+row*rim+i,b=base+row*rim+(i+1)%rim;
-  indices.push(a,a+rim,b,b,a+rim,b+rim);
+  indices.push(a,b,a+rim,b,b+rim,a+rim);
  }
  geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
 }

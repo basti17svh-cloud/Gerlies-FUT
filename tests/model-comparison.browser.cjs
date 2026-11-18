@@ -40,6 +40,16 @@ await page.route('**/render-fixture',route=>route.fulfill({contentType:'text/htm
  const pos=root.localToWorld(new T.Vector3(.3,0,-.85)).sub(root.getWorldPosition(new T.Vector3()));c.position.copy(aim).add(pos);c.lookAt(aim);draw(sc,c);const portrait=save();
  const shirt=root.getObjectByName('FooteraShirt');
  const samples={count:shirt.geometry.attributes.position.count,look:root.getObjectByName('FooteraHairCap')?.visible};
+ if(samples.count===2473){
+  const g=shirt.geometry,pos=g.attributes.position,norm=g.attributes.normal,idx=g.index;
+  const a=new T.Vector3(),b=new T.Vector3(),d=new T.Vector3(),n=new T.Vector3();let outward=0;
+  for(let i=idx.count-840;i<idx.count;i+=3){
+   a.fromBufferAttribute(pos,idx.getX(i));b.fromBufferAttribute(pos,idx.getX(i+1)).sub(a);
+   d.fromBufferAttribute(pos,idx.getX(i+2)).sub(a);n.fromBufferAttribute(norm,idx.getX(i));
+   if(b.cross(d).dot(n)>0)outward++;
+  }
+  if(outward<250)throw Error('Collar winding: '+outward+'/280');
+ }
  const cap=root.getObjectByName('FooteraHairCap');if(cap)cap.visible=false;draw(sc,c);const noCap=save();if(cap)cap.visible=true;
  const hair=body.parent.children.find(m=>m.name.startsWith('FooteraHair-'));if(hair)hair.visible=false;draw(sc,c);const noHair=save();
  if(hair)hair.visible=true;
