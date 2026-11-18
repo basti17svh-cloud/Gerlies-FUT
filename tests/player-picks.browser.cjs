@@ -157,6 +157,7 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   await page.evaluate(()=>FooteraPlayerPicks.applyDelivery(window.testDelivery));
   assert.deepEqual(await page.evaluate(()=>window.pickTransportCalls),['footera_choose_player_pick_compact','footera_choose_player_pick_compact']);
   assert.equal(await page.evaluate(()=>FooteraAccount.pendingPlayerPick()),null);
+  const pointDebug=await page.evaluate(()=>{const p=JSON.parse(localStorage.getItem('footera-cloud-sync-point-v1')||'null');return {revision:p?.revision,hasHash:!!p?.hash,hasContentHash:!!p?.contentHash,saveId:p?.saveId,club:state.club.length,claims:Object.keys(state.playerPickClaims||{}).length}});console.log('PICK SYNC DIAGNOSTICS',JSON.stringify(pointDebug));
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('footera-cloud-sync-point-v1')).revision),2);
   assert.equal(await page.evaluate(()=>state.club.length),1);assert.equal(await page.evaluate(()=>state.club[0].tradeable),false);
   assert.equal(await page.evaluate(()=>Object.keys(state.playerPickClaims).length),1);
