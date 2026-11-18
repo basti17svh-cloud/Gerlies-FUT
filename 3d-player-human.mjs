@@ -7,6 +7,7 @@
  * morphs during a highlight. Skeleton frames match the Quaternius rig, so the
  * existing retarget, mocap layers and foot IK drive it unchanged.
  */
+import * as THREE from './vendor/three/three.module.min.js';
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
 import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21465';
 
@@ -49,6 +50,7 @@ export async function prepareFooteraHumanModel(){
    const info=gltf.parser.json.extras?.footera,bones=new Set();let vertices=0,body=null;
    gltf.scene.traverse(node=>{
     if(node.isBone)bones.add(node.name);
+    if(info?.metahuman&&node.isSkinnedMesh&&node.name==='FooteraShirt')stitchCrewNeck(THREE,node.geometry);
     if(node.isSkinnedMesh&&node.name==='FooteraBody'){body=node;vertices=node.geometry.getAttribute('position').count}
    });
    if(!info||!body||vertices<5000||NEEDED.some(name=>!bones.has(name)))
@@ -287,6 +289,11 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
    ctx.fillStyle=s&1?'rgba(255,255,255,.035)':'rgba(0,0,0,.045)';ctx.fillRect(x,y,1,1)}
  }
  ctx.setTransform(1,0,0,1,0,0);
+ if(info?.metahuman){
+  // Narrow reserved atlas gap between jersey and shorts.
+  ctx.fillStyle=shirt;ctx.fillRect(0,size*.621,size,size*.018);
+  ctx.fillStyle=second;ctx.fillRect(0,size*.625,size,size*.0045);
+ }
  return true;
 }
 
@@ -357,11 +364,66 @@ export function hairCapIndex(body,hair,full=.006,reach=.018){
  // From the hair's highest point down (long tails and braids hang far lower).
  const crown=top-.065;
  for(let v=0;v<bp.count;v++){const y=bp.getY(v);if(y>crown)cover[v]=Math.max(cover[v],Math.min(1,(y-crown)/.012))}
+ // The painted base should fade into the frontal hairline before the
+ // strand tips. The back of the skull can keep full crown coverage.
+ let hairFront=-Infinity;for(let i=0;i<hp.count;i++)hairFront=Math.max(hairFront,hp.getZ(i));
+ for(let v=0;v<bp.count;v++){
+  if(!cover[v])continue;
+  const front=clamp((bp.getZ(v)-hairFront+.082)/.062);
+  const edge=clamp((bp.getY(v)-skullTop+.11-.059*front)/.035);
+  cover[v]*=edge*edge*(3-2*edge);
+ }
  const out=[],ix=index.array;
  for(let t=0;t<ix.length;t+=3)if(cover[ix[t]]>.01||cover[ix[t+1]]>.01||cover[ix[t+2]]>.01)out.push(ix[t],ix[t+1],ix[t+2]);
  const result={index:bp.count>65535?Uint32Array.from(out):Uint16Array.from(out),cover};
  perBody.set(hair,result);return result;
 }
+// Ordered neckline of the 2263-vertex MetaHuman shirt, welded across its UV seams.
+// Stitch into the existing shirt primitive so the band uses the same draw and bones.
+const neckEdge=[207,206,57,56,71,72,61,58,51,50,49,194,193,203,202,201,12,144,159,198,197,196,185,17,180,181,263,264,271,277,227,226,182,31,29,62,313,314,458,500,501,550,544,538,536,537,457,456,301,461,471,472,473,474,475,476,477,478,469,470,330,336,335,343,344,357,356,341,342,481];
+function stitchCrewNeck(THREE,geometry){
+ const pos=geometry.getAttribute('position'),normal=geometry.getAttribute('normal');
+ if(pos.count!==2263||!geometry.index||Math.abs(pos.getY(neckEdge[0])-1.495)>.002)return;
+ const rim=neckEdge.length,rows=3,count=rim*rows,base=pos.count;
+ const positions=new Float32Array(count*3),normals=new Float32Array(count*3),uvs=new Float32Array(count*2);
+ const along=[-.008,.001,.013],lift=[.003,.005,.0025],atlasV=[.624,.628,.636];
+ const centre=new THREE.Vector3(),n=new THREE.Vector3(),p=new THREE.Vector3(),v=new THREE.Vector3(),radial=new THREE.Vector3(),down=new THREE.Vector3();
+ for(let i=0;i<rim;i++){
+  centre.set(0,0,0);n.set(0,0,0);
+  for(let k=-1;k<=1;k++){
+   const id=neckEdge[(i+k+rim)%rim],w=k===0?.6:.2;
+   centre.addScaledVector(v.fromBufferAttribute(pos,id),w);
+   n.addScaledVector(v.fromBufferAttribute(normal,id),w);
+  }
+  n.normalize();radial.set(centre.x,0,centre.z).normalize();
+  down.copy(radial).multiplyScalar(Math.max(.16,n.y));down.y=-Math.max(.18,radial.dot(n));down.normalize();
+  for(let row=0;row<rows;row++){
+   const j=row*rim+i;
+   p.copy(centre).addScaledVector(down,along[row]).addScaledVector(n,lift[row]).toArray(positions,j*3);
+   v.copy(n).addScaledVector(down,(row-1)*.19).normalize().toArray(normals,j*3);
+   uvs[j*2]=.5;uvs[j*2+1]=atlasV[row];
+  }
+ }
+ for(const [key,attr] of Object.entries(geometry.attributes)){
+  const added=new attr.array.constructor((base+count)*attr.itemSize);
+  added.set(attr.array);
+  if(key==='position')added.set(positions,base*3);
+  else if(key==='normal')added.set(normals,base*3);
+  else if(key==='uv')added.set(uvs,base*2);
+  else for(let j=0;j<count;j++){
+   const start=neckEdge[j%rim]*attr.itemSize;
+   added.set(attr.array.subarray(start,start+attr.itemSize),(base+j)*attr.itemSize);
+  }
+  geometry.setAttribute(key,new THREE.BufferAttribute(added,attr.itemSize,attr.normalized));
+ }
+ const indices=Array.from(geometry.index.array);
+ for(let row=0;row<rows-1;row++)for(let i=0;i<rim;i++){
+  const a=base+row*rim+i,b=base+row*rim+(i+1)%rim;
+  indices.push(a,a+rim,b,b,a+rim,b+rim);
+ }
+ geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
+}
+
 // The MetaHuman export has facial morphs but no build target. Shape skin and
 // garments in the same bind space, tapering out before the joints and head.
 function fitFootballBuild(geometry,build){
