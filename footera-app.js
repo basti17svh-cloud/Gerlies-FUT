@@ -3155,6 +3155,32 @@ function totwAliasMatch(p,info){
  if(primary.length>=4&&!primary.includes(" ")&&keys.has(primary))return 100;
  return aliases.some(a=>keys.has(a))?100:0
 }
+// V21.481: start-up speed. PLAYERS.filter(p=>totwAliasMatch(p,info)===100) normalised the names of
+// all ~18,000 players again for every TOTW card (about 0.3 s on a desktop, over a second on a phone).
+// The same players now come from a name index built once per player list; every hit is still checked
+// with totwAliasMatch and returned in PLAYERS order, so the result is identical.
+let TOTW_NAME_INDEX=null;
+function totwNameIndex(){
+ if(TOTW_NAME_INDEX&&TOTW_NAME_INDEX.players===PLAYERS&&TOTW_NAME_INDEX.size===PLAYERS.length)return TOTW_NAME_INDEX;
+ const byKey=new Map(),byId=new Map(),order=new Map();
+ for(let i=0;i<PLAYERS.length;i++){
+  const p=PLAYERS[i];if(!p)continue;order.set(p,i);
+  const id=String(p.id||"");if(id){let rows=byId.get(id);if(!rows)byId.set(id,rows=[]);rows.push(p)}
+  for(const k of totwSearchKeys(p)){let rows=byKey.get(k);if(!rows)byKey.set(k,rows=[]);rows.push(p)}
+ }
+ return TOTW_NAME_INDEX={players:PLAYERS,size:PLAYERS.length,byKey,byId,order};
+}
+function totwPlayersMatching(info){
+ if(!info)return [];
+ const idx=totwNameIndex(),hits=new Set(),add=rows=>{for(const p of rows||[])hits.add(p)};
+ if(info.eaId)add(idx.byId.get(String(info.eaId)));
+ const primary=normalizeKey(info?.names?.[0]||"");
+ if(primary.length>=4&&!primary.includes(" "))add(idx.byKey.get(primary));
+ for(const a of totwAliases(info))add(idx.byKey.get(a));
+ const out=[...hits].filter(p=>totwAliasMatch(p,info)===100).sort((a,b)=>idx.order.get(a)-idx.order.get(b));
+ // A name changed in place since the index was built: fall back to the full scan.
+ return out.length?out:PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
+}
 function uniqueTotwPlayer(matches){
  if(matches.length===1)return matches[0];
  const ids=new Set(matches.map(p=>String(p?.id||"")).filter(Boolean));
@@ -3236,7 +3262,7 @@ function mergeTotwBase(base,a,index){return mergeTotwWeekBase(LIVE_TOTW,base,a,i
 const TOTW_ARCHIVE_BASE_CACHE=new Map();
 function resolveTotwWeekBase(team,info,index){
  const key=`${team.id}:${index}`,cached=TOTW_ARCHIVE_BASE_CACHE.get(key);if(cached)return cached;
- let candidates=PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
+ let candidates=totwPlayersMatching(info);
  if(info?.eaId){const byId=candidates.filter(p=>String(p.id||"")===String(info.eaId));if(byId.length)candidates=byId}
  const base=uniqueTotwPlayer(candidates),out=mergeTotwWeekBase(team,base,null,index);
  TOTW_ARCHIVE_BASE_CACHE.set(key,out);if(out?.id)P_BY_ID.set(String(out.id),out);
@@ -3248,7 +3274,7 @@ function allTotwMarketBases(){return publishedTotwWeeks().flatMap(team=>team.pla
 function resolveTotwBase(info,index){
  const cached=LIVE_TOTW_BASE_CACHE.get(index);
  if(cached){P_BY_ID.set(String(cached.id),cached);return cached}
- let candidates=PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
+ let candidates=totwPlayersMatching(info);
  if(info?.eaId){const byId=candidates.filter(p=>String(p.id||"")===String(info.eaId));if(byId.length)candidates=byId}
  const base=uniqueTotwPlayer(candidates),out=mergeTotwBase(base,null,index);
  LIVE_TOTW_BASE_CACHE.set(index,out);P_BY_ID.set(String(out.id),out);return out
@@ -3632,7 +3658,7 @@ function totwEventEntries(team){
 function totwReviewEntries(team){
  // A draft must never replace an owned player's real base row in P_BY_ID.
  return team.players.map((info,index)=>{
-  const real=uniqueTotwPlayer(PLAYERS.filter(player=>totwAliasMatch(player,info)===100));
+  const real=uniqueTotwPlayer(totwPlayersMatching(info));
   const base={...mergeTotwWeekBase(team,real,null,index),id:`totw-review-${team.id}-${index}`,ovr:info.ovr};
   if(info.eaId)base.futwizId=String(info.eaId);else if(real?.id&&/^\d+$/.test(String(real.id)))base.futwizId=String(real.id);
   P_BY_ID.set(base.id,base);
@@ -4113,6 +4139,7 @@ let PLAYER_ARRAY_INDEX=new Map(),PLAYER_TEAM_INDEX=new Map(),PLAYER_TEAM_SIG_IND
 function addRuntimeIndex(map,key,p){if(!key)return;let rows=map.get(key);if(!rows)map.set(key,rows=[]);rows.push(p)}
 function removeRuntimeIndex(map,key,p){if(!key)return;const rows=map.get(key);if(!rows)return;const i=rows.indexOf(p);if(i>=0)rows.splice(i,1);if(!rows.length)map.delete(key)}
 function rebuildPlayerRuntimeIndexes(){
+ TOTW_NAME_INDEX=null;
  PLAYER_ARRAY_INDEX=new Map();PLAYER_TEAM_INDEX=new Map();PLAYER_TEAM_SIG_INDEX=new Map();PLAYER_LEAGUE_INDEX=new Map();PLAYER_POSITION_RATING_INDEX=new Map();PLAYER_RATING_INDEX=new Map();
  for(let i=0;i<PLAYERS.length;i++){
   const p=PLAYERS[i],id=String(p?.id||"");if(id)PLAYER_ARRAY_INDEX.set(id,i);
@@ -4163,6 +4190,20 @@ function parseRareValue(v){
 }
 function csvRow(line){const out=[];let cur="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(c===','&&!q){out.push(cur);cur=""}else cur+=c}out.push(cur);return out}
 function parseCSV(text){const lines=String(text||"").replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim().length);if(lines.length<2)throw new Error("CSV enthält keine Datensätze");const headers=csvRow(lines[0]).map(x=>x.trim());const rows=[];for(let i=1;i<lines.length;i++){const vals=csvRow(lines[i]);if(vals.length<3)continue;const r={};for(let c=0;c<headers.length;c++)r[headers[c]]=vals[c]??"";rows.push(r)}return rows}
+// V21.481: the same rows as parseCSV(text).map(normCSV).filter(...), but in slices of about 25 ms with a
+// yield in between, so the loading bar and the intro video keep moving on a phone instead of freezing for
+// one or two seconds when the player database is downloaded (first start and every weekly DB update).
+async function parsePlayersCsvSliced(text,budgetMs=25){
+ const lines=String(text||"").replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim().length);if(lines.length<2)throw new Error("CSV enthält keine Datensätze");
+ const headers=csvRow(lines[0]).map(x=>x.trim()),players=[],now=()=>(globalThis.performance?.now?.()??Date.now());
+ const pause=()=>new Promise(r=>setTimeout(r,0));let started=now();
+ for(let i=1;i<lines.length;i++){
+  const vals=csvRow(lines[i]);
+  if(vals.length>=3){const r={};for(let c=0;c<headers.length;c++)r[headers[c]]=vals[c]??"";const p=normCSV(r);if(p.id&&p.name&&p.ovr)players.push(p)}
+  if((i&63)===0&&now()-started>budgetMs){await pause();started=now()}
+ }
+ return players
+}
 function sofifaFace(id){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/27_120.png`}
 function normCSV(raw){
  const id=String(first(raw,"sofifa_id","player_id","ea_id","id"));
@@ -5579,7 +5620,8 @@ function applyPlayerTraits(players){
   if((!Number.isFinite(Number(player.phy))||Number(player.phy)<20)&&Number.isInteger(traits[3])&&traits[3]>=20&&traits[3]<=99)player.phy=traits[3]
  }
 }
-async function savePlayers(players){await idbClear();const chunk=1500;for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
+async function savePlayers(players){await idbClear();const chunk=400;// V21.481: smaller write batches, no long freeze
+ for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
 async function loadFallback(){try{const r=await fetch('./players-fallback.json',{cache:'no-store'});if(!r.ok)return[];return await r.json()}catch(e){return[]}}
 // Bumped when the game reads the same file differently, so offline copies are rebuilt once (w1: women's club crests).
 const PLAYER_DB_CLIENT_REVISION=":w1";
@@ -5604,7 +5646,7 @@ async function syncDatabase(force=false){
    const src=DB_SOURCES[i];$("dbText").textContent="Dein Club wird vorbereitet …";$("dbBar").style.width=`${15+i*20}%`;$("dbPercent").textContent=`${15+i*20}%`;
    try{
     const text=await fetchText(src.url);$("dbText").textContent="Nur noch einen Moment …";$("dbBar").style.width="65%";
-    const raw=parseCSV(text),players=raw.map(normCSV).filter(p=>p.id&&p.name&&p.ovr);const v=validateDatabase(players);if(!v.ok)throw new Error(v.reason);
+    const players=await parsePlayersCsvSliced(text);const v=validateDatabase(players);if(!v.ok)throw new Error(v.reason);
     $("dbText").textContent="Alles für deinen Anpfiff wird bereitgemacht …";$("dbBar").style.width="82%";
     await keepOwnedPlayers(players);await savePlayers(players);if(revision)await idbMetaPut("revision",revision).catch(()=>{});PLAYERS=players;DATA_ROUTE=src.name;return finishDbLoad(true)
    }catch(e){errors.push(`${src.name}: ${e.message||e}`)}
@@ -11025,7 +11067,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.480";
+const GFUT_BUILD="V21.481";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11083,7 +11125,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21480",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21481",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
