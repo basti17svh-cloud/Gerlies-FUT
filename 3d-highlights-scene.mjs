@@ -3,7 +3,7 @@ import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21455';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21455';
-import {createSceneSound} from './3d-stadium-sound.mjs?v=21444';
+import {createSceneSound} from './3d-stadium-sound.mjs?v=21478';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21471';
 import * as THREE from './vendor/three/three.module.min.js';
