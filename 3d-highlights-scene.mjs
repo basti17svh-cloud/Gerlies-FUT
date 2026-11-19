@@ -14,7 +14,7 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21471';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21482';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,SUB_COACH_SPOT,SUB_BENCH_SEATS,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21482';
 // V21.470: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
 import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21471';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
@@ -1151,17 +1151,34 @@ export function passStrikePose(progress){
  return{hip,knee,ankle:-hip-knee,follow};
 }
 const ceremony0=event=>!!ceremonyKind(event);
-// V21.482 VAR geometry (pure): the final pass to the scorer, his line and the
-// second-last defender's line at that moment; for 'offside' how far he is moved
-// up so that he stands ~0.6 m beyond it (at most 2.4 m).
-export function varGeometry(sequence,check='offside',finish='normal',placement=null){
- let pass=null,prev=controlCarrier(0,sequence).index;
- for(let n=1;n<=Math.round(SHOT_TIME*50);n++){const t=n/50,c=controlCarrier(t,sequence).index;if(c===0&&prev!==0)pass=t;prev=c}
- if(pass===null)pass=Math.max(.5,SHOT_TIME-1.6);
- const scorer=playerPosition(0,pass,'goal',sequence,placement,finish);
- const lines=[];for(let i=8;i<=15;i++)lines.push(playerPosition(i,pass,'goal',sequence,placement,finish)[1]);lines.push(-51.6);lines.sort((a,b)=>a-b);
- const lastDefender=lines[1],nudge=check==='offside'?clamp(scorer[1]-lastDefender+.62,0,2.4):0;
- return{pass,lastDefender,scorerZ:scorer[1]-nudge,scorerX:scorer[0],nudge};
+// V21.482 VAR geometry (pure): the moment the final pass to the scorer is
+// played (ball release, not reception), his line and the second-last
+// defender's line at that moment (keeper included). For 'offside' the scorer
+// is moved up to stand ~0.6 m beyond it; for 'stands' he is held ~0.5 m
+// onside. The defenders come from the same defensive unit the scene renders.
+export function varPassTime(sequence){
+ const seq=normalizeSequence(sequence),plan=getPlay(seq);
+ if(plan){const last=playTouches(plan).filter(t=>t.receiver===0).at(-1);if(last&&Number.isFinite(last.release))return last.release}
+ let pass=null,release=null,prev=controlCarrier(0,seq).index;
+ for(let n=1;n<=Math.round(SHOT_TIME*50);n++){const t=n/50,c=controlCarrier(t,seq).index;
+  if(c<0&&prev>0)release=t;
+  if(c===0&&prev!==0){pass=prev>0?t:release??t}
+  prev=c}
+ return pass??Math.max(.5,SHOT_TIME-1.6);
+}
+export function varGeometry(sequence,check='offside',finish='normal',placement=null,{defenseAt=null,keeperZ=null}={}){
+ const seq=normalizeSequence(sequence),pass=varPassTime(seq);
+ const unit=defenseAt?null:createDefensiveUnit({positionAt:(i,t)=>playerPosition(i,t,'goal',seq,placement,finish),ballAt:t=>ballPosition('goal',t,seq,finish,'classic',placement),defenderIndex:8,ballWon:false,duration:DURATION});
+ const at=defenseAt||((i,t)=>unit.position(i,t));
+ const scorer=playerPosition(0,pass,'goal',seq,placement,finish);
+ const keeper=Number.isFinite(keeperZ)?keeperZ:keeperPose('goal',pass,finish,seq,'classic',placement).z;
+ const lines=[keeper];for(let i=8;i<RUNS.length;i++)lines.push(at(i,pass)[1]);lines.sort((a,b)=>a-b);
+ const line=lines[1],need=check==='offside'?Math.max(0,scorer[1]-line+.62):0;
+ // Offside: the back line steps up (offside trap) and the scorer starts his
+ // run a little early; each at most 2 m / 2.4 m, at the release of the pass.
+ const step=check==='offside'?clamp(need*.5,0,2):0;
+ const nudge=check==='offside'?clamp(need-step,0,2.4):check==='stands'?clamp(scorer[1]-(line+.5),-2.4,0):0;
+ return{pass,lastDefender:line+step,scorerZ:scorer[1]-nudge,scorerX:scorer[0],nudge,step};
 }
 export function playerPosition(index,time,type='goal',sequence='central',placement=null,finish='normal'){
  const p=runPosition(index,time,sequence);
@@ -1206,9 +1223,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // 'offside', moves him up to ~2.4 m beyond the second-last defender around it.
  const varCheck=['stands','offside'].includes(event.varCheck)&&!ceremony0(event)&&!extendedKind(sequence)?event.varCheck:'';
  let varInfoCache=null;
- function varInfo(){if(!varInfoCache&&varCheck)varInfoCache=varGeometry(sequence,varCheck,finish,placement);return varInfoCache}
+ function varInfo(){if(!varInfoCache&&varCheck)varInfoCache=varGeometry(sequence,varCheck,finish,placement,{defenseAt:(i,t)=>stagedPlayerPositionRaw(i,t),keeperZ:eventKeeperPose(event.type,varPassTime(sequence)).z});return varInfoCache}
  // The nudge builds up before the pass and fades out while the ball travels.
- function varNudge(time){const v=varInfo();if(!v||!v.nudge)return 0;return v.nudge*smooth((time-(v.pass-1.5))/1.3)*(1-smooth((time-v.pass)/.95))}
+ function varRamp(time,v){return smooth((time-(v.pass-2.3))/2.1)*(1-smooth((time-v.pass-.1)/1.15))}
+ function varNudge(time){const v=varInfo();return v&&v.nudge?v.nudge*varRamp(time,v):0}
+ function varStep(time){const v=varInfo();return v&&v.step?v.step*varRamp(time,v):0}
  const eventBallPosition=(type,time,seq=sequence,style=finish,action=keeperAction)=>ballPosition(type,time,seq,style,action,placement);
  const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
  const netArrival=shotArrival('goal',sequence,finish,placement)+goalNetDelay(placement),netPoint=goalNetPoint(sequence,finish,placement);
@@ -1321,8 +1340,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // goal-line clearances stay in the normal TV picture; only the scorer
  // close-up after a goal and the set-piece TV angles remain.
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
+  const p=stagedPlayerPositionRaw(index,time,type,seq);
+  return varCheck==='offside'&&index>=8&&index<RUNS.length&&seq===sequence?[p[0],p[1]+varStep(time)]:p;
+ }
+ function stagedPlayerPositionRaw(index,time,type=event.type,seq=sequence){
   if(ceremony){const a=ceremonyActor(ceremony,index,time,{draw:ceremonyDraw});return[a.x,a.z]}
-  if(index===0&&varCheck==='offside'){const p=playerPosition(0,time,type,seq,placement,finish);return[p[0],p[1]-varNudge(time)]}
+  if(index===0&&varCheck&&seq===sequence){const p=playerPosition(0,time,type,seq,placement,finish);return[p[0],p[1]-varNudge(time)]}
   const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq,placement,finish);
   if(lineClearer&&index===lineClearer.index){
    // The covering defender sprints back onto the line and blocks the shot there.
@@ -1718,22 +1741,27 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const trophyStage=trophyNight?createTrophyStage({scene,parent:field,renderer,event,weak,track,hash}):null;
   // V21.470 the bench: a covered dugout on the main-stand touchline and the user's manager in front of it,
   // arms crossed, looking at the camera's end position. Without a ready human body the bench shot still runs.
-  const coachBench=coachShot?{figure:null,next:0,seats:[],subs:[]}:null;
+  // V21.482 the substitution happens in front of the same dugout (Basti: "wir haben ja auch eine Auswechselbank").
+  const subScene=ceremony==='substitution',subCoach=subScene&&event.team!=='away'&&!!event.coach?.manager;
+  const coachBench=coachShot||subScene?{figure:null,next:0,seats:[],subs:[]}:null;
   if(coachBench)try{coachBench.seats=mountDugout(field,{x:DUGOUT_SPOT[0],z:DUGOUT_SPOT[1],seat:'#1d2228',track}).userData.seats||[]}catch(_){}
   // V21.470 (Basti: "Ersatzspieler mit einbinden"): substitutes in club warm-up tracksuits on the bench, one mounted per try.
-  const SUB_SEATS=weak?[1,3,6]:[0,1,3,4,6,7],subKit={top:event.homeColor,trousers:event.homeShorts,accent:event.homeSecondary};
+  const awayBench=subScene&&event.team==='away';
+  const SUB_SEATS=subScene?(weak?[0,6]:SUB_BENCH_SEATS):weak?[1,3,6]:[0,1,3,4,6,7],subKit=awayBench?{top:event.awayColor,trousers:event.awayShorts,accent:event.awaySecondary}:{top:event.homeColor,trousers:event.homeShorts,accent:event.homeSecondary};
   // The body may still be loading when the walk-out starts (first scene of the match):
   // try now and again while the camera is elsewhere, until shortly before the cut.
   function mountCoach(time){
-   if(!coachBench||time<coachBench.next||time>COACH_SHOT.start-.2)return;
-   if(coachBench.figure){mountSub(time);return}
+   if(!coachBench||time<coachBench.next||time>(subScene?SUB_TIMES.cut-.2:COACH_SHOT.start-.2))return;
+   if(coachBench.figure||subScene&&!subCoach){mountSub(time);return}
    coachBench.next=time+.6;let figure=null;
    try{
     figure=mountManager(field,event.coach.manager,{detail:!weak,crest:footeraCrestImageNow(event.teamCrestHTML)});
     if(figure){
      const end=coachCamera(COACH_SHOT.end);
      measureManagerHead(figure);
-     poseManager(figure,{pose:'crossed',x:COACH_SPOT[0],z:COACH_SPOT[1],camera:{position:new THREE.Vector3(...end.position)},yaw:-.12,body:''});
+     // In the substitution scene he watches the hand slap from the far end of the dugout.
+     if(subScene)poseManager(figure,{pose:'crossed',x:SUB_COACH_SPOT[0],z:SUB_COACH_SPOT[1],camera:{position:new THREE.Vector3(SUB_HIGH_FIVE[0],1.6,SUB_HIGH_FIVE[1])},yaw:0,body:''});
+     else poseManager(figure,{pose:'crossed',x:COACH_SPOT[0],z:COACH_SPOT[1],camera:{position:new THREE.Vector3(...end.position)},yaw:-.12,body:''});
      coachBench.figure=figure;
     }
    }catch(_){if(figure){try{field.remove(figure.root);disposeManagerParts(figure.owned)}catch(__){}}}

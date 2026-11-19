@@ -73,7 +73,7 @@ test('Siegerfoto: the manager stands on the floor beside the team, inside the pi
 test('after the walk-out the manager stands at the bench, his card comes up in the action frame; files are pinned and cached',async()=>{
  // V21.470: the old pop-up before kick-off is gone
  const app=read('footera-app.js');assert.doesNotMatch(app,/FooteraManager\?\.kickoff/);assert.doesNotMatch(read('footera-manager.css'),/mg-intro/);
- assert.match(read('3d-highlights-match.js'),/coach:kind==='kickoff'\?/);assert.match(read('3d-highlights.js'),/coach:event\.ceremony==='kickoff'\?cleanCoach\(event\.coach\):null/);
+ assert.match(read('3d-highlights-match.js'),/coach:kind==='kickoff'\?/);assert.match(read('3d-highlights.js'),/coach:\['kickoff','substitution'\]\.includes\(event\.ceremony\)\?cleanCoach\(event\.coach\):null/);
  const C=await import(pathToFileURL(path.join(root,'3d-ceremony.mjs')).href);
  assert.equal(C.ceremonyEnd('kickoff'),10.4);assert.equal(C.ceremonyEnd('kickoff',{coach:true}),C.COACH_SHOT.end);
  assert.ok(C.COACH_SHOT.start>=10.4&&C.COACH_SHOT.card>C.COACH_SHOT.start&&C.COACH_SHOT.end-C.COACH_SHOT.card>=3.5);

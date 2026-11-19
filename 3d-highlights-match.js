@@ -373,7 +373,7 @@ function queueMatchSubstitutions3D(){
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
  const crest=s=>match3DPresentationMeta({type:'goal',team:s,playerName:''},current).teamCrestHTML;
  const queued=match3DQueue.enqueue({...base,id:'substitution:'+list.length+':'+side,weather:match3DWeather(current),...match3DStadium(current),ceremony:'substitution',
-  minute:Math.floor(Number(sub.minute)||current.minute||60),period:1,sequence:'central',finish:'normal',outName:pair.outName,inNumber,outNumber,
+  minute:Math.floor(Number(sub.minute)||current.minute||60),period:1,coach:side==='home'?(()=>{try{return globalThis.FooteraManager?.forKickoff?.()||null}catch(e){return null}})():null,sequence:'central',finish:'normal',outName:pair.outName,inNumber,outNumber,
   homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
   teamCrestHTML:crest(side),defendCrestHTML:crest(defending),keeperName:goalie?.name||'',
   shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:(numbers.captainActors||[]).filter(i=>i!==0&&i!==1),keeperCaptain:numbers.keeperCaptain,...skin,squadNames:names,playerSkinTones:tones,playerLooks:looks,

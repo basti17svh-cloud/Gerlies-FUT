@@ -74,7 +74,7 @@
    // V21.427 Fan-Choreo (walk-out tifo): plain values only.
    choreo:cleanChoreo(event.choreo),
    // V21.470: the user's manager at the bench after the walk-out (plain look values and his card markup).
-   coach:event.ceremony==='kickoff'?cleanCoach(event.coach):null,
+   coach:['kickoff','substitution'].includes(event.ceremony)?cleanCoach(event.coach):null,
    replay:event.replay!==false});
  }
  function cleanCoach(c){
@@ -613,9 +613,10 @@
   const mirror=canMirror&&(typeof event.restartMirror==='boolean'?event.restartMirror:kind==='corner'?event.restartSide==='right':kind==='throw_in'?event.restartSide==='left':(mixHash(key+':restart-side')&1)===1);
   return 'extended_'+kind+(variant?'_'+variant:'')+(mirror?'_right':'');
  }
- // V21.482: plays whose final pass reaches the scorer within ~1.8 m of the
- // second-last defender (checked in tests/var-v21482).
- const VAR_OFFSIDE_SCENES=Object.freeze(['byline_drive_left','byline_drive_right','far_post_slide_right','whipped_header_left','whipped_header_right','keeper_rush_dink_right','touchline_sprint_cut_right','blindside_chip_through_left','centerback_draw_then_slip','touchline_flyby_right','wide_third_man_cross','backpost_late_arrival','overlap_double_exchange','wing_decoy_switch','low_square_dummy']);
+ // V21.482: plays whose final pass is played forward to the scorer, who is
+ // clearly ahead of the ball at the release (a ball played back is never
+ // offside) and within ~3.5 m of the second-last defender (tests/substitution-var-v21482).
+ const VAR_OFFSIDE_SCENES=Object.freeze(['whipped_header_left','whipped_header_right','keeper_rush_dink_right','blindside_chip_through_left','blindside_seam_left','centerback_draw_then_slip','last_man_reverse_run','touchline_flyby_right','wide_third_man_cross','backpost_late_arrival','overlap_double_exchange','wing_decoy_switch','low_square_dummy']);
  function choosePresentation(event,history=[]){
   // Retired: extended_turnover_counter. Its scripted interception left
   // defenders motionless and the final runner offside. Preserve the simulator's

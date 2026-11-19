@@ -205,15 +205,20 @@ function trophyActor(index,time){
 export function trophyGrip(time){return smooth((time-TR.grab-.42)/.22)}
 // ---- V21.482 substitution (Basti 2026-11-19: "Szenen beim Wechseln der Spieler").
 // Play has stopped. The fourth official (actor 15, referee kit) stands at the
-// halfway line on the bench side and holds up the board (red: out, green: in).
+// touchline in front of the end of the dugout (Basti: "die Wechselzone an die
+// Auswechselbank") and holds up the board (red: out, green: in).
 // The substitute (actor 0) waits beside him, the player going off (actor 1)
 // walks over, they slap hands and the new man jogs on while the other one
 // heads to the bench, clapping to the fans. Everyone else waits on the pitch.
 export const SUB_TIMES=Object.freeze({boardUp:.6,meet:5.15,clap:5.45,boardDown:7.4,cut:4.2,end:9.8});
-export const SUB_OFFICIAL=Object.freeze([34.55,-.6]);
+export const SUB_OFFICIAL=Object.freeze([34.55,-3]);
 // The substitute waits on the far side of the official and runs on that way;
 // the player going off walks the other way to the bench, so they never cross.
-const SUB_IN_WAIT=[34.1,1.25],SUB_IN_MEET=[33.75,.78],SUB_OUT_MEET=[33.02,.2],SUB_IN_TO=[23.5,7.2],SUB_OUT_FROM=[25.2,-6.4],SUB_BENCH=[36.3,-6.7];
+// The player going off walks into the dugout (DUGOUT_SPOT, open towards the pitch).
+const SUB_IN_WAIT=[34.1,-1.15],SUB_IN_MEET=[33.75,-1.62],SUB_OUT_MEET=[33.02,-2.2],SUB_IN_TO=[23.5,4.8],SUB_OUT_FROM=[25.2,-8.8],SUB_BENCH=[35.85,-7.25];
+// In the substitution scene the manager stands at the far end of the dugout.
+export const SUB_COACH_SPOT=Object.freeze([34.95,-9.7]);
+export const SUB_BENCH_SEATS=Object.freeze([0,1,2,6,7]);
 // Where the others wait while play is stopped: loosely spread, no line-up.
 const SUB_WAITING=Object.freeze([null,null,[14,-12],[9,3],[18,10.5],[4,-6],[21,-1.5],[11,15],
  [16,-8.5],[7,-1],[12,9],[2,4],[19,2.5],[24,13],[6,-14],null,[1,47]]);
@@ -291,11 +296,13 @@ export function ceremonyCamera(kind,time){
 // then low at the line for the hand slap, following the substitute onto the pitch.
 function substitutionCamera(time){
  const T=SUB_TIMES;
+ // From the pitch towards the bench: the official with the board in front of the dugout.
  if(time<T.cut){const u=smooth(time/T.cut);
-  return{position:[mix(21.5,23.8,u),mix(4.4,3.7,u),mix(-10.2,-8.6,u)],target:[mix(32.2,33.4,u),1.15,mix(-2.4,-.5,u)],fov:34,phase:'substitution-board'}}
- // At the line for the hand slap, then with the substitute as he runs on.
- const go=smooth((time-T.clap)/(T.end-.2-T.clap)),follow=[mix(33.9,mix(SUB_IN_MEET[0],SUB_IN_TO[0],go),smooth((time-T.clap)/1.2)),mix(-.1,mix(SUB_IN_MEET[1],SUB_IN_TO[1],go),smooth((time-T.clap)/1.2))];
- return{position:[follow[0]-7.1,1.8,follow[1]-2.5],target:[follow[0],mix(1.4,1.15,go),follow[1]],fov:36,phase:'substitution'};
+  return{position:[mix(25,26.6,u),mix(3.4,2.9,u),mix(5.6,4.4,u)],target:[mix(33.6,34.2,u),1.2,mix(-4.9,-3.6,u)],fov:34,phase:'substitution-board'}}
+ // Lower, the hand slap; then the substitute runs past while the other walks into the dugout.
+ const go=smooth((time-T.clap)/(T.end-.6-T.clap)),runner=time<T.clap?SUB_IN_MEET:walkTo(SUB_IN_MEET,SUB_IN_TO,T.clap,T.end-.2,time);
+ // Aim between the substitute and the dugout so both stay in the picture.
+ return{position:[mix(27.8,20.5,go),mix(1.9,2.6,go),mix(5.2,10.5,go)],target:[mix(33.4,mix(runner[0],35.5,.3),go),mix(1.35,1.1,go),mix(-2.2,mix(runner[1],-7,.3),go)],fov:mix(32,38,go),phase:'substitution'};
 }
 
 // V21.444 cup presentation: low in front of the stage down the guard of

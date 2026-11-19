@@ -20,6 +20,10 @@ test('substitution ceremony: human speeds, no collision, board and camera',async
  assert.ok(C.subHighFive(C.SUB_TIMES.meet+.27)>.95&&C.subHighFive(2)===0);
  // The official stands at the touchline; the substitute runs onto the pitch.
  assert.ok(Math.abs(C.SUB_OFFICIAL[0]-34)<1);
+ // The exchange happens at the bench: official at the dugout's end, the player going off walks into it.
+ assert.ok(Math.abs(C.SUB_OFFICIAL[1]-C.DUGOUT_SPOT[1])<5);
+ const off=C.ceremonyActor('substitution',1,C.SUB_TIMES.end);assert.ok(Math.hypot(off.x-C.DUGOUT_SPOT[0],off.z-C.DUGOUT_SPOT[1])<1);
+ for(let n=0;n<=980;n++){const t=n/100,o=C.ceremonyActor('substitution',1,t);assert.ok(Math.hypot(o.x-C.SUB_COACH_SPOT[0],o.z-C.SUB_COACH_SPOT[1])>1.2,'past the manager '+t)}
  assert.ok(C.ceremonyActor('substitution',0,C.SUB_TIMES.end).x<30);
  for(const t of [0,2,4.5,6,9])assert.match(C.ceremonyCamera('substitution',t).phase,/substitution/);
 });
@@ -31,16 +35,20 @@ test('substitution snapshot keeps names and shirt numbers only',()=>{
 });
 
 test('VAR offside scenes: every pool scene exists and the scorer ends up beyond the line',async()=>{
- const S=await import('../3d-highlights-scene.mjs');
+ const S=await import('../3d-highlights-scene.mjs'),P=await import('../3d-playbook.mjs');
  assert.ok(H.VAR_OFFSIDE_SCENES.length>=10);
  const ids=new Set([...H.PLAYBOOK_SCENES,...H.VISUAL_SCENES].map(v=>v.id));
  for(const seq of H.VAR_OFFSIDE_SCENES){
   assert.ok(ids.has(seq),seq+' exists');
   const g=S.varGeometry(seq,'offside');
-  assert.ok(g&&g.pass>0,seq+' pass');
-  assert.ok(g.nudge>=0&&g.nudge<=2.4,seq+' nudge '+g.nudge);
-  assert.ok(g.scorerZ-g.nudge<g.lastDefender-.3,seq+' offside after nudge');
-  assert.equal(S.varGeometry(seq,'stands').nudge,0,seq+' no nudge when the goal stands');
+  // Frozen at the release of the final pass, not when the scorer takes it.
+  const touch=P.playTouches(P.getPlay(seq)).filter(t=>t.receiver===0).at(-1);
+  assert.equal(g.pass,touch.release,seq+' pass release');assert.ok(g.pass<touch.arrival-.6,seq+' before reception');
+  assert.ok(g.nudge>=0&&g.nudge<=2.4&&g.step>=0&&g.step<=2,seq+' nudge '+g.nudge+' step '+g.step);
+  assert.ok(g.scorerZ<g.lastDefender-.5,seq+' offside');
+  // Ahead of the ball when it is played (a ball played back is never offside).
+  assert.ok(S.ballPosition('goal',g.pass,seq)[2]-g.scorerZ>1.5,seq+' ahead of the ball');
+  const st=S.varGeometry(seq,'stands');assert.ok(st.nudge<=0&&st.step===0&&st.scorerZ>st.lastDefender,seq+' onside when the goal stands');
  }
  const used=new Set();
  for(let n=0;n<60;n++){const p=H.choosePresentation({id:'v'+n,minute:n,type:'big_chance_missed',varCheck:'offside',playerName:'P'+n});assert.ok(H.VAR_OFFSIDE_SCENES.includes(p.sequence),p.sequence);used.add(p.sequence)}
