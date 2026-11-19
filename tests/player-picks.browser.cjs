@@ -155,7 +155,9 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   await page.locator('[data-pick-close]').click();
   await page.waitForFunction(()=>state.club.length===1&&!FooteraAccount.pendingPlayerPick());
   await page.evaluate(()=>FooteraPlayerPicks.applyDelivery(window.testDelivery));
-  assert.deepEqual(await page.evaluate(()=>window.pickTransportCalls),['footera_choose_player_pick_compact','footera_choose_player_pick_compact']);
+  // A background cloud read (select save_data,revision,saved_at from the start-up/visibility check) can land in this window
+  // on slow CI runners; it is no pick traffic. What matters here: exactly two compact pick calls and never a full save.
+  assert.deepEqual(await page.evaluate(()=>window.pickTransportCalls.filter(c=>c.startsWith('footera_'))),['footera_choose_player_pick_compact','footera_choose_player_pick_compact']);
   assert.equal(await page.evaluate(()=>FooteraAccount.pendingPlayerPick()),null);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('footera-cloud-sync-point-v1')).revision),2);
   assert.equal(await page.evaluate(()=>state.club.length),1);assert.equal(await page.evaluate(()=>state.club[0].tradeable),false);
