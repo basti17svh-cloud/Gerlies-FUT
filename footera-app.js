@@ -9245,7 +9245,7 @@ function resolveMissedMatchShot(shot,team){
  // Refine only the presentation of already missed shots using the EXISTING roll.
  // No extra random draw, goal check, shot, xG or defensive action is introduced.
  shot.highlightType=shot.outcome==="wide"&&roll>=.965?"shot_post":(Number(shot.xg)>=.16||shot.foul3D||(typeof FooteraHighlights!=="undefined"&&FooteraHighlights.getMode()==="all"))?(shot.outcome==="save"?"big_chance_saved":shot.outcome==="wide"?"big_chance_missed":""):"";
- // V21.482 VAR (rare): a big missed chance is shown as a goal ruled out for
+ // V21.484 VAR (rare): a big missed chance is shown as a goal ruled out for
  // offside. Still a miss in every stat; no extra random draw.
  if(shot.highlightType==="big_chance_missed"&&!match.varOffsideShown&&typeof FooteraMatchActions.varPlan==="function"&&
   FooteraMatchActions.varPlan("miss",matchVarKey(shot.side),{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:shot.creationType,foul:!!shot.foul3D})==="offside"){shot.varCheck="offside";match.varOffsideShown=1}
@@ -9328,7 +9328,7 @@ function logGoal(side,scorer,assist,type,shot={}){
   assistIndex:side==="away"?Number(assist?.index??-1):-1,
   scoreHome:match.home,scoreAway:match.away
  };
- // V21.482 VAR (rare): the goal is checked for offside and stands.
+ // V21.484 VAR (rare): the goal is checked for offside and stands.
  if(!match.varStandsShown&&typeof FooteraMatchActions.varPlan==="function"&&FooteraMatchActions.varPlan("goal",matchVarKey(side),{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:type,foul:!!shot.foul3D})==="stands"){event.varCheck="stands";match.varStandsShown=1}
  match.goalEvents=match.goalEvents||[];match.goalEvents.push(event);
  const in3D=typeof queueMatchGoal3D==="function"&&queueMatchGoal3D(event);
@@ -9368,7 +9368,7 @@ function matchCommentaryLine(kind,ctx,ticker=true){
  }catch(e){return""}
 }
 function matchVarKey(side){return `${match.resultId||match.mode||""}|${Math.round(match.minute*100)}|${side}|${(match.shotEvents||[]).length}`}
-// V21.482: the ticker lines around a VAR check.
+// V21.484: the ticker lines around a VAR check.
 function matchVarCommentary(kind,name,team){
  const pick=list=>list[Math.abs(Math.round((match?.minute||0)*7))%list.length];
  return kind==="offside"?pick([`${name} trifft – doch der VAR schaltet sich ein: Abseits! Das Tor zählt nicht.`,`Der Ball ist drin, aber die Fahne geht hoch. Nach VAR-Check: Abseits, kein Tor für ${team}.`,`Jubel bei ${team} – zu früh. Der Videoassistent erkennt Abseits bei ${name}.`]):
@@ -9502,7 +9502,7 @@ function simTick(){
  advanceMatchFitness(step);match.minute+=step;
  // V21.472: the CPU coach reads score, flanks and fatigue (no RNG draws).
  if(typeof FooteraOpponentStyles!=='undefined'&&FooteraOpponentStyles.think)FooteraOpponentStyles.think(match);
- // V21.482: a confirmed change (yours after the pause, or the CPU coach's) as its own 3D scene. Display only.
+ // V21.484: a confirmed change (yours after the pause, or the CPU coach's) as its own 3D scene. Display only.
  if(typeof queueMatchSubstitutions3D==='function')queueMatchSubstitutions3D();
  const homeTactic=tacticMods(match.tactic,match.customTactics),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced",match.opponentProfile?.customTactics),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower(),balance=FooteraMatchActions.matchupBalance(powerNow,matchOpponentPower(),matchChemistry("home"),matchChemistry("away"));
@@ -11083,7 +11083,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.482";
+const GFUT_BUILD="V21.484";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11141,7 +11141,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21482",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21484",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

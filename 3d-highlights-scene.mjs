@@ -14,7 +14,7 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21471';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,SUB_COACH_SPOT,SUB_BENCH_SEATS,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21482';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,SUB_COACH_SPOT,SUB_BENCH_SEATS,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21484';
 // V21.470: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
 import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21471';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
@@ -76,7 +76,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {createStadiumWeather} from './3d-weather.mjs?v=21340';
+import {createStadiumWeather} from './3d-weather.mjs?v=21483';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21471';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
@@ -1151,7 +1151,7 @@ export function passStrikePose(progress){
  return{hip,knee,ankle:-hip-knee,follow};
 }
 const ceremony0=event=>!!ceremonyKind(event);
-// V21.482 VAR geometry (pure): the moment the final pass to the scorer is
+// V21.484 VAR geometry (pure): the moment the final pass to the scorer is
 // played (ball release, not reception), his line and the second-last
 // defender's line at that moment (keeper included). For 'offside' the scorer
 // is moved up to stand ~0.6 m beyond it; for 'stands' he is held ~0.5 m
@@ -1215,10 +1215,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence),base=baseSequence(sequence),finish=normalizeFinish(event.finish),keeperAction=String(event.keeperAction||'classic'),defenderAction=String(event.defenderAction||'jockey'),defenderIndex=Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<16?event.defenderIndex:8;
  const extended=extendedKind(sequence);
  // V21.479 Fouls: the attacker goes down, the referee (actor 15 in black) whistles and books.
- // V21.482: at a substitution actor 15 is the fourth official (referee kit) with the board.
+ // V21.484: at a substitution actor 15 is the fourth official (referee kit) with the board.
  const foul=parseFoul(sequence),substitution=ceremonyKind(event)==='substitution',refereeIndex=foul||substitution?REFEREE_ACTOR:-1;
  const placement=event.shotPlacement||null;
- // V21.482 VAR: 'stands' (goal checked, counts) or 'offside' (shown as a goal,
+ // V21.484 VAR: 'stands' (goal checked, counts) or 'offside' (shown as a goal,
  // then ruled out). The scene finds the final pass to the scorer and, for
  // 'offside', moves him up to ~2.4 m beyond the second-last defender around it.
  const varCheck=['stands','offside'].includes(event.varCheck)&&!ceremony0(event)&&!extendedKind(sequence)?event.varCheck:'';
@@ -1546,9 +1546,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    impact:IMPACT_TIME,netArrival,sceneEnd:SCENE_END,homeName:event.homeName,awayName:event.awayName,crowdRows}):null;
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
+   // V21.483: phones draw each fan head with 48 instead of 70 triangles (a few pixels on screen):
+   // about 160.000 fewer triangles per frame, every fan stays.
    // V21.358: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
    const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),crowdLife?crowdLife.material('torso'):mat('#ffffff'),specs.length);
-   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
+   const head=new THREE.InstancedMesh(geo(high?'crowd-head-human':'crowd-head-human-phone',()=>{const g=high?new THREE.SphereGeometry(.123,7,6):new THREE.SphereGeometry(.123,6,5),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
    const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),crowdLife?crowdLife.material('arm'):mat('#ffffff'),specs.length*2);
    const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6,1,true)),crowdLife?crowdLife.material('leg'):mat('#ffffff'),specs.length*2);
    for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
@@ -1741,7 +1743,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const trophyStage=trophyNight?createTrophyStage({scene,parent:field,renderer,event,weak,track,hash}):null;
   // V21.470 the bench: a covered dugout on the main-stand touchline and the user's manager in front of it,
   // arms crossed, looking at the camera's end position. Without a ready human body the bench shot still runs.
-  // V21.482 the substitution happens in front of the same dugout (Basti: "wir haben ja auch eine Auswechselbank").
+  // V21.484 the substitution happens in front of the same dugout (Basti: "wir haben ja auch eine Auswechselbank").
   const subScene=ceremony==='substitution',subCoach=subScene&&event.team!=='away'&&!!event.coach?.manager;
   const coachBench=coachShot||subScene?{figure:null,next:0,seats:[],subs:[]}:null;
   if(coachBench)try{coachBench.seats=mountDugout(field,{x:DUGOUT_SPOT[0],z:DUGOUT_SPOT[1],seat:'#1d2228',track}).userData.seats||[]}catch(_){}
@@ -1776,6 +1778,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }catch(_){if(sub){try{field.remove(sub.root);disposeManagerParts(sub.owned)}catch(__){}}coachBench.subsFailed=true}
   }
   mountCoach(0);
+  // V21.483: when the body is ready, the whole bench sits down before the first
+  // picture. Mounting one substitute every 0.25 s during the walk-out froze single
+  // frames for 50-300 ms on phones (seven times per kick-off).
+  if(coachBench?.figure)for(let k=0;k<SUB_SEATS.length&&!coachBench.subsFailed&&coachBench.subs.length===k;k++)mountSub(0);
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
    if(crowdDetailReduced)return;
@@ -2333,7 +2339,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const cardColor=foul?(event.foulCard==='red'?'#e0242e':event.foulCard==='yellow'?'#ffd31c':''):'';
   const foulCardMesh=cardColor?(()=>{const m=new THREE.Mesh(track(new THREE.PlaneGeometry(.075,.105)),track(new THREE.MeshBasicMaterial({color:cardColor,side:THREE.DoubleSide,toneMapped:false})));m.name='FooteraRefereeCard';m.visible=false;m.renderOrder=3;scene.add(m);return m})():null;
   const foulRoot=new THREE.Vector3(),foulPoint=new THREE.Vector3(),foulHandA=new THREE.Vector3(),foulHandB=new THREE.Vector3();
-  // V21.482 the fourth official's LED board: red number off, green number on.
+  // V21.484 the fourth official's LED board: red number off, green number on.
   const subBoardMesh=substitution?(()=>{
    const c=document.createElement('canvas');c.width=256;c.height=192;const g=c.getContext('2d');
    g.fillStyle='#07090b';g.fillRect(0,0,256,192);g.strokeStyle='#3a3f46';g.lineWidth=10;g.strokeRect(5,5,246,182);
@@ -2346,7 +2352,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const m=new THREE.Mesh(track(new THREE.PlaneGeometry(.62,.465)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false})));
    m.name='FooteraSubstitutionBoard';m.visible=false;m.renderOrder=3;scene.add(m);return m})():null;
   const subBoardPoint=new THREE.Vector3();
-  // V21.482 VAR: two calibrated lines across the pitch at the frozen moment of the
+  // V21.484 VAR: two calibrated lines across the pitch at the frozen moment of the
   // final pass: red at the scorer, blue at the second-last defender.
   const varLines=varCheck?[['#ff3346','scorerZ'],['#35d6ff','lastDefender']].map(([color,key])=>{
    const m=new THREE.Mesh(track(new THREE.PlaneGeometry(68,.16)),track(new THREE.MeshBasicMaterial({color,transparent:true,opacity:.92,depthWrite:false,toneMapped:false})));
@@ -3027,7 +3033,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;currentCameraPhase='replay';
    }
    if(varReview!=null&&varInfo()){
-    // V21.482 VAR: high on the TV side, square to the offside line, frozen at the pass.
+    // V21.484 VAR: high on the TV side, square to the offside line, frozen at the pass.
     const v=varInfo(),lz=(v.scorerZ+v.lastDefender)/2*direction,push=smooth(varReview/3.2);
     camera.position.set(mix(31,27,push),mix(17,14.5,push),lz+.6*direction);camTarget.set(v.scorerX*direction*.35,0,lz);camera.fov=40;currentCameraPhase='var';
    }
@@ -3140,7 +3146,22 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.371 Stadion-Sound: the ball's world position and the attacked goal.
   const soundBall=new THREE.Vector3(),soundGoal=worldPosition([0,0,-52.5],direction);
   function soundProbe(){ball.getWorldPosition(soundBall);return{ball:[soundBall.x,soundBall.y,soundBall.z],goal:soundGoal}}
-  return{update,resize,dispose,inspect,reduceQuality,soundProbe,varPass:varCheck?varInfo()?.pass??null:null,lineClearIndex:lineClearer?lineClearer.index:-1,duration:SCENE_END,celebrationSpot:celebrationPlan?.spot||null};
+  // V21.483: build every shader and upload every texture before the first
+  // picture, while the loading label is still up. Before, materials that only
+  // appear later (scarves, ticker tape, cards, referee, bench, celebration props)
+  // were compiled in the middle of the scene: a visible hang of 50-400 ms each
+  // time on a phone. compile() also covers hidden objects.
+  function prewarm(){
+   try{renderer.compile(scene,camera)}catch(_){}
+   try{
+    const seen=new Set(),warm=t=>{if(t&&t.isTexture&&!seen.has(t)&&t.image){seen.add(t);renderer.initTexture(t)}};
+    scene.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){
+     for(const k in m)warm(m[k]);
+     if(m.uniforms)for(const k in m.uniforms)warm(m.uniforms[k]?.value);
+    }});
+   }catch(_){}
+  }
+  return{update,resize,dispose,inspect,reduceQuality,soundProbe,prewarm,varPass:varCheck?varInfo()?.pass??null:null,lineClearIndex:lineClearer?lineClearer.index:-1,duration:SCENE_END,celebrationSpot:celebrationPlan?.spot||null};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
 }
 export function play(event,signal){
@@ -3150,7 +3171,7 @@ export function play(event,signal){
   const stageFrame=host?.closest('#match,#onlineMatch')||document.getElementById('match');
   if(!host||signal.aborted||document.hidden){resolve('skipped');return}
   let renderer,world,observer,raf,timer,done=false,last=0,slowFrames=0,frames=0,verySlowFrames=0,impactSent=false;
-  // V21.482 VAR: a goal ruled out for offside is built and heard as a goal; the
+  // V21.484 VAR: a goal ruled out for offside is built and heard as a goal; the
   // score, the clip and the replay go by the real (missed) event.
   const varCheck=['stands','offside'].includes(event.varCheck)&&!event.ceremony?event.varCheck:'';
   const sceneEvent=varCheck==='offside'?{...event,type:'goal'}:event;
@@ -3287,8 +3308,8 @@ export function play(event,signal){
    layer.dataset.capturedMotion=modelInfo.capturedMotionEnabled?'ready':'off';
    // Optional extra device information; the main badge always shows.
    if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores} · ${layer.dataset.humanModel}`;
-   const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
-   // V21.482 VAR review: the frozen final pass with both lines, then the decision.
+   const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);world.prewarm?.();
+   // V21.484 VAR review: the frozen final pass with both lines, then the decision.
    function varFrame(now){
     const r=varState;
     if(r.last!==undefined)r.elapsed+=Math.max(0,Math.min(realtimeTest?2000:100,now-r.last))/1000;r.last=now;

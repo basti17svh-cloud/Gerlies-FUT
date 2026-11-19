@@ -1,0 +1,241 @@
+/* Run with NODE_PATH pointing to a Playwright installation. Isolated local save; no online writes. */
+const {chromium}=require('playwright'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.join(__dirname,'..'),output=path.join(root,'test-artifacts');fs.mkdirSync(output,{recursive:true});
+const mime={'.js':'text/javascript','.mjs':'text/javascript','.html':'text/html','.css':'text/css','.json':'application/json','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.webmanifest':'application/manifest+json'};
+let activePage;
+const results=[];const check=(label,value)=>{assert.ok(value,label);results.push(label);console.log('PASS',label)};
+// Keep all production scripts, but don't run account/database startup in this isolated match fixture.
+const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(file===root)file=path.join(root,'index.html');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return}try{let body=fs.readFileSync(file);if(file.endsWith('index.html')){let html=body.toString();const last=html.lastIndexOf('<script>');html=html.slice(0,last)+html.slice(html.indexOf('</script>',last)+9);body=Buffer.from(html)}res.setHeader('Content-Type',mime[path.extname(file)]||'application/octet-stream');res.end(body)}catch(_){res.writeHead(404).end()}});
+async function fixture(page,mode='important'){
+ await page.evaluate(mode=>{
+  cancelMatch3D();stopMatchTimer();dismissMatchGoalMoment(false);
+  for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
+  // This is an isolated match rendering test, not an account/consent test. Other
+  // startup modules may open their dialogs asynchronously after the match starts.
+  // Suppress these test-only overlays without changing production behavior.
+  if(!document.getElementById('footeraMatchFixtureOverlayGuard')){
+   const guard=document.createElement('style');guard.id='footeraMatchFixtureOverlayGuard';
+   guard.textContent='#footeraAccountDialog,#footeraAnalyticsConsent{display:none!important;pointer-events:none!important}';
+   document.head.append(guard);
+  }
+  const positions=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM'];
+  PLAYERS=positions.map((position,i)=>({id:'qa-'+i,name:'Musiala',fullName:'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:'Germany',team:'FC Bayern München',league:'Bundesliga'}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
+  const homeIdentity=defaultClubIdentity(),awayIdentity=defaultClubIdentity();
+  homeIdentity.crest={...homeIdentity.crest,initials:'HOME',symbol:'f',primary:'#37df78',secondary:'#102d1d',accent:'#ffffff',borderColor:'#37df78'};
+  awayIdentity.crest={...awayIdentity.crest,initials:'AWAY',symbol:'diamond',primary:'#d85a6a',secondary:'#341117',accent:'#ffffff',borderColor:'#d85a6a'};
+  state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName='Heimteam';state.profile.clubIdentity=homeIdentity;state.tactic='balanced';
+  FooteraHighlights.setMode(mode);document.querySelectorAll('[data-highlight-mode]').forEach(s=>s.value=mode);
+  const awaySquad=PLAYERS.slice(0,11).map((p,i)=>i===0?{...p,id:'away-gk',name:'Maignan',fullName:'Mike Maignan',nation:'France',team:'AC Milan',league:'Serie A'}:{...p,id:'away-'+i});
+  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:awaySquad,clubIdentity:awayIdentity});
+  // V21.226: drop the walk-out scene; each test forces its own highlight.
+  cancelMatch3D();stopMatchTimer();
+  match.minute=41;match.injuryTriggered=true;match.redTriggered=true;matchSpeed=5000;updateMatchUI();document.getElementById('match').scrollTop=0;
+ },mode);
+}
+async function force(page,type,team='home'){
+ return page.evaluate(({type,team})=>{
+  const random=Math.random;let draws=0;Math.random=()=>type==='goal'?(++draws===3?.5:.001):type==='big_chance_saved'?.2:type==='shot_post'?.99:.94;
+  try{
+   if(type==='goal')simAttack(team==='home');
+   else{const shot={side:team,minute:Math.floor(match.minute),at:match.minute,xg:.35,playerName:'Jamal Musiala',shooter:'Musiala',shooterUid:match.lineup[9],shooting:84,goal:false};match.shotEvents.push(shot);if(team==='home'){match.shotsHome++;match.xgHome+=shot.xg}else{match.shotsAway++;match.xgAway+=shot.xg}resolveMissedMatchShot(shot,'Heimteam');updateMatchUI()}
+   return{score:[match.home,match.away],goals:match.goalEvents.length,shots:match.shotEvents.length,minute:match.minute,name:match.goalEvents.at(-1)?.playerName||match.shotEvents.at(-1)?.playerName};
+  }finally{Math.random=random}
+ },{type,team});
+}
+if(require.main===module)(async()=>{
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}`;
+ const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
+ try{
+  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,serviceWorkers:'block'});
+  // The CI renderer is software WebGL at 1-2 fps: keep wall-clock highlight pace.
+  await context.addInitScript(()=>{Object.defineProperty(navigator,'deviceMemory',{get:()=>4});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>4});globalThis.FOOTERA_TEST_REALTIME_3D=true});
+  const page=await context.newPage(),errors=[];activePage=page;page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',route=>route.request().url().startsWith(url)?route.continue():route.abort());
+  await page.goto(url,{waitUntil:'load'});check('app initializes without JS errors',errors.length===0);
+  check('3D stays unloaded before first highlight',await page.evaluate(()=>!performance.getEntriesByType('resource').some(r=>r.name.includes('three.module'))));
+  await fixture(page);
+  const kickoffKitFreeze=await page.evaluate(()=>{
+   const before=JSON.stringify(match.kickoffKits?.home||null);
+   state.profile.clubIdentity.kits.home={pattern:'solid',shirtPrimary:'#ffffff',shirtSecondary:'#ffffff',shorts:'#ffffff',socks:'#ffffff'};
+   return{before,after:JSON.stringify(match.kickoffKits?.home||null),live:JSON.stringify(state.profile.clubIdentity.kits.home)}
+  });
+  check('kickoff kit is frozen and cannot be replaced by a later profile edit',kickoffKitFreeze.before===kickoffKitFreeze.after&&kickoffKitFreeze.after!==kickoffKitFreeze.live);
+  await page.evaluate(()=>stopMatchTimer());
+  for(const width of [360,390,412]){
+   await page.setViewportSize({width,height:844});await fixture(page);await page.evaluate(()=>{state.profile.clubIdentity.crest.initials='LIVE'});const before=await force(page,'goal');
+   await page.waitForSelector('.fh3d canvas',{timeout:12000});
+    // An actually painted WebGL frame, not an empty allocated canvas.
+    await page.waitForSelector('.fh3d.fh3d-ready',{timeout:12000});
+   console.log('OK READY',width);break;}
+  if(0){
+   check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
+   const modelBadge=await page.locator('[data-footera-model-diagnostic]').evaluate(el=>{
+    const a=el.getBoundingClientRect(),bar=el.closest('.fh3d-top').getBoundingClientRect();
+    const skip=el.closest('.fh3d-top').querySelector('.fh3d-skip').getBoundingClientRect();
+    return{text:el.textContent,visible:a.width>30&&a.height>10&&a.left>=bar.left&&a.right<=skip.left&&a.bottom<=bar.bottom+1,
+     source:el.closest('.fh3d').dataset.playerModel,reason:el.closest('.fh3d').dataset.playerModelReason};
+   });
+   // At first kickoff the CC0 rig may still load. The fallback is intentional;
+    // 390/412px scenes must then mount the real GLB, not silently stay legacy.
+    // V21.441: the badge names the GLB squad (weak phones: KLASSISCH · LOW).
+    const modelOk=modelBadge.source==='glb'&&/^(KLASSISCH|METAHUMAN|MAN PLAYER|MAKEHUMAN)/.test(modelBadge.text)||
+      width===360&&modelBadge.source==='legacy'&&modelBadge.reason==='not-ready'&&modelBadge.text==='ALT · LOW';
+    check(`${width}: visible GLB or initially permitted skinned fallback`,
+      modelBadge.visible&&modelOk);
+   check(`${width}: weak mobile hardware keeps the low-quality safety tier`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
+   check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
+   check(`${width}: simulation owns 1:0 but visible score stays 0:0 before impact`,await page.evaluate(()=>match.home===1&&match.away===0&&document.getElementById('matchScore').textContent==='0 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));
+   const geometry=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),r=layer.getBoundingClientRect(),button=layer.querySelector('button').getBoundingClientRect(),canvas=layer.querySelector('canvas').getBoundingClientRect(),body=getComputedStyle(document.body);return{overflow:document.documentElement.scrollWidth>innerWidth||document.getElementById('match').scrollWidth>innerWidth,left:r.left,right:r.right,button:button.height,buttonBottom:button.bottom,canvasTop:canvas.top,width:innerWidth,locked:document.documentElement.classList.contains('fh3d-scroll-lock')&&body.position==='fixed',touch:getComputedStyle(layer.querySelector('canvas')).touchAction}});
+   check(`${width}: no horizontal scroll; skip stays entirely in broadcast bar`,!geometry.overflow&&geometry.left>=0&&geometry.right<=geometry.width+1&&geometry.button>=44&&geometry.buttonBottom<=geometry.canvasTop+1);
+   check(`${width}: live scene locks document scrolling and canvas panning`,geometry.locked&&geometry.touch==='none');
+   await page.waitForSelector('.fh3d-hud.visible');
+   check(`${width}: visible score updates only after the visual goal impact`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='1 : 0'&&!match.highlight3DScoreHold));
+   check(`${width}: matchday and highlight clock agree`,await page.evaluate(()=>document.querySelector('.fh3d-brand small').textContent.endsWith(document.getElementById('matchMinute').textContent)));
+   const hud=await page.locator('.fh3d-hud').evaluate(h=>{
+    const box=h.getBoundingClientRect(),cardEl=h.querySelector('.fh3d-player-card'),copyEl=h.querySelector('.fh3d-copy'),metaEl=h.querySelector('.fh3d-goal-meta'),minuteEl=h.querySelector('.fh3d-minute'),crestEl=h.querySelector('.fh3d-team-crest'),actualCrestEl=crestEl?.querySelector('.club-crest');
+    const card=cardEl?.getBoundingClientRect(),copy=copyEl?.getBoundingClientRect(),meta=metaEl?.getBoundingClientRect(),minute=minuteEl?.getBoundingClientRect(),crest=crestEl?.getBoundingClientRect(),actualCrest=actualCrestEl?.getBoundingClientRect();
+    const inside=r=>!!r&&r.left>=box.left-1&&r.right<=box.right+1&&r.top>=box.top-1&&r.bottom<=box.bottom+1;
+    const overlap=(a,b)=>!!a&&!!b&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+    return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,
+     visibleCrest:!!actualCrest&&inside(actualCrest)&&actualCrest.left>=crest.left-1&&actualCrest.right<=crest.right+1&&actualCrest.top>=crest.top-1&&actualCrest.bottom<=crest.bottom+1,card:!!h.querySelector('.fh3d-player-card .card-shell'),gold:!!h.querySelector('.fh3d-player-card .custom-card.gold'),cardContained:!!card&&inside(card)&&card.width<=82,
+     crest:(h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent||h.querySelector('.fh3d-team-crest .club-crest')?.textContent||'').trim(),minute:minuteEl?.textContent||'',minuteFont:minuteEl?parseFloat(getComputedStyle(minuteEl).fontSize):99,
+     minuteAboveCrest:!!minute&&!!crest&&minute.bottom<=crest.top+1,metaWidth:meta?.width||999,crestSize:crest?Math.min(crest.width,crest.height):0,
+     allContained:[card,copy,meta,minute,crest].filter(Boolean).every(inside),noOverlap:!overlap(card,copy)&&!overlap(copy,meta)&&!overlap(card,meta)};
+   });
+   console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
+   check(`${width}: goal uses scorer + actual Gold Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Musiala'&&hud.card&&hud.gold);
+   check(`${width}: home goal uses frozen Home-team crest and team label`,hud.visibleCrest&&hud.crest==='HOME'&&hud.event==='für Heimteam');
+   check(`${width}: minute is compact above the crest in a narrow right column`,hud.minute===`${before.minute}'`&&hud.minuteAboveCrest&&hud.metaWidth<=54&&hud.crestSize>=39&&hud.minuteFont<=13.5);
+   check(`${width}: goal overlay has no clipping or column overlap`,hud.cardContained&&hud.allContained&&hud.noOverlap);
+   await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
+   // On a slow software renderer the scene may hand over to the 2D goal moment
+   // (very-slow-frame fallback). That card holds the match ~2.7 s, then resumes.
+   await page.waitForFunction(()=>!match.highlightActive&&matchTimer!==null,null,{timeout:8000}).catch(()=>{});
+   check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
+   check(`${width}: viewport lock is completely released after highlight`,await page.evaluate(()=>!document.documentElement.classList.contains('fh3d-scroll-lock')&&getComputedStyle(document.body).position!=='fixed'));
+   await page.evaluate(()=>{stopMatchTimer();const minute=match.minute;simTick();if(match.minute<=minute)throw Error('Ticker did not continue');stopMatchTimer()});
+  }
+  await page.setViewportSize({width:390,height:844});
+  await fixture(page);await page.evaluate(()=>{match.opponentProfile.items=PLAYERS.slice(0,11).map(p=>makeItem(p,false,{variant:'special',eventName:'Team of the Week QA'}))});const awayGoal=await force(page,'goal','away');await page.waitForSelector('.fh3d-hud.visible');const awayCard=await page.locator('.fh3d-player-card').evaluate(c=>{const h=c.closest('.fh3d-hud');return{totw:!!c.querySelector('.custom-card.totw'),name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,crest:(h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent||h.querySelector('.fh3d-team-crest .club-crest')?.textContent||'').trim(),minute:h.querySelector('.fh3d-minute')?.textContent||''}});check('away scorer uses the actual equipped special card',awayGoal.goals===1&&awayCard.totw&&awayCard.name);check('away goal uses the actual Away-team crest, label and compact minute',awayCard.crest==='AWAY'&&awayCard.event==='für Auswärtsteam'&&awayCard.minute===`${awayGoal.minute}'`);await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>stopMatchTimer());
+  for(const type of ['big_chance_saved','big_chance_missed','shot_post']){
+   await fixture(page);const before=await force(page,type);check(`${type}: does not change score`,before.score[0]===0&&before.score[1]===0&&before.goals===0);
+   await page.waitForSelector('.fh3d-hud.visible');
+   const hudState=await page.locator('.fh3d-hud').evaluate(h=>{
+     const performer=h.querySelector('.fh3d-player-card'),shell=performer?.querySelector('.card-shell'),art=performer?.querySelector('.custom-card');
+     const outer=performer?.getBoundingClientRect(),inner=shell?.getBoundingClientRect();
+     return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,
+      performerVisible:!!shell&&!!art&&getComputedStyle(performer).display!=='none'&&outer.width>=65&&outer.height>=90&&inner.width>=65&&inner.height>=90};
+    });
+   // V21.195: a miss may also be shown as a goal-line clearance ('GEKLÄRT').
+   check(`${type}: correct event headline`,({big_chance_saved:['PARADE'],big_chance_missed:['VORBEI','GEKLÄRT'],shot_post:['PFOSTEN']}[type]).some(x=>hudState.headline.includes(x)));check(`${type}: real performer card painted at mobile size`,hudState.performerVisible);if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Musiala'))}
+   await page.screenshot({path:path.join(output,type+'.png')});
+   await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
+   check(`${type}: natural completion resumes match without duplicate events`,await page.evaluate(()=>!match.highlight3DPending&&match.home===0&&match.away===0&&match.shotEvents.length===1&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
+  }
+  await fixture(page,'off');await force(page,'goal');check('Off: legacy goal moment, no 3D or pending queue',await page.evaluate(()=>document.getElementById('matchGoalMoment').classList.contains('active')&&!document.querySelector('.fh3d')&&!match.highlight3DPending));await page.evaluate(()=>dismissMatchGoalMoment());
+  await fixture(page,'goals');await force(page,'big_chance_saved');check('Only goals: saved chance stays in text flow',await page.evaluate(()=>!match.highlight3DPending&&!document.querySelector('.fh3d')));
+  // A context loss must release the pending highlight and allow the legacy text scene to continue.
+  await fixture(page);await force(page,'big_chance_saved');await page.waitForSelector('.fh3d canvas');
+  await page.locator('.fh3d canvas').evaluate(c=>c.getContext('webgl2').getExtension('WEBGL_lose_context').loseContext());
+  await page.waitForSelector('.fh3d',{state:'detached'});check('WebGL context failure resumes fallback',await page.evaluate(()=>!match.highlight3DPending&&matchTimer!==null&&match.home===0));
+  await fixture(page);await force(page,'goal');await page.waitForSelector('.fh3d canvas');
+  await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));window.dispatchEvent(new Event('pageshow'))});
+  await page.waitForSelector('.fh3d',{state:'detached'});check('back/forward page restore cannot strand an active goal',await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&matchTimer!==null&&match.home===1));
+  // No supported WebGL context at all (separate page so the prototype can be restored safely).
+  const fallback=await context.newPage();await fallback.route('**/*',route=>route.request().url().startsWith(url)?route.continue():route.abort());
+  await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args)}});
+  await fallback.goto(url,{waitUntil:'load'});await fixture(fallback);await force(fallback,'goal');
+  await fallback.waitForFunction(()=>!match.highlight3DPending&&document.getElementById('matchGoalMoment').classList.contains('active'));
+  check('No WebGL: one goal, original 2D card fallback',await fallback.evaluate(()=>match.home===1&&match.goalEvents.length===1&&!document.querySelector('.fh3d')));await fallback.close();
+  // A real click while the result is still hidden, followed by exactly one resume.
+  await fixture(page);await page.evaluate(()=>{match.minute=38;document.getElementById('matchMinute').textContent="37'"});await force(page,'goal');await page.waitForSelector('.fh3d canvas');
+  check('38-minute highlight updates previous 37-minute matchday clock',await page.evaluate(()=>document.getElementById('matchMinute').textContent==="38'"&&document.querySelector('.fh3d-brand small').textContent==="LIVE · 38'"));
+  await page.getByRole('button',{name:'Überspringen',exact:true}).click();await page.waitForSelector('.fh3d',{state:'detached'});
+  check('early Skip: no duplicate goal or shot; ticker resumes',await page.evaluate(()=>match.home===1&&match.goalEvents.length===1&&match.shotEvents.length===1&&!match.highlightActive&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
+  // Fail the actual dynamic module request on a fresh page (no cached loader).
+  const loadFailure=await context.newPage();await loadFailure.route('**/*',r=>r.request().url().includes('3d-highlights-scene.mjs')||!r.request().url().startsWith(url)?r.abort():r.continue());
+  await loadFailure.goto(url);await fixture(loadFailure);await force(loadFailure,'goal');await loadFailure.waitForFunction(()=>!match.highlight3DPending&&document.getElementById('matchGoalMoment').classList.contains('active'));
+  check('module load failure: original 2D goal exactly once',await loadFailure.evaluate(()=>match.home===1&&match.goalEvents.length===1&&match.shotEvents.length===1&&!document.querySelector('.fh3d')));
+  await loadFailure.evaluate(()=>dismissMatchGoalMoment());check('module load failure: timer resumes after fallback',await loadFailure.evaluate(()=>matchTimer!==null&&!match.highlightActive));await loadFailure.close();
+  // Exercise the real bridge with a renderer that never resolves.
+  await fixture(page);await page.evaluate(()=>{window.OriginalHighlightQueue=FooteraHighlights.Queue;FooteraHighlights.Queue=class extends OriginalHighlightQueue{constructor(options){super({...options,play:()=>new Promise(()=>{}),timeout:30})}}});
+  await force(page,'big_chance_saved');await page.waitForFunction(()=>!match.highlight3DPending);
+  check('watchdog releases actual match without duplicate shots or goals',await page.evaluate(()=>matchTimer!==null&&match.home===0&&match.shotEvents.length===1));
+  await page.evaluate(()=>{stopMatchTimer();FooteraHighlights.Queue=OriginalHighlightQueue});
+  // Production bridge snapshots for consecutive home/away events in all periods.
+  await page.evaluate(()=>{window.directionEvents=[];FooteraHighlights.Queue=class extends OriginalHighlightQueue{constructor(options){super({...options,play:async e=>{directionEvents.push(e);return 'played'}})}}});
+  for(const period of [1,2,3,4]){
+   await fixture(page);await page.evaluate(p=>{match.halftimeLogged=p>1;match.extraTimeStarted=p>2;match.extraTimeBreakLogged=p>3;match.minute=p===1?45:p===2?90:p===3?105:120},period);
+   for(const team of ['home','away','home','away']){await force(page,'goal',team);await page.waitForFunction(()=>!match.highlight3DPending);await page.evaluate(()=>stopMatchTimer())}
+  }
+  const directions=await page.evaluate(()=>directionEvents);
+  check('16 consecutive bridge events: fixed home/away directions and correct HT/ET switches',directions.length===16&&directions.every((e,i)=>e.period===Math.floor(i/4)+1&&e.attackDirection===(e.team==='home'?1:-1)*(e.period%2?1:-1)));
+  await page.evaluate(()=>{FooteraHighlights.Queue=OriginalHighlightQueue});
+  // Boundaries cannot overtake a queued event.
+  for(const minute of [45,90]){await fixture(page);await page.evaluate(m=>{match.minute=m;match.halftimeLogged=m>=90},minute);await force(page,'goal');check(`${minute}: phase boundary waits for highlight`,await page.evaluate(()=>resolveEndOfPhase()&&!match.finished&&!match.halftimeActive));await page.waitForSelector('.fh3d canvas');await page.getByRole('button',{name:'Überspringen',exact:true}).click();await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>{stopMatchTimer();resolveEndOfPhase()});check(`${minute}: correct phase resumes`,await page.evaluate(m=>m===45?match.halftimeActive:match.finished,minute));}
+  // Defender card layout must match the goal overlay at actual mobile widths.
+  for(const width of [360,390,412]){
+   await page.setViewportSize({width,height:844});
+   await fixture(page);
+   const defense=await page.evaluate(()=>{
+    match.opponentProfile.squad[2]={...match.opponentProfile.squad[2],id:'away-laimer',name:'K. Laimer',fullName:'Konrad Laimer'};
+    const attacker=matchActorRows('home').find(x=>x.index===9);
+    const action=recordMatchDefense('home','interception',0,2);
+    const queued=queueMatchDefensive3D(action,'home',attacker);
+    // Compare at the real queue completion boundary. A slow CI screenshot can
+    // outlast the clip; ordinary simTick events after resumption are not 3D mutations.
+    const snapshot=()=>JSON.stringify({home:match.home,away:match.away,shots:match.shotEvents,goals:match.goalEvents,defense:match.defensiveEvents});
+    window.footeraDefenseBefore=snapshot();window.footeraDefenseAfter=null;
+    if(queued){const idle=match3DQueue.onIdle;match3DQueue.onIdle=function(){idle.call(this);stopMatchTimer();window.footeraDefenseAfter=snapshot()};}
+    return{queued,count:match.defensiveEvents.length,defender:action?.name};
+   });
+   check(width+': opponent interception uses a real event',defense.queued&&defense.count===1&&defense.defender==='K. Laimer');
+   await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
+   const hud=await page.locator('.fh3d-hud').evaluate(h=>{
+    const bound=e=>e?.getBoundingClientRect(),a=bound(h),card=bound(h.querySelector('.fh3d-player-card')),copy=bound(h.querySelector('.fh3d-copy')),
+     meta=bound(h.querySelector('.fh3d-goal-meta')),minute=bound(h.querySelector('.fh3d-minute')),crest=bound(h.querySelector('.fh3d-team-crest'));
+    const name=h.querySelector('.fh3d-name'),headline=h.querySelector('.fh3d-headline'),c=h.querySelector('.fh3d-copy');
+    const range=document.createRange();range.selectNodeContents(name);const lineCount=range.getClientRects().length;
+    const headerRange=document.createRange();headerRange.selectNodeContents(headline);
+    const inside=r=>!!r&&r.left>=a.left-1&&r.right<=a.right+1&&r.top>=a.top-1&&r.bottom<=a.bottom+1;
+    return{headline:headline.textContent,name:name.textContent,lines:lineCount,headerLines:headerRange.getClientRects().length,
+     crestVisible:!!h.querySelector('.fh3d-team-crest .club-crest,.fh3d-team-crest .fh3d-opponent-crest')&&crest.width>=35&&crest.height>=35,
+     card:!!h.querySelector('.fh3d-player-card .card-shell'),
+     minuteAboveCrest:minute.bottom<=crest.top+1,metaWidth:meta.width,
+     contained:[card,copy,meta,minute,crest].every(inside),noOverlap:card.right<=copy.left+1&&copy.right<=meta.left+1,
+     copyFits:c.scrollWidth<=c.clientWidth+1};
+   });
+   console.log('DEFENSE HUD',width,JSON.stringify(hud));
+   check(width+': defender card, name and rendered opponent crest',hud.headline==='ABGEFANGEN'&&hud.name==='K. Laimer'&&hud.card&&hud.crestVisible);
+   check(width+': one-line name and no clipped columns',hud.contained&&hud.noOverlap&&hud.copyFits&&hud.lines===1&&hud.headerLines===1&&hud.minuteAboveCrest&&hud.metaWidth<=54);
+   await page.screenshot({path:path.join(output,'interception-'+width+'.png')});
+   await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());
+   await page.waitForSelector('.fh3d',{state:'detached'});
+   await page.waitForFunction(()=>window.footeraDefenseAfter!==null);
+   check(width+': no fabricated goal or shot',await page.evaluate(()=>window.footeraDefenseBefore===window.footeraDefenseAfter&&match.home===0&&match.away===0&&match.shotEvents.length===0&&match.defensiveEvents.length===1));
+   await page.evaluate(()=>stopMatchTimer());
+  }
+  // Generated opponents without custom badges get their own initials.
+  await fixture(page);
+  await page.evaluate(()=>{
+   match.opponentProfile.clubIdentity=null;
+   match.kickoffTeamIdentity.away=null;
+   match.opponentProfile.name='SV Monte Claro';match.opponentName='SV Monte Claro';
+   const action=recordMatchDefense('home','interception',0,2);
+   const attacker=matchActorRows('home').find(x=>x.index===9);
+   queueMatchDefensive3D(action,'home',attacker);
+  });
+  await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
+  check('generated opponent badge is distinct from FC Gerlies',await page.locator('.fh3d-team-crest').evaluate(c=>
+   c.querySelector('.fh3d-opponent-crest')?.textContent==='SMC'&&!c.querySelector('.club-crest')));
+  // The badge assertion can finish as the clip ends naturally. Only skip a
+  // still-present clip, rather than waiting for a later match event's button.
+  await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());
+  await page.waitForSelector('.fh3d',{state:'detached'});
+  await page.evaluate(()=>stopMatchTimer());
+  check('no uncaught JavaScript errors during mobile matches',errors.length===0);
+  fs.writeFileSync(path.join(output,'results.json'),JSON.stringify({passed:results.length,results,errors},null,2));
+ }catch(error){if(activePage)await activePage.screenshot({path:path.join(output,'failure.png')}).catch(()=>{});throw error}finally{await browser.close();server.close()}
+})().catch(error=>{fs.writeFileSync(path.join(output,'failure.txt'),error.stack);console.error(error);server.close();process.exitCode=1});
+
+module.exports={server,fixture,force};

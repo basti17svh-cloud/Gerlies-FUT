@@ -182,7 +182,7 @@
   const cardChance=(zone==='box'?.42:['arc','center'].includes(zone)?.34:.24)+(['behind','slide'].includes(kind)?.14:kind==='pull'?.06:0);
   return Object.freeze({zone,kind,variant,mirror:zone!=='center'&&foulHash(key+':side')<.5||variant==='trick'&&foulHash(key+':side')<.5,card:foulHash(key+':card')<cardChance?'yellow':''});
  }
- // V21.482 VAR: whether a goal is checked (and stands) or a missed chance is
+ // V21.484 VAR: whether a goal is checked (and stands) or a missed chance is
  // shown as a goal ruled out for offside. Presentation only, stable hash, no
  // RNG draw; at most one of each per match (the caller keeps the count).
  const VAR_KINDS=Object.freeze(['through','cross','cutback','combination','switch']);

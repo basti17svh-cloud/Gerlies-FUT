@@ -202,13 +202,30 @@ export function createStadiumWeather(THREE,{scene,field,renderer,camera,weather,
  breath.frustumCulled=false;breath.renderOrder=21;breath.visible=breathOn;group.add(breath);
  const forward=new THREE.Vector3(),at=new THREE.Vector3(),size=new THREE.Vector2();
  let lastTime=0;
+ // V21.483: the spray asked the scene for the ball 56 times a frame (the whole
+ // play path each time). Ball positions on a fixed 1/120 s grid are kept and
+ // shared between frames, linearly blended in between: same picture, a few
+ // new lookups per frame.
+ const ballGrid=new Map(),GRID=120;
+ function ballOnGrid(k){
+  if(ballGrid.has(k))return ballGrid.get(k);
+  const v=ballAt(k/GRID)||null;ballGrid.set(k,v);
+  if(ballGrid.size>720)ballGrid.delete(ballGrid.keys().next().value);
+  return v;
+ }
+ function ballNear(t){
+  const f=t*GRID,k=Math.floor(f),u=f-k,a=ballOnGrid(k);
+  if(!a||u<1e-6)return a;
+  const b=ballOnGrid(k+1);if(!b)return a;
+  return[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u];
+ }
  function updateSpray(time){
   sprayAlpha.fill(0);
   if(!ballAt)return;
   for(let k=0;k<SPRAY;k++){
    const age=(k+((time*30)%1))/30*(snow?1.4:1),t0=time-age;
    if(t0<0)continue;
-   const a=ballAt(t0),b=ballAt(t0+.04);if(!a||!b)continue;
+   const a=ballNear(t0),b=ballNear(t0+.04);if(!a||!b)continue;
    const vx=(b[0]-a[0])/.04,vz=(b[2]-a[2])/.04,speed=Math.hypot(vx,vz);
    if(a[1]>.32||speed<5)continue;
    const s=hash(k*31+Math.floor(t0*30)),side=(s-.5)*2;

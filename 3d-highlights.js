@@ -58,7 +58,7 @@
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
    // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
    ceremony:['kickoff','fulltime','trophy','substitution'].includes(event.ceremony)?event.ceremony:'',
-   // V21.482 substitution: who goes off and both numbers for the fourth official's board.
+   // V21.484 substitution: who goes off and both numbers for the fourth official's board.
    outName:String(event.outName||'').replace(/[<>]/g,'').slice(0,40),
    inNumber:Number.isInteger(Number(event.inNumber))&&Number(event.inNumber)>=1&&Number(event.inNumber)<=99?Number(event.inNumber):0,
    outNumber:Number.isInteger(Number(event.outNumber))&&Number(event.outNumber)>=1&&Number(event.outNumber)<=99?Number(event.outNumber):0,
@@ -91,7 +91,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21482').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21484').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -613,7 +613,7 @@
   const mirror=canMirror&&(typeof event.restartMirror==='boolean'?event.restartMirror:kind==='corner'?event.restartSide==='right':kind==='throw_in'?event.restartSide==='left':(mixHash(key+':restart-side')&1)===1);
   return 'extended_'+kind+(variant?'_'+variant:'')+(mirror?'_right':'');
  }
- // V21.482: plays whose final pass is played forward to the scorer, who is
+ // V21.484: plays whose final pass is played forward to the scorer, who is
  // clearly ahead of the ball at the release (a ball played back is never
  // offside) and within ~3.5 m of the second-last defender (tests/substitution-var-v21482).
  const VAR_OFFSIDE_SCENES=Object.freeze(['whipped_header_left','whipped_header_right','keeper_rush_dink_right','blindside_chip_through_left','blindside_seam_left','centerback_draw_then_slip','last_man_reverse_run','touchline_flyby_right','wide_third_man_cross','backpost_late_arrival','overlap_double_exchange','wing_decoy_switch','low_square_dummy']);
@@ -623,7 +623,7 @@
   // real chance outcome but select a normal, continuous 3D attacking play.
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
   if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:restartSequence(event,history),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:15,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
-  // V21.482 VAR: a goal ruled out for offside comes from a play whose final pass
+  // V21.484 VAR: a goal ruled out for offside comes from a play whose final pass
   // finds the scorer close to the last defender (the scene nudges him beyond it).
   if(event.varCheck==='offside'){
    const pool=VAR_OFFSIDE_SCENES.map(id=>PLAYBOOK_SCENES.find(v=>v.id===id)||VISUAL_SCENES.find(v=>v.id===id)).filter(Boolean);

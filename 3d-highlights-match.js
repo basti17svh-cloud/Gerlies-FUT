@@ -272,7 +272,7 @@ function queueMatch3D(event){
   presentation.defendRows=shirtInfo.defendRows;presentation.defendSide=shirtInfo.defendSide;
 
 
- // V21.482: a goal ruled out for offside is shown as a goal (ball in the net) until the VAR check.
+ // V21.484: a goal ruled out for offside is shown as a goal (ball in the net) until the VAR check.
  const visual=presentation.varCheck==='offside'?{...presentation,type:'goal'}:presentation;
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(visual,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(visual);
@@ -336,7 +336,7 @@ function queueMatchCeremony3D(kind){
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
 }
-// V21.482 Spielerwechsel: the change at the touchline (fourth official's board,
+// V21.484 Spielerwechsel: the change at the touchline (fourth official's board,
 // hand slap, the substitute runs on). Shows recorded substitutions only, at
 // most two per match, each pair once; no RNG, no match state besides the counter.
 function queueMatchSubstitutions3D(){

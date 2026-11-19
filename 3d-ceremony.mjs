@@ -5,7 +5,7 @@
  * broadcast side (main stand, tunnel) is +x. Heading 0 faces -z. */
 export const CEREMONY_VERSION='21.482-substitution';
 // V21.444 'trophy': the cup presentation after a won tournament final.
-// V21.482 'substitution': the change at the halfway line with the fourth official's board.
+// V21.484 'substitution': the change at the halfway line with the fourth official's board.
 export const CEREMONY_KINDS=Object.freeze(['kickoff','fulltime','trophy','substitution']);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=v=>{const x=clamp(v);return x*x*(3-2*x)};
@@ -203,7 +203,7 @@ function trophyActor(index,time){
 }
 // Where the cup is: 0 = on the pedestal, 1 = in the captain's hands.
 export function trophyGrip(time){return smooth((time-TR.grab-.42)/.22)}
-// ---- V21.482 substitution (Basti 2026-11-19: "Szenen beim Wechseln der Spieler").
+// ---- V21.484 substitution (Basti 2026-11-19: "Szenen beim Wechseln der Spieler").
 // Play has stopped. The fourth official (actor 15, referee kit) stands at the
 // touchline in front of the end of the dugout (Basti: "die Wechselzone an die
 // Auswechselbank") and holds up the board (red: out, green: in).
@@ -292,7 +292,7 @@ export function ceremonyCamera(kind,time){
  return{position:[fx+11.5-u*.3,2.2,fz+2.2-u*.4],target:[mix(fx-6,fx-1,come),mix(.2,.55,come),fz+.6-u*.2],fov:32,phase:'to-the-fans'};
 }
 
-// V21.482: first from the pitch over the player walking off towards the board,
+// V21.484: first from the pitch over the player walking off towards the board,
 // then low at the line for the hand slap, following the substitute onto the pitch.
 function substitutionCamera(time){
  const T=SUB_TIMES;
