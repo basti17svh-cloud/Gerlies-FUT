@@ -1,0 +1,18 @@
+{
+ "Al Hilal": {
+  "url": "./assets/badges/club-al-hilal.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Al_Hilal_SFC_Logo.svg/330px-Al_Hilal_SFC_Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Al Qadsiah": {
+  "url": "./assets/badges/club-al-qadsiah.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/QAD_LOGO.png/330px-QAD_LOGO.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Estudiantes": {
+  "url": "./assets/badges/club-estudiantes.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Estudiantes_de_la_Plata_crest_%282025%29_cropped.svg/330px-Estudiantes_de_la_Plata_crest_%282025%29_cropped.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "West Ham": {
+  "url": "./assets/badges/club-west-ham.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/c2/West_Ham_United_FC_logo.svg/330px-West_Ham_United_FC_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ }
+}

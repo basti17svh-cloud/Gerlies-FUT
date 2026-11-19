@@ -4761,7 +4761,13 @@ const LOCAL_LEAGUE_LOGOS={
  "nwsl":"./assets/leagues/nwsl.png",
  "nederland vrouwen liga":"./assets/leagues/nederland-vrouwen-liga.jpg",
  "scottish women s league":"./assets/leagues/scottish-women-s-league.png",
- "sverige liga":"./assets/leagues/sverige-liga.png"
+ "sverige liga":"./assets/leagues/sverige-liga.png",
+ // Men's leagues whose API-Sports logo stays blank (Ligue 1) or tiny (Süper Lig) on the cards, or is missing.
+ "ligue 1":"./assets/leagues/ligue-1-white.png",
+ "trendyol super lig":"./assets/leagues/trendyol-super-lig-mark.png",
+ "roshn saudi league":"./assets/leagues/roshn-saudi-league.png",
+ "efl championship":"./assets/leagues/efl-championship.png",
+ "lpf":"./assets/leagues/lpf-mark.png"
 };
 // The game shows some leagues under their full name (LEAGUE_NAME_ALIASES); those find the logo too.
 const LOCAL_LEAGUE_LOGO_CACHE=new Map();
@@ -4794,8 +4800,18 @@ function isWomensAffiliation(team,p={}){
 }
 // EA ships the women's teams with their own team ids and crests, so only EA's crest is exact for them.
 function womensClubLogo(p){const url=String(p?.clubLogo||"").trim();return /^https:\/\/drop-assets\.ea\.com\//.test(url)?url:""}
+// Crests missing from the pinned collection (scripts/fetch-league-logos.cjs -> assets/badges/local-clubs.json).
+const LOCAL_CLUB_BADGES={
+ "al hilal":{name:"Al Hilal",league:"ROSHN Saudi League",url:"./assets/badges/club-al-hilal.png"},
+ "al qadsiah":{name:"Al Qadsiah",league:"ROSHN Saudi League",url:"./assets/badges/club-al-qadsiah.png"},
+ "estudiantes":{name:"Estudiantes",league:"LPF",url:"./assets/badges/club-estudiantes.png"},
+ "west ham":{name:"West Ham",league:"",url:"./assets/badges/club-west-ham.png"},
+ "west ham united":{name:"West Ham",league:"",url:"./assets/badges/club-west-ham.png"},
+ "paris sg":{name:"Paris Saint-Germain",league:"Ligue 1",url:"./assets/badges/ce22ba5e30cb.png"}
+};
 function verifiedClubBadge(team,p={}){
- return isWomensAffiliation(team,p)?null:VERIFIED_BADGES.clubs?.[normalizeKey(team)]||null
+ if(isWomensAffiliation(team,p))return null;
+ const key=normalizeKey(team);return VERIFIED_BADGES.clubs?.[key]||LOCAL_CLUB_BADGES[key]||null
 }
 async function loadVerifiedBadges(){
  try{
@@ -10158,22 +10174,27 @@ function halloweenHeroSlide(at=Date.now()){
 }
 // BLACK FRIDAY hero: silhouettes as teaser from 20.11., then the live team. Never names SBC or objective players early.
 const BLACKFRIDAY_TEASER_FROM="2026-11-20T19:00:00+01:00";
+// Cards revealed on social media are uncovered in the in-game teaser at the same moment (Basti 2026-11-19).
+// Add one row per reveal; only team players, never SBC/objective players.
+const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"}];
+function blackFridayRevealedNames(at=Date.now()){return new Set(BLACKFRIDAY_TEASER_REVEALS.filter(r=>at>=Date.parse(r.at)).map(r=>r.name))}
+function blackFridayRevealText(at=Date.now()){const names=blackFridayRevealedNames(at);if(!names.size)return"";const shown=byEventRating(promoEventEntries(BLACKFRIDAY_EVENT)).filter(e=>names.has(e.player.name));return shown.length?` Schon enthüllt: ${shown.map(e=>`${e.player.name.split(" ").pop()} ${e.player.ovr}`).join(", ")}.`:""}
 function blackFridayLiveEvent(at=Date.now()){return [BLACKFRIDAY_TEAM2_EVENT,BLACKFRIDAY_EVENT].find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
 function blackFridayHeroSlide(at=Date.now()){
  const start=Date.parse(BLACKFRIDAY_EVENT.activeFrom),end=Date.parse(BLACKFRIDAY_TEAM2_EVENT.activeUntilAt),teaserFrom=Date.parse(BLACKFRIDAY_TEASER_FROM);
  if(at<teaserFrom||at>=end||!eventRosterReady(BLACKFRIDAY_EVENT))return null;
- if(at<start){const berlinDay=t=>{const p=berlinParts(new Date(t));return Date.UTC(p.year,p.month-1,p.day)/86400000},days=Math.max(0,berlinDay(start)-berlinDay(at));return{kicker:"DEMNÄCHST · FR 27.11. · 19:00",title:'BLACK<br><span>FRIDAY</span>',text:`Neues Kartendesign, 18 Spezialkarten, jeden Abend ein geheimer Deal des Tages und −30 % auf alle Coin-Packs. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} gehen die Deals los.`,button:"Was kommt?",action:"blackfriday-preview",shield:"%",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"27.11. · 19:00",theme:"blackfriday",teaser:true,event:BLACKFRIDAY_EVENT}}
+ if(at<start){const berlinDay=t=>{const p=berlinParts(new Date(t));return Date.UTC(p.year,p.month-1,p.day)/86400000},days=Math.max(0,berlinDay(start)-berlinDay(at));return{kicker:"DEMNÄCHST · FR 27.11. · 19:00",title:'BLACK<br><span>FRIDAY</span>',text:`Neues Kartendesign, 18 Spezialkarten, jeden Abend ein geheimer Deal des Tages und −30 % auf alle Coin-Packs. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} gehen die Deals los.${blackFridayRevealText(at)}`,button:"Was kommt?",action:"blackfriday-preview",shield:"%",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"27.11. · 19:00",theme:"blackfriday",teaser:true,revealed:blackFridayRevealedNames(at),event:BLACKFRIDAY_EVENT}}
  const ev=blackFridayLiveEvent(at)||BLACKFRIDAY_EVENT,team2=ev.id===BLACKFRIDAY_TEAM2_EVENT.id,deal=blackFridayStoreDealActive(at);
  const text=team2?"Das Cyber-Team ist jetzt in Packs. Black Friday läuft bis Fr 11.12. um 19:00 Uhr.":deal?"18 Team-1-Spezialkarten sind in Packs, jeden Abend um 19:00 kommt ein neuer Deal des Tages und alle Coin-Packs kosten 30 % weniger.":"18 Team-1-Spezialkarten sind in Packs. Team 2 folgt am Fr 04.12. um 19:00 Uhr.";
  return{kicker:team2?"BLACK FRIDAY · TEAM 2":deal?"BLACK FRIDAY · DEALS LAUFEN":"BLACK FRIDAY · TEAM 1",title:'BLACK<br><span>FRIDAY</span>',text,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"%",live:team2?"TEAM 2 JETZT IN PACKS":"TEAM 1 JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:team2?"CYBER-TEAM · BIS 11.12.":"TEAM 2 AB 04.12. · 19:00",theme:"blackfriday",event:ev}
 }
 function openBlackFridayPreview(){
- const entries=promoEventEntries(BLACKFRIDAY_EVENT),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
+ const entries=promoEventEntries(BLACKFRIDAY_EVENT),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3),revealed=blackFridayRevealedNames();
  const rows=[["FR 27.11. · 19:00","Black Friday startet","18 BLACK-FRIDAY-Spezialkarten in allen Packs, die Neon-Deal-Evolution (78–84 GES) und das Neon-Deal-Design im Design-Studio."],["FR 27.11. · 19:00","Shop-Deals","Bis Di 01.12. um 19:00 Uhr kosten alle Coin-Packs im Shop 30 % weniger. Die Points-Preise bleiben gleich."],["FR 27.11. – MO 30.11.","Deal des Tages","Jeden Abend um 19:00 Uhr kommt eine neue geheime SBC dazu. Jede läuft eine ganze Woche. Was drin ist, siehst du erst beim Start."],["FR 27.11. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen BLACK-FRIDAY-Spieler."],["FR 04.12. · 19:00","Cyber-Team","Team 2 löst Team 1 in den Packs ab, dazu eine neue geheime SBC, ein neues Objective und die Cyber-Evolution."],["FR 11.12. · 19:00","Ende","Black Friday endet zusammen mit Season 2."]];
  $("opponentTeamModalTitle").textContent="BLACK FRIDAY · NEON-DEALS";
  $("opponentTeamModalSub").textContent="Vorschau · Team 1 am 27.11., Team 2 am 04.12. · jeweils um 19:00 Uhr";
  delete $("opponentTeamModalBody").dataset.battleEventRelease;
- $("opponentTeamModalBody").innerHTML=`<div class="blackfriday-preview"><div class="blackfriday-preview-cards home-momentum-roster teaser">${mystery.map(e=>`<div class="home-momentum-player">${cardHTML(e.player,e.item,true,e.player.position)}</div>`).join("")}</div><ol class="blackfriday-timeline">${rows.map(([when,title,text])=>`<li><span>${esc(when)}</span><strong>${esc(title)}</strong><p>${esc(text)}</p></li>`).join("")}</ol></div>`;
+ $("opponentTeamModalBody").innerHTML=`<div class="blackfriday-preview"><div class="blackfriday-preview-cards home-momentum-roster teaser">${mystery.map(e=>`<div class="home-momentum-player${revealed.has(e.player.name)?" revealed":""}">${cardHTML(e.player,e.item,true,e.player.position)}</div>`).join("")}</div><ol class="blackfriday-timeline">${rows.map(([when,title,text])=>`<li><span>${esc(when)}</span><strong>${esc(title)}</strong><p>${esc(text)}</p></li>`).join("")}</ol></div>`;
  showUiLayer("opponentTeamModal","opponent-team")
 }
 function homeHeroSlides(){const event=activeMomentumEvent(),halloween=typeof halloweenHeroSlide==="function"?halloweenHeroSlide():null,blackFriday=typeof blackFridayHeroSlide==="function"?blackFridayHeroSlide():null;return[
@@ -10194,7 +10215,7 @@ function renderHomeHero(){
  const roster=$("homeMomentumRoster");roster.hidden=!hero.event;roster.classList.toggle("teaser",!!hero.teaser);
  // Show the strongest cards first (Team 2 would otherwise open with its two keepers).
  const eventPlayers=hero.event?byEventRating(promoEventEntries(hero.event)):[];
- roster.innerHTML=eventPlayers.slice(0,4).map((entry,index)=>`<button type="button" class="home-momentum-player" data-home-event-player="${index}" aria-label="${esc(entry.player.name)} Spielerbiografie öffnen">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`).join("")+(eventPlayers.length>4?`<span class="home-momentum-count">+${eventPlayers.length-4} weitere Karten im Team</span>`:"");
+ roster.innerHTML=eventPlayers.slice(0,4).map((entry,index)=>{const secret=hero.teaser&&!hero.revealed?.has(entry.player.name);return`<button type="button" class="home-momentum-player${hero.teaser&&!secret?" revealed":""}" data-home-event-player="${index}" aria-label="${secret?"Geheime Karte":esc(entry.player.name)+" Spielerbiografie öffnen"}">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`}).join("")+(eventPlayers.length>4?`<span class="home-momentum-count">+${eventPlayers.length-4} weitere Karten im Team</span>`:"");
  $("homeSliderDots").innerHTML=slides.map((_,i)=>`<span class="home-slider-dot ${i===homeHeroSlide?"active":""}" data-home-slide="${i}" aria-hidden="true"></span>`).join("")
 }
 function renderFounderUpgradeNotice(){
@@ -11089,7 +11110,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.488";
+const GFUT_BUILD="V21.489";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11147,7 +11168,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21488",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21489",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

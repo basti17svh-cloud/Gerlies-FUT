@@ -46,5 +46,29 @@
  "Iceland League": {
   "url": "./assets/leagues/iceland-league.png",
   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/BestaLeague.png/330px-BestaLeague.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Norge Kvinner Liga": {
+  "url": "./assets/leagues/norge-kvinner-liga.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/e/e1/Toppserien_logo.svg/330px-Toppserien_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Ligue 1": {
+  "url": "./assets/leagues/ligue-1.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Logo_Ligue_1_McDonald%27s_2024.svg/330px-Logo_Ligue_1_McDonald%27s_2024.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Trendyol Süper Lig": {
+  "url": "./assets/leagues/trendyol-super-lig.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/0f/Turkish_S%C3%BCper_Lig_logo_%282024%29.svg/330px-Turkish_S%C3%BCper_Lig_logo_%282024%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "ROSHN Saudi League": {
+  "url": "./assets/leagues/roshn-saudi-league.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/7/75/Roshn_Saudi_League_Logo.svg/330px-Roshn_Saudi_League_Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "EFL Championship": {
+  "url": "./assets/leagues/efl-championship.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/0f/EFL_Championship_Logo.svg/330px-EFL_Championship_Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "LPF": {
+  "url": "./assets/leagues/lpf.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/6/64/Liga_Profesional_de_F%C3%BAtbol_%28Argentina%29_logo.svg/330px-Liga_Profesional_de_F%C3%BAtbol_%28Argentina%29_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
  }
 }
