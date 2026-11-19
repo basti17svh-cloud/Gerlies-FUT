@@ -17,13 +17,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Download the women's league logos
+      - name: Download league logos and missing club crests
         run: node scripts/fetch-league-logos.cjs
       - name: Commit the logos to this branch
         run: |
-          git add assets/leagues
+          git add assets/leagues assets/badges
           if git diff --cached --quiet; then echo "League logos unchanged"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
-          git commit -m "League logos: download women's league logos"
+          git commit -m "League logos: download league logos and club crests"
           git push origin HEAD:${GITHUB_REF_NAME}
