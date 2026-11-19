@@ -8,15 +8,15 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21471';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21480';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21480';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21486';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21486';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21471';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,SUB_COACH_SPOT,SUB_BENCH_SEATS,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21484';
 // V21.470: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
-import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21471';
+import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21486';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
 import {createCrowdLife,crowdLifeWanted} from './3d-crowd-life.mjs?v=21471';

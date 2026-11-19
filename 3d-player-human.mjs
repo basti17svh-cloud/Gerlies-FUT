@@ -49,10 +49,14 @@ export async function prepareFooteraHumanModel(){
   // about a third fewer bytes). Same data bit for bit once decoded; without
   // WebAssembly or on any decode error the original GLB is loaded instead.
   const decoder=typeof WebAssembly==='object'?import('./vendor/three/meshopt_decoder.mjs').then(m=>m.MeshoptDecoder.ready.then(()=>m.MeshoptDecoder)).catch(()=>null):Promise.resolve(null);
+  // V21.486: the compressed copies had their skin textures mixed up (blue
+  // skin, every dark-skinned player looked alike); fixed files get their own
+  // ?v= so phones never keep the broken copy from the cache.
+  const compressedUrl=url=>url.replace('/models/footera-','/models/compressed/footera-').replace(/\?v=\d+/,'?v=21486');
   const fetchGltf=async url=>{
    const meshopt=await decoder;
    if(meshopt&&url.includes('/models/footera-')){
-    try{return await new GLTFLoader().setMeshoptDecoder(meshopt).loadAsync(url.replace('/models/footera-','/models/compressed/footera-'))}
+    try{return await new GLTFLoader().setMeshoptDecoder(meshopt).loadAsync(compressedUrl(url))}
     catch(error){console.warn('Footera: compressed model failed, loading original',error)}
    }
    return new GLTFLoader().loadAsync(url);

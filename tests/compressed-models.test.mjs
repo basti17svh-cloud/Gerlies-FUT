@@ -79,6 +79,10 @@ for(const name of ['footera-humans','footera-real','footera-metahuman']){
   assert.deepEqual(dst.glb.json.nodes.map(n=>n.name),src.glb.json.nodes.map(n=>n.name));
   assert.deepEqual(dst.glb.json.materials.map(m=>m.name),src.glb.json.materials.map(m=>m.name));
   assert.deepEqual(dst.images,src.images,'textures byte-identical and in the same order');
+  // V21.486: extras.footera.skins points at texture SLOTS; they must name the same images.
+  assert.deepEqual(dst.glb.json.textures,src.glb.json.textures,'texture slots unchanged (skin tones)');
+  const texRefs=json=>JSON.stringify(json.materials,(k,v)=>k==='index'||typeof v!=='number'?v:undefined);
+  assert.equal(texRefs(dst.glb.json),texRefs(src.glb.json),'materials use the same texture slots');
   assert.deepEqual([...dst.out.keys()].sort(),[...src.out.keys()].sort());
   for(const [key,a] of src.out){
    const b=dst.out.get(key);
@@ -91,7 +95,9 @@ for(const name of ['footera-humans','footera-real','footera-metahuman']){
 test('the game loads the compressed bodies and falls back to the originals',()=>{
  const src=fs.readFileSync(path.join(root,'3d-player-human.mjs'),'utf8');
  assert.match(src,/import\('\.\/vendor\/three\/meshopt_decoder\.mjs'\)/);
- assert.match(src,/setMeshoptDecoder\(meshopt\)\.loadAsync\(url\.replace\('\/models\/footera-','\/models\/compressed\/footera-'\)\)/);
+ assert.match(src,/setMeshoptDecoder\(meshopt\)\.loadAsync\(compressedUrl\(url\)\)/);
+ // V21.486: the fixed compressed copies carry their own ?v= so no phone keeps the broken ones.
+ assert.match(src,/compressedUrl=url=>url\.replace\('\/models\/footera-','\/models\/compressed\/footera-'\)\.replace\(\/\\\?v=\\d\+\/,'\?v=21486'\)/);
  assert.match(src,/return new GLTFLoader\(\)\.loadAsync\(url\)/);
  assert.ok(fs.readFileSync(path.join(root,'service-worker.js'),'utf8').includes('"./vendor/three/meshopt_decoder.mjs"'));
 });

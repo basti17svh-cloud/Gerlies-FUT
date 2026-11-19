@@ -68,6 +68,38 @@ const same=(a,b)=>{
  return '';
 };
 
+
+// V21.486 (Basti: "Männchen sind blau"): glTF-Transform writes a texture
+// slot only for images a material uses and renumbers the rest, but
+// extras.footera.skins names skin textures by their slot in the source GLB
+// (the extra skin tones sit in no material). After writing, the texture list
+// is copied back from the source (same images, same order) and the material
+// references are renumbered to it, so every texture index means the same
+// picture as before.
+export function keepTextureSlots(srcFile,dstFile){
+ const read=file=>{const b=fs.readFileSync(file),n=b.readUInt32LE(12);return{b,n,json:JSON.parse(b.subarray(20,20+n).toString())}};
+ const src=read(srcFile).json,dst=read(dstFile);
+ const images=list=>(list||[]).length;
+ if(images(src.images)!==images(dst.json.images))throw new Error('image count differs '+dstFile);
+ if(!(src.textures||[]).every((t,i)=>t.source===i))throw new Error('source texture slots are not 1:1 with images '+srcFile);
+ const old=dst.json.textures||[];
+ const walk=node=>{
+  if(!node||typeof node!=='object')return;
+  if(Array.isArray(node)){node.forEach(walk);return}
+  for(const [key,value] of Object.entries(node)){
+   if(/Texture$/.test(key)&&value&&typeof value.index==='number')value.index=old[value.index].source;
+   else walk(value);
+  }
+ };
+ walk(dst.json.materials);
+ dst.json.textures=src.textures.map(t=>({...t}));
+ let text=JSON.stringify(dst.json);while(Buffer.byteLength(text)%4)text+=' ';
+ const json=Buffer.from(text),rest=dst.b.subarray(20+dst.n),head=Buffer.alloc(20);
+ head.write('glTF',0);head.writeUInt32LE(2,4);head.writeUInt32LE(20+json.length+rest.length,8);
+ head.writeUInt32LE(json.length,12);head.writeUInt32LE(0x4E4F534A,16);
+ fs.writeFileSync(dstFile,Buffer.concat([head,json,rest]));
+}
+
 const checkOnly=process.argv.includes('--check');
 fs.mkdirSync(OUT,{recursive:true});
 let failed=false;
@@ -78,6 +110,7 @@ for(const name of FOOTERA_COMPRESSED_MODELS){
   doc.createExtension(EXTMeshoptCompression).setRequired(true)
    .setEncoderOptions({method:EXTMeshoptCompression.EncoderMethod.QUANTIZE});
   await io.write(dst,doc);
+  keepTextureSlots(src,dst);
  }
  const problem=same(fingerprint(await io.read(src)),fingerprint(await io.read(dst)));
  const a=fs.statSync(src).size,b=fs.statSync(dst).size;
