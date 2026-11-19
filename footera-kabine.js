@@ -968,13 +968,41 @@
  /* ---------- V21.443 Siegerfoto ---------- */
  // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
  // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
- const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21486";
- const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
+ // V21.488 (Basti: Siegerfoto "scharf in HD, nicht so Taschenrechner"): photos
+ // render at 1600 px and live in IndexedDB (too big for localStorage next to the
+ // save). The old 720 px cache (v1) is dropped, so a tap develops them again in HD.
+ const PHOTO_KEY="footera-kabine-photos-v2",PHOTO_LEGACY_KEY="footera-kabine-photos-v1",PHOTO_DB="footera-kabine-photos",PHOTO_KEEP=8,PHOTO_HD=1600,PHOTO_SAFE=960,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21488";
+ let photoDbOpen=null;const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}
  function photoUrl(id){if(photoMem.has(id))return photoMem.get(id);const c=photoCache()[id];return c&&typeof c.url==="string"&&c.url.startsWith("data:image/")?c.url:""}
- function keepPhoto(id,url){
-  try{const c=photoCache();c[id]={url,at:Date.now()};const ids=Object.keys(c).sort((a,b)=>num(c[b].at)-num(c[a].at));ids.slice(PHOTO_KEEP).forEach(k=>delete c[k]);localStorage.setItem(PHOTO_KEY,JSON.stringify(c))}
+ function photoDb(){
+  if(photoDbOpen)return photoDbOpen;
+  photoDbOpen=new Promise((res,rej)=>{try{const r=indexedDB.open(PHOTO_DB,1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+  photoDbOpen.catch(()=>{photoDbOpen=null});
+  return photoDbOpen;
+ }
+ function photoTx(mode,fn){return photoDb().then(db=>new Promise((res,rej)=>{const tx=db.transaction("photos",mode),st=tx.objectStore("photos");const out=fn(st);tx.oncomplete=()=>res(out&&"result" in out?out.result:undefined);tx.onerror=()=>rej(tx.error)}))}
+ function loadPhoto(id){
+  if(typeof indexedDB==="undefined")return Promise.resolve("");
+  return photoTx("readonly",st=>st.get(id)).then(v=>v&&typeof v.url==="string"&&v.url.startsWith("data:image/")?v.url:"").catch(()=>"");
+ }
+ function dropLegacyPhotos(){try{localStorage.removeItem(PHOTO_LEGACY_KEY)}catch(_){}}
+ async function keepPhoto(id,url){
+  dropLegacyPhotos();
+  if(typeof indexedDB!=="undefined")try{
+   await photoTx("readwrite",st=>st.put({url,at:Date.now()},id));
+   const all=await photoTx("readonly",st=>st.getAllKeys());
+   if(Array.isArray(all)&&all.length>PHOTO_KEEP){
+    const rows=await Promise.all(all.map(k=>photoTx("readonly",st=>st.get(k)).then(v=>[k,num(v?.at)])));
+    rows.sort((a,b)=>b[1]-a[1]);const old=rows.slice(PHOTO_KEEP).map(r=>r[0]);
+    if(old.length)await photoTx("readwrite",st=>{old.forEach(k=>st.delete(k))});
+   }
+   return;
+  }catch(_){}
+  // No IndexedDB: keep a smaller copy in localStorage, never more than two.
+  url=await shrink(url,1080,.85);
+  try{const c=photoCache();c[id]={url,at:Date.now()};const ids=Object.keys(c).sort((a,b)=>num(c[b].at)-num(c[a].at));ids.slice(2).forEach(k=>delete c[k]);localStorage.setItem(PHOTO_KEY,JSON.stringify(c))}
   catch(e){try{localStorage.setItem(PHOTO_KEY,JSON.stringify({[id]:{url,at:Date.now()}}))}catch(_){}}
  }
  function photoHTML(m){
@@ -990,8 +1018,10 @@
   // Only reuse pictures already cached. Never launch WebGL for unseen chat history.
   if(typeof document==="undefined"||!document.querySelectorAll)return;
   document.querySelectorAll("#kabineList .kb-photo:not(.ready)").forEach(el=>{
-   const url=photoUrl(el.dataset.kbPhoto);
-   if(url)showPhoto(el.dataset.kbPhoto,url);
+   const id=el.dataset.kbPhoto,url=photoUrl(id);
+   if(url){showPhoto(id,url);return}
+   // HD photos come back from IndexedDB (a file read, no 3D work).
+   loadPhoto(id).then(hd=>{if(!hd)return;photoMem.set(id,hd);showPhoto(id,hd)});
   });
  }
  function developPhoto(id){
@@ -1013,9 +1043,12 @@
     const mod=await import(PHOTO_MODULE);
     let manager=null;try{manager=root.FooteraManager?.forPhoto?.()||null}catch(_){}
     const mobile=typeof matchMedia==="function"&&matchMedia("(max-width:700px)").matches;
-    const width=mobile?720:960;
     const spec=m.photo.signing?m.photo:{...m.photo,manager};
-    const r=m.photo.signing?await mod.renderSigningPhoto(spec,{width,height:Math.round(width*1.25)}):await mod.renderKabinePhoto(spec,{width,height:Math.round(width*.75)});
+    const render=width=>m.photo.signing?mod.renderSigningPhoto(spec,{width,height:Math.round(width*1.25),quality:.9}):mod.renderKabinePhoto(spec,{width,height:Math.round(width*.75),quality:.9});
+    // HD first (signing portrait 1280 x 1600); a phone without the GPU memory
+    // for it gets the former size instead of no photo.
+    let r=null;try{r=await render(m.photo.signing?1280:PHOTO_HD)}catch(e){console.warn("Kabinenfoto HD nicht möglich, kleiner:",e)}
+    if(!r?.url||!r.url.startsWith("data:image/")||r.url.length<2000)r=await render(mobile?720:PHOTO_SAFE);
     if(!r?.url||!r.url.startsWith("data:image/"))throw new Error("Empty photo");
     photoMem.set(id,r.url);
     while(photoMem.size>PHOTO_KEEP)photoMem.delete(photoMem.keys().next().value);
@@ -1037,7 +1070,7 @@
   });
  }
  function openPhoto(id){
-  const url=photoUrl(id);if(!url)return;
+  const url=photoUrl(id)||[...document.querySelectorAll("#kabineList .kb-photo.ready")].find(el=>el.dataset.kbPhoto===id)?.querySelector("img")?.getAttribute("src")||"";if(!url)return;
   const box=document.createElement("div");box.className="kb-photo-view";box.setAttribute("role","dialog");box.setAttribute("aria-label","Siegerfoto");
   box.innerHTML=`<img src="${escText(url)}" alt="Siegerfoto aus der Kabine"><div class="kb-photo-actions"><button type="button" class="kb-photo-btn" data-kb-photo-share>Teilen</button><button type="button" class="kb-photo-btn ghost" data-kb-photo-close>Schließen</button></div>`;
   box.addEventListener("click",async e=>{

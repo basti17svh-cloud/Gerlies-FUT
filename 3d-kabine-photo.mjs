@@ -534,7 +534,7 @@ export async function renderKabinePhoto(spec={},opts={}){
   g.fillStyle=v;g.fillRect(0,0,width,height);
   g.globalCompositeOperation='soft-light';g.fillStyle='rgba(255,196,140,.18)';g.fillRect(0,0,width,height);g.globalCompositeOperation='source-over';
   const noise=g.getImageData(0,0,width,height),d=noise.data;let s=photoHash(seed+'grain');
-  for(let i=0;i<d.length;i+=4){s=(Math.imul(1664525,s)+1013904223)>>>0;const n=((s>>>24)-128)*.06;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
+  for(let i=0;i<d.length;i+=4){s=(Math.imul(1664525,s)+1013904223)>>>0;const n=((s>>>24)-128)*.04;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
   g.putImageData(noise,0,0);
   return{url:out.toDataURL('image/jpeg',opts.quality||.86),width,height,variant:layout.variant,actors:layout.actors.length};
  }finally{
