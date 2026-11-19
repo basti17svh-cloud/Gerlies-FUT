@@ -60,3 +60,19 @@ test('friends and online opponents are never coached by the CPU',()=>{
  const a=setup({kind:'friend'});a.ctx.match.home=2;a.run(88);
  assert.equal(a.ctx.match.aiBrain,undefined);assert.equal(a.ctx.match.opponentProfile,a.original);assert.equal(a.ticker.length,0);
 });
+test('the CPU targets your weaker full-back with wide attacks and stops when you fix it',()=>{
+ const a=setup();
+ let home=[{slot:'GK',uid:'g',name:'Keeper',attrs:{def:50,pac:50}},{slot:'LB',uid:'lb',name:'Wackel',attrs:{def:58,pac:62}},{slot:'RB',uid:'rb',name:'Fels',attrs:{def:84,pac:80}},{slot:'ST',uid:'st',name:'Neun',attrs:{def:30,pac:90}}];
+ const rows=a.ctx.matchActorRows;a.ctx.matchActorRows=side=>side==='home'?home:rows(side);
+ a.run(3);
+ assert.ok(a.ticker.some(x=>/linke Seite: Wackel/.test(x.t)));
+ const lb=home[1],rb=home[2];
+ assert.equal(a.api.targetWeight(a.ctx.match,'away','cross',lb),3);
+ assert.equal(a.api.targetWeight(a.ctx.match,'away','cross',rb),1);
+ assert.equal(a.api.targetWeight(a.ctx.match,'away','through',lb),1,'only wide attacks go at him');
+ assert.equal(a.api.targetWeight(a.ctx.match,'home','cross',lb),1,'never affects your own attacks');
+ home=[home[0],{slot:'LB',uid:'lb2',name:'Neu',attrs:{def:83,pac:81}},home[2],home[3]];
+ a.run(15);
+ assert.ok(a.ticker.some(x=>/linke Seite hält jetzt/.test(x.t)),'a better full-back closes the gap');
+ assert.equal(a.api.targetWeight(a.ctx.match,'away','cross',home[1]),1);
+});
