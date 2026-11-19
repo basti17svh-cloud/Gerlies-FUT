@@ -4763,7 +4763,7 @@ const LOCAL_LEAGUE_LOGOS={
  "scottish women s league":"./assets/leagues/scottish-women-s-league.png",
  "sverige liga":"./assets/leagues/sverige-liga.png",
  // Men's leagues whose API-Sports logo stays blank (Ligue 1) or tiny (Süper Lig) on the cards, or is missing.
- "ligue 1":"./assets/leagues/ligue-1-white.png",
+ "ligue 1":"./assets/leagues/ligue-1-white-mark.png",
  "trendyol super lig":"./assets/leagues/trendyol-super-lig-mark.png",
  "roshn saudi league":"./assets/leagues/roshn-saudi-league.png",
  "efl championship":"./assets/leagues/efl-championship.png",
@@ -7155,7 +7155,7 @@ $("resultGrid").addEventListener("click",e=>{
 $("resultAllClub").addEventListener("click",()=>{
  const dupMap=packDuplicateMap();let added=0;const boosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.collectAll(state):0;
  pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)&&!isFounderItem(i)){if(!state.club.some(x=>x.uid===i.uid))state.club.push(i);pendingResolved.add(k);added++}});
- if(!added&&!boosts)return;state.pendingResolved=[...pendingResolved];save();flushSave();toast(boosts?`${added} Spieler und ${boosts} Chemie-Boosts zum Verein hinzugefügt.`:added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
+ if(!added&&!boosts)return;state.pendingResolved=[...pendingResolved];save();flushSave();toast(boosts?`${added?`${added} Spieler und `:""}${boosts} Chemie-Boost${boosts===1?"":"s"} zum Verein hinzugefügt.`:added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
  packResultsRefresh()
 });
 $("resultQuickSellAll").addEventListener("click",()=>resolvePackSellBatch());
@@ -10176,7 +10176,7 @@ function halloweenHeroSlide(at=Date.now()){
 const BLACKFRIDAY_TEASER_FROM="2026-11-20T19:00:00+01:00";
 // Cards revealed on social media are uncovered in the in-game teaser at the same moment (Basti 2026-11-19).
 // Add one row per reveal; only team players, never SBC/objective players.
-const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"}];
+const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"},{at:"2026-11-24T13:00:00+01:00",name:"Nuno Mendes"}];
 function blackFridayRevealedNames(at=Date.now()){return new Set(BLACKFRIDAY_TEASER_REVEALS.filter(r=>at>=Date.parse(r.at)).map(r=>r.name))}
 function blackFridayRevealText(at=Date.now()){const names=blackFridayRevealedNames(at);if(!names.size)return"";const shown=byEventRating(promoEventEntries(BLACKFRIDAY_EVENT)).filter(e=>names.has(e.player.name));return shown.length?` Schon enthüllt: ${shown.map(e=>`${e.player.name.split(" ").pop()} ${e.player.ovr}`).join(", ")}.`:""}
 function blackFridayLiveEvent(at=Date.now()){return [BLACKFRIDAY_TEAM2_EVENT,BLACKFRIDAY_EVENT].find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
@@ -11110,7 +11110,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.489";
+const GFUT_BUILD="V21.490";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11168,7 +11168,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21489",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21490",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

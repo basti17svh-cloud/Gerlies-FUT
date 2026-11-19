@@ -12,6 +12,8 @@
  function progress(){return state.eventChallenges?.[ID]?.wins||[]}
  function claimKey(stage){return ID+':'+stage}
  function active(at=Date.now()){return at>=START&&at<END}
+ // V21.490: after the event the tile only stays while an earned round still waits to be claimed.
+ function visible(at=Date.now()){return at<END||progress().some(w=>!state.challengeClaims?.[claimKey(w.stage)])}
  function canStart(at=Date.now()){
   if(busy)return 'Die Belohnung wird gerade bestätigt.';
   if(at<START)return 'Der Halloween-Cup startet am 30.10. um 19:00 Uhr.';
@@ -70,5 +72,5 @@
    }).join('')+'</ol><section class="play-box"><button type="button" class="primary startmode" data-mode="halloween-cup" '+(reason?'disabled':'')+'>'+ (won>=3?'Cup gewonnen':at<START?'Start am 30.10. · 19:00':at>=END?'Cup beendet':'Zur Aufstellung · '+rounds[won].label)+'</button><p class="play-note">Niederlage? Versuche dieselbe Runde erneut. Bei Gleichstand folgen Verlängerung und Elfmeterschießen. Jede Belohnung einmal pro Konto. Zum Abholen benötigst du dein bestätigtes Footera-Konto.</p><p role="status">'+esc(message)+'</p></section>';
  }
  document.addEventListener('click',e=>{if(e.target.closest('[data-mode="halloween-cup"]')){openModeEntry(MODE);return}const b=e.target.closest('[data-cup-claim]');if(b)claim(Number(b.dataset.cupClaim))});
- window.FooteraHalloweenCup={ID,MODE,START,END,rounds,active,canStart,opponent,kickoff,record,render,applyReward,busy:()=>busy};
+ window.FooteraHalloweenCup={ID,MODE,START,END,rounds,active,visible,canStart,opponent,kickoff,record,render,applyReward,busy:()=>busy};
 })();

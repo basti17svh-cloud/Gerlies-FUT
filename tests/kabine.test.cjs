@@ -311,3 +311,15 @@ test('V21.488: Siegerfoto renders in HD, is kept in IndexedDB and falls back to 
  const hydrate=src.slice(src.indexOf('function hydratePhotos(){'),src.indexOf('function developPhoto(id)'));
  assert.match(hydrate,/loadPhoto\(id\)/,'cached HD photos come back when the chat opens');
 });
+
+test('V21.490: keeper gags mention the keeper by name, never an empty @[]',()=>{
+ let keeperGags=0;
+ for(let i=0;i<400;i++){
+  const players=squad();players[2].goals=1;
+  const r=api.matchMessages({seed:'gag'+i,home:'A',away:'B',gh:1,ga:0,players,goals:[g('home',30,'Harry Kane','u2')],potm:null,recentGags:[]});
+  const t=text(r);
+  assert.ok(!/@\[\s*\]/.test(t),'empty mention in: '+t);
+  if(/Abschlag ins Publikum|Morgen 20 Schüsse/.test(t)){keeperGags++;assert.match(t,/@\[Manuel Neuer\] warum ging|Morgen 20 Schüsse, @\[Manuel Neuer\]/)}
+ }
+ assert.ok(keeperGags>0,'keeper gags show up');
+});
