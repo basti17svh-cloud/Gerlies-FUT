@@ -1,5 +1,6 @@
 /* Footera V21.108 – seeded CPU opponent identities, using the existing tactics engine.
-   V21.472 – the CPU coach reacts during the match (score, flanks, fatigue). */
+   V21.472 – the CPU coach reacts during the match (score, flanks, fatigue).
+   V21.473 – the CPU attacks your weaker full-back (and stops when you fix it). */
 (function(root){
  "use strict";
  const profiles=Object.freeze([
@@ -105,7 +106,7 @@
  function say(match,kind,text,tone="analysis"){
   const brain=match.aiBrain,minute=Math.min(120,Math.floor(match.minute));
   brain.decisions.push({minute,kind,text});if(brain.decisions.length>16)brain.decisions.shift();
-  const ticker=fn("matchCommentaryTicker");if(ticker)ticker((kind==="sub"?"↔ ":kind==="flank"?"🛡 ":"🧠 ")+text,tone);
+  const ticker=fn("matchCommentaryTicker");if(ticker)ticker((kind==="sub"?"↔ ":kind==="flank"?"🛡 ":kind==="target"?"🎯 ":"🧠 ")+text,tone);
   const log=fn("addLog");if(log)log(text);
  }
  function desiredMode(match,id){
@@ -195,7 +196,7 @@
  function think(match){
   if(!brainActive(match)||match.finished)return;
   const id=activeId(match.opponentProfile);ensureBrain(match);
-  thinkTactics(match,id);thinkFlank(match);thinkSubs(match);
+  thinkTactics(match,id);thinkFlank(match);thinkTarget(match);thinkSubs(match);
  }
  // Bounded flank effect: the secured side defends wide attacks better, the
  // CPU's own build-up loses a little because the full-back stays home.
@@ -207,6 +208,37 @@
   return wide?{build:-.012,duel:-.045,xg:0}:NEUTRAL;
  }
  function decisions(match){return match?.aiBrain?.decisions||[]}
+ // V21.473: the CPU coach looks for YOUR weaker full-back and sends his wide
+ // attacks there. Only the choice of the duel defender is weighted, the duel
+ // itself is decided by that player's real attributes. Re-checked during the
+ // match, so subbing in a better full-back closes the gap.
+ const FULLBACK={left:["LB","LWB"],right:["RB","RWB"]};
+ function fullbackScore(row){const a=row?.attrs||{};return(Number(a.def)||60)*.6+(Number(a.pac)||60)*.4}
+ function findWeakSide(rows){
+  const pick=f=>rows.find(r=>FULLBACK[f].includes(r.slot))||null,L=pick("left"),R=pick("right");
+  if(!L||!R)return null;
+  const gap=fullbackScore(L)-fullbackScore(R);if(Math.abs(gap)<3)return null;
+  const w=gap<0?L:R;return{flank:gap<0?"left":"right",name:w.name||"",uid:String(w.uid||""),def:Math.round(Number(w.attrs?.def)||0),pac:Math.round(Number(w.attrs?.pac)||0)};
+ }
+ function thinkTarget(match){
+  const brain=match.aiBrain,rows=fn("matchActorRows");if(!rows)return;
+  const due=brain.targetChecked===undefined||match.minute-brain.targetChecked>=10;if(!due)return;
+  brain.targetChecked=match.minute;
+  const weak=findWeakSide(rows("home")),old=brain.target||null;
+  if(weak&&(!old||old.uid!==weak.uid)){
+   brain.target=weak;
+   say(match,"target",`${teamName()} sucht gezielt eure ${weak.flank==="left"?"linke":"rechte"} Seite: ${weak.name} (DEF ${weak.def}, PAC ${weak.pac}) bekommt viele Duelle.`);
+  }else if(!weak&&old){
+   brain.target=null;
+   say(match,"target",`Eure ${old.flank==="left"?"linke":"rechte"} Seite hält jetzt – ${teamName()} greift wieder breiter verteilt an.`);
+  }
+ }
+ function targetWeight(match,attackingSide,kind,row){
+  const t=match?.aiBrain?.target;
+  if(!t||attackingSide!=="away"||!brainActive(match))return 1;
+  if(kind!=="cross"&&kind!=="cutback"&&kind!=="dribble")return 1;
+  return String(row?.uid||"")===t.uid&&FULLBACK[t.flank].includes(row?.slot)?3:1;
+ }
  function install(){
   if(typeof getSquadBattleOpponents==="function"){
    const raw=getSquadBattleOpponents;
@@ -261,6 +293,6 @@
    };
   }
  }
- root.FooteraOpponentStyles={profiles,hash,styleFor,activeId,matchTuning,possessionBias,think,flankTuning,attackFlank,decisions,desiredMode};
+ root.FooteraOpponentStyles={profiles,hash,styleFor,activeId,matchTuning,possessionBias,think,flankTuning,attackFlank,decisions,desiredMode,targetWeight,findWeakSide};
  install();
 })(globalThis);
