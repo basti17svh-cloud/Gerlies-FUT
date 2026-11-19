@@ -136,7 +136,7 @@ function freeKickShape(key,attack,j,target){
  const [ux,uz]=goalUnit(spot);
  if(key==='free_kick_cross'){
   // A cross from the touchline: a two-man wall, everyone else in or around the box.
-  if(!attack&&j<2){const off=j?.3:-.3,d=9.15+(target?1.1:0);return[spot[0]+ux*d-uz*off,spot[1]+uz*d+ux*off]}
+  if(!attack&&j<2){const off=j?.3:-.3,d=9.15;return[spot[0]+ux*d-uz*off,spot[1]+uz*d+ux*off]}
   if(!attack&&j<4)return(target?CROSS_MARKER_TARGETS:CROSS_MARKERS)[j-2];
   return src;
  }
@@ -157,7 +157,9 @@ function restartPosition(index,seconds,kind,key=kind){
  // V21.479: the box moves when the cross is struck, not after the 'shot'.
  const release=key==='free_kick_cross'?5.7:RESTART_RELEASE[kind],wall=kind==='free_kick'&&!attack&&(key==='free_kick_cross'?j<2:j<4);
  // Micro-positioning before delivery stays behind the penalty line and arc.
- const drift=wall?0:kind==='penalty'?.075:.18;
+ // The two markers at a crossed free kick hold their man instead of shuffling.
+ const marker=key==='free_kick_cross'&&!attack&&j<4;
+ const drift=wall||marker?0:kind==='penalty'?.075:.18;
  const idle=drift*Math.sin(seconds*(.62+(index%4)*.09)+index*.83)
    *smooth(seconds/1.8)*(1-smooth((seconds-release+.38)/.42));
  // Individual reaction timing prevents synchronized sprints into the box.

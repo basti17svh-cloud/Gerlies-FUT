@@ -2763,7 +2763,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      if(i===0&&time>=4.9||hugWeight(i,time)>0)return;
      const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence);
      const dx=after[0]-before[0],dz=after[1]-before[1],speed=clamp(Math.hypot(dx,dz)/.04*rate/6.5);
-     const wall=extended==='free_kick'&&i>=8&&i<=11&&physical<8.6;
+     // V21.479: at the crossed free kick only two stand in the wall, and they turn to run once it is struck.
+     const crossKick=/^extended_free_kick_cross/.test(sequence),wall=extended==='free_kick'&&i>=8&&i<=(crossKick?9:11)&&physical<(crossKick?6.4:8.6);
      const heading=wall?extendedWallHeading(sequence):extended==='throw_in'&&i===1&&physical<3.5?Math.PI/2*(extendedMirrored(sequence)?-1:1):
       Math.hypot(dx,dz)>.001?Math.atan2(-dx,-dz):p.root.rotation.y;
      const stride=gaitPhase(i,time),control=carrierIndex===i?carrierState.weight:0;
