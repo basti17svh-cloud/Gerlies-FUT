@@ -149,7 +149,12 @@ test('shirt name and crest: surname in capitals, crest colours resolved for an i
  assert.match(svg,/^<svg class="club-crest-art"[\s\S]*<\/svg>$/);
  assert.doesNotMatch(svg,/var\(--/);
  assert.match(svg,/FCG/);
- assert.equal(footeraCrestSVG('<span class="fh3d-opponent-crest">AB</span>'),null);
+ // V21.471: a computer opponent's initials badge becomes a real shirt crest
+ // with a fixed pixel size (Safari draws a size-less SVG as nothing).
+ const badge=footeraCrestSVG('<span class="fh3d-opponent-crest">AB</span>');
+ assert.match(badge,/^<svg class="club-crest-art" width="400" height="440"[\s\S]*>AB<\/text><\/svg>$/);
+ assert.match(svg,/^<svg class="club-crest-art" width="400" height="440" /);
+ assert.equal(footeraCrestSVG('<span>nothing</span>'),null);
 });
 
 function recordingContext(){

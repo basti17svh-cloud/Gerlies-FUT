@@ -215,35 +215,51 @@ export function createCrowdLife(THREE,{scene,track=o=>o,weak=false,high=false,mo
  let mosaic=null;
  function addMosaic(specs){
   if(!mosaicWanted)return;
-  const cards=specs.filter(s=>lifeOf(s)[2]>=0);
-  if(!cards.length)return;
-  const W=224,H=Math.max(8,crowdRows*4),c=canvas(W,H),ctx=c.getContext('2d'),kit=kitOf(hostTeam);
+  // V21.471 (Basti: "sehr unvollständig und unsauber"): the cards used to sit
+  // over each fan, so the jittered, staggered crowd left holes, aisles and a
+  // half-step gap between rows, and the motif only used the middle of the
+  // picture. Now the whole end holds up one closed card grid: two cards per
+  // terrace step, one every half metre across the full stand, aisles too.
+  // Each card takes the average colour of its cell of the motif.
+  if(!specs.some(s=>lifeOf(s)[2]>=0))return;
+  const rows=Math.max(1,crowdRows),sub=2,lines=rows*sub,half=37.3,pitch=mobileStandard||weak?.62:.52;
+  const cols=Math.max(24,Math.round(half*2/pitch)),cw=half*2/cols,cell=6;
+  const W=cols*cell,H=lines*cell,c=canvas(W,H),ctx=c.getContext('2d'),kit=kitOf(hostTeam);
   let drawn=false;
   if(hostTeam==='home'&&choreo&&typeof drawChoreo==='function'){try{drawChoreo(ctx,W,H,choreo,crestImage);drawn=true}catch(_){}}
   if(!drawn){
-   // Bold club-colour blocks read from far away (text would not at one card per fan):
-   // broad horizontal bands with a white sash across the whole end.
+   // Bold club-colour blocks read from far away: broad bands with a white sash.
    for(let i=0;i<4;i++){ctx.fillStyle=i%2?kit.shirtSecondary:kit.shirt;ctx.fillRect(0,i*H/4,W,H/4+1)}
    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.moveTo(W*.30,H);ctx.lineTo(W*.46,0);ctx.lineTo(W*.58,0);ctx.lineTo(W*.42,H);ctx.closePath();ctx.fill();
    ctx.fillStyle=kit.shirt;ctx.beginPath();ctx.moveTo(W*.40,H);ctx.lineTo(W*.505,0);ctx.lineTo(W*.535,0);ctx.lineTo(W*.43,H);ctx.closePath();ctx.fill();
   }
   let pixels=null;try{pixels=ctx.getImageData(0,0,W,H).data}catch(_){}
-  const geometry=track(new THREE.PlaneGeometry(.94,.8)),data=new Float32Array(cards.length*4);
+  const count=cols*lines,slope=Math.atan(.72/1.42),along=Math.hypot(1.42,.72)/sub;
+  const geometry=track(new THREE.PlaneGeometry(cw*.94,along*1.06)),data=new Float32Array(count*4);
   const m=track(new THREE.MeshLambertMaterial({color:'#ffffff',side:THREE.DoubleSide}));
   patch(m,uniforms,'mosaic','',`
  float mOn=lifeMosaicOn();
- transformed.y+=sin(uLifeTime*2.4+aLife.x*12.)*.025;
+ transformed.y+=sin(uLifeTime*2.4+aLife.x*12.)*.02;
  transformed*=step(.002,mOn);transformed.y-=(1.-mOn)*.9;
 `);
   geometry.setAttribute('aLife',new THREE.InstancedBufferAttribute(data,4));
-  const mesh=new THREE.InstancedMesh(geometry,m,cards.length),d=new THREE.Object3D(),col=new THREE.Color(),slope=Math.atan(.72/1.42);
-  cards.forEach((s,i)=>{
-   data.set(lifeOf(s),i*4);
-   const yaw=Math.atan2(-s.x,-s.z);d.position.set(s.x,s.y+1.62,s.z);d.rotation.set(-slope,yaw,0,'YXZ');d.updateMatrix();mesh.setMatrixAt(i,d.matrix);
-   const u=clamp((s.x*-hostEnd+56)/112,0,.999),v=clamp(1-s.row/Math.max(1,crowdRows-1),0,.999);
-   if(pixels){const k=(Math.floor(v*H)*W+Math.floor(u*W))*4;col.setRGB(pixels[k]/255,pixels[k+1]/255,pixels[k+2]/255,THREE.SRGBColorSpace)}else col.set(i%2?kit.shirt:kit.shirtSecondary);
-   mesh.setColorAt(i,col.multiplyScalar(.92+hash(s.index*7+3)*.1));
-  });
+  const mesh=new THREE.InstancedMesh(geometry,m,count),d=new THREE.Object3D(),col=new THREE.Color();
+  let i=0;
+  for(let r=0;r<rows;r++)for(let k=0;k<sub;k++){
+   const f=(k+.5)/sub-.5,line=r*sub+k,y=1.13+r*.72+1.58+f*.72,z=hostEnd*(59.4+r*1.42+f*1.42),py=Math.floor((lines-1-line)*cell);
+   for(let n=0;n<cols;n++,i++){
+    const x=-half+(n+.5)*cw,seed=hash(line*977+n*31+5);
+    data.set([seed,TEAM[hostTeam]+4,r/Math.max(1,rows-1),Math.atan2(z,x*1.5)],i*4);
+    d.position.set(x,y,z);d.rotation.set(-slope+(seed-.5)*.06,hostEnd<0?0:Math.PI,(hash(i*13+1)-.5)*.05,'YXZ');d.updateMatrix();mesh.setMatrixAt(i,d.matrix);
+    if(pixels){
+     // u runs left to right as seen from the pitch.
+     const px=Math.floor((hostEnd<0?n:cols-1-n)*cell);let R=0,G=0,B=0;
+     for(let yy=1;yy<cell-1;yy++)for(let xx=1;xx<cell-1;xx++){const q=((py+yy)*W+px+xx)*4;R+=pixels[q];G+=pixels[q+1];B+=pixels[q+2]}
+     const nn=(cell-2)*(cell-2)*255;col.setRGB(R/nn,G/nn,B/nn,THREE.SRGBColorSpace);
+    }else col.set(n%2?kit.shirt:kit.shirtSecondary);
+    mesh.setColorAt(i,col.multiplyScalar(.93+seed*.09));
+   }
+  }
   if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
   mesh.frustumCulled=false;mesh.name='FooteraMosaic';mesh.visible=false;scene.add(mesh);track(mesh);extra.push(mesh);mosaic=mesh;
  }
@@ -252,7 +268,8 @@ export function createCrowdLife(THREE,{scene,track=o=>o,weak=false,high=false,mo
  function addFlags(){
   const perEnd=weak?2:mobileStandard?4:high?7:5,spots=[];
   const endZ=(side,row)=>side*(59.4+row*1.42),stepY=row=>1.13+row*.72;
-  for(const [t,side,count] of [[hostTeam,hostEnd,perEnd+1],[guestTeam,-hostEnd,Math.max(1,perEnd-1)]]){
+  // While the home end holds up its card mosaic, its flags stay down (they cut through the picture).
+  for(const [t,side,count] of [[hostTeam,hostEnd,mosaicWanted?0:perEnd+1],[guestTeam,-hostEnd,Math.max(1,perEnd-1)]]){
    for(let k=0;k<count;k++){const row=k%3,x=-30+(k+.5)*60/count+(hash(k*13+(t==='home'?1:2))-.5)*4;spots.push({team:t,x,y:stepY(row),z:endZ(side,row),k})}
   }
   // A few on the long stands too, where the broadcast camera looks all match long.

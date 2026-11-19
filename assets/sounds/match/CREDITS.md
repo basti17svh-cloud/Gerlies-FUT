@@ -1,7 +1,8 @@
-# Match whistle and post — V21.475
+# Match whistle and post — V21.478
 
 Real recordings from BigSoundBank (Joseph Sardin, LaSonotheque), released under
-**CC0 1.0**, and one Wikimedia Commons recording under **CC BY 4.0** (credit required, given below) (public domain dedication; crediting is optional, done anyway).
+**CC0 1.0** (public domain dedication; crediting is optional, done anyway),
+and one Wikimedia Commons recording under **CC BY 4.0** (credit required, given below).
 Licence: https://bigsoundbank.com/licenses.html · CC0 text: https://creativecommons.org/publicdomain/zero/1.0/
 Fetched from the site's public MP3 rendition (`/UPLOAD/mp3/NNNN.mp3`).
 

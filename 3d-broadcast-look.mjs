@@ -18,6 +18,9 @@ function upgradeMaterial(material,kind,envMap){
  const physical=new THREE.MeshPhysicalMaterial();
  THREE.MeshStandardMaterial.prototype.copy.call(physical,material);
  physical.userData={...material.userData,footeraBroadcastLook:true};
+ // V21.471: the kit collar and cuffs set when the player was dressed move
+ // over to the upgraded material (Material.copy drops shader hooks).
+ material.footeraKitTrim?.(physical);
  // Image-based reflections only on the athletes: grass and stands keep their
  // authored contrast instead of being lifted by a global environment.
  physical.envMap=envMap;

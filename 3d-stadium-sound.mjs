@@ -71,7 +71,7 @@ export function outcomeCues(event,{impactTime,goalArrival,ceremonyCut}={}){
   // V21.444: applause for the guard of honour, the roar when the cup goes up.
   cues.push({time:.2,cue:'applause',seconds:4,level:.42},{time:8.5,cue:'roar',size:1},{time:9.2,cue:'applause',seconds:4,level:.6});
  }else if(type==='ceremony'&&event.ceremony==='fulltime'){
-  // V21.475: the referee's real final whistle (short, short, long) opens the scene.
+  // V21.478: the referee's real final whistle (short, short, long) opens the scene.
   cues.push({time:.2,cue:'whistle',pattern:'final'});
   cues.push({time:Math.max(.3,Number(ceremonyCut)||0)+.15,cue:'applause',seconds:3,level:.45});
  }

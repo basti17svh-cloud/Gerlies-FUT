@@ -7204,7 +7204,7 @@ function renderClubIdentityPreview(){
 // V21.460 (Basti: "so eine Ansicht aus der Luft wie beim Anfang vom Spiel"):
 // the preview is the real 3D stadium seen from the air, slowly circling; the
 // drawn strip stays underneath as fallback when 3D can't start.
-const STADIUM_PREVIEW_MODULE="./3d-stadium-preview.mjs?v=21459";
+const STADIUM_PREVIEW_MODULE="./3d-stadium-preview.mjs?v=21471";
 let stadiumPreview3D=null,stadiumPreviewLoad=null,stadiumPreviewKey="",stadiumPreviewTimer=0,stadiumPreviewFailed=false;
 function stadiumPreview3DWanted(){try{return localStorage.getItem("footera-3d-stadium-preview")!=="0"}catch(e){return true}}
 function showStadiumPreview3D(box,st,identity){
@@ -9323,7 +9323,7 @@ function matchTacticReportHTML(){
 function matchOpponentBrainHTML(){
  if(typeof FooteraOpponentStyles==="undefined"||!FooteraOpponentStyles.decisions||!match)return"";
  const rows=FooteraOpponentStyles.decisions(match);if(!rows.length)return"";
- const icon=k=>k==="sub"?"↔":k==="flank"?"🛡":"🧠";
+ const icon=k=>k==="sub"?"↔":k==="flank"?"🛡":k==="target"?"🎯":"🧠";
  return `<section class="match-report-moves match-report-brain"><div class="match-report-section-title"><strong>Gegner-Trainer</strong><span>So hat ${esc(matchAwayTeamName())} reagiert</span></div>${rows.map(r=>`<div class="match-brain-row"><time>${r.minute}'</time><i aria-hidden="true">${icon(r.kind)}</i><span>${esc(r.text)}</span></div>`).join("")}</section>`
 }
 function simAttack(homeSide){
@@ -9364,7 +9364,9 @@ function simAttack(homeSide){
   if(action){if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordWin(match,defendingSide,"build");recordMatchScene(`${defendingSide}-interception`,matchCommentaryLine("interception",{...context,phase:"build",side,defendingSide,team,opponent:defendingSide==="home"?matchHomeTeamName():matchAwayTeamName(),creator:creator.name,shooter:attacker.name,defender:action.name})||`${action.name} fängt den Pass von ${creator.name} ab.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,creator)}
   return
  }
- const duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
+ // V21.473: a CPU coach who found your weaker full-back sends wide attacks at him (weights only, same single RNG draw).
+ const targetWeight=typeof FooteraOpponentStyles!=='undefined'&&FooteraOpponentStyles.targetWeight?row=>FooteraOpponentStyles.targetWeight(match,side,kind,row):()=>1;
+ const duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK").map(p=>{const w=targetWeight(p);return w===1?p:{...p,weight:p.weight*w}}));
  const duelAttack=actions.duelSkill(attacker,kind,context),duelDefense=duelDefender?actions.defendSkill(duelDefender,kind,"duel"):defenseProfile.defense,duelMargin=matchClamp(duelAttack-duelDefense,-30,30),duelProfileGap=matchAttributeGap(attackProfile.transition-defenseProfile.defense);
  const duelChance=matchClamp(.60+duelMargin*.006+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016+aiTuning.duel+flankTune.duel+advantage.duel,.28,.86);
  if(!setPiece&&!eventChance(duelChance)){
@@ -10978,7 +10980,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.475";
+const GFUT_BUILD="V21.478";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11036,7 +11038,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21475",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21478",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

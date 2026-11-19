@@ -1,6 +1,6 @@
-/* Footera Stadion-Sound (V21.475).
+/* Footera Stadion-Sound (V21.478).
  * Ball touches and the net use Web Audio; fans, the post and the referee's
- * whistle use real CC0 recordings (V21.412, V21.475). The
+ * whistle use real CC0 recordings (V21.412, V21.478). The
  * pack walkout plays short real recordings (CC0, assets/sounds/walkout/). Presentation only: nothing here reads or
  * writes the match, the save or any online data.
  *
@@ -125,7 +125,7 @@
   const n=noise(c,{at,dur:.3,offset:.4}),lp=filter(c,'lowpass',650,.9),g=c.createGain();env(g,at,.008,.22,.02,.2);chain(n,lp,g,d);
   hold(.6);
  }
- // V21.475 (earshot: the synthesized post read as "a kalimba note", the
+ // V21.478 (earshot: the synthesized post read as "a kalimba note", the
  // whistle as "crickets"): post and whistle are real CC0 recordings now
  // (assets/sounds/match/CREDITS.md). Not decoded yet: the post falls back to
  // a plain ball touch, the whistle stays silent. Never a synthesized tone.
@@ -156,7 +156,7 @@
  // Real crowd recordings only. Never fall back to synthetic vowel voices.
  // One-shots are dropped when not decoded yet, so a late download cannot
  // cheer an old goal. The bed can fade in late, unless its scene was disposed.
- const STADIUM_V='21412',MATCH_V='21475';
+ const STADIUM_V='21412',MATCH_V='21478';
  const STADIUM_FILES={bed:'stadium/bed',groan:'stadium/groan',applause:'stadium/applause',cheer:'stadium/goal',post:'match/post',whistleShort:'match/whistle-short',whistleLong:'match/whistle-long'};
  const stadiumSets=new WeakMap();
  function preloadStadium(target){
