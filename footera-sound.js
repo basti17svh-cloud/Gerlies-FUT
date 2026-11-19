@@ -139,7 +139,7 @@
   s.start(at);s.stop(at+dur+.02);hold(dur);return{at,dur};
  }
  function post(at,dest){
-  if(sample('post',{gain:.5,at,dest}))return;
+  if(sample('post',{gain:.62,at,dest}))return;
   kick(.8,at,dest);
  }
  const WHISTLES={short:[[0,.28]],long:[[0,.95]],double:[[0,.24],[.36,.24]],final:[[0,.34],[.52,.34],[1.04,1.15]],kickoff:[[0,.7]]};

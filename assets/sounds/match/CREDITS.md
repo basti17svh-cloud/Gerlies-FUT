@@ -9,7 +9,7 @@ Fetched from the site's public MP3 rendition (`/UPLOAD/mp3/NNNN.mp3`).
 | --- | --- | --- | --- |
 | `whistle-short.mp3` | One short blow of a plastic pea whistle (source 2.26–2.51 s) | "Plastic Whistle #1" https://bigsoundbank.com/plastic-whistle-s1017.html | CC0 1.0 |
 | `whistle-long.mp3` | One long blow with the pea's trill (source 18.35–19.50 s) | "Whistle, plastic #2" https://bigsoundbank.com/search?q=whistle (sound 1105) | CC0 1.0 |
-| `post.mp3` | Ball hitting a metal post: a real football kick (source 0.31 s, "Ball Kicked", sound 1044, https://bigsoundbank.com/search?q=football) layered with the first strike of a real iron bar ("Iron bar falling #1", sound 0234, https://bigsoundbank.com/search?q=metal+bar) at -2 dB, 4 ms later | BigSoundBank 1044 + 0234 | CC0 1.0 |
+| `post.mp3` | Ball hitting a metal post: a real football kick (source 0.31 s, "Ball Kicked", sound 1044, https://bigsoundbank.com/search?q=football) layered 3 ms later with the first strike of a real iron bar ("Iron bar falls #2", sound 0235, https://bigsoundbank.com/search?q=metal+bar), low-passed at 1.5 kHz and damped (110 ms decay) so it knocks instead of ringing like a cymbal (Basti 2026-11-19) | BigSoundBank 1044 + 0235 | CC0 1.0 |
 
 Processing: mono, 44.1 kHz, peak-normalised to -1.5 dBFS, 5 ms fade-in,
 30 ms fade-out, MP3 112 kbps. Chosen by listening with earshot
