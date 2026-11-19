@@ -118,8 +118,8 @@ test('release wiring: scripts, scene import, cache and versions',()=>{
  assert.ok(rendererScript&&rendererModule,'versioned renderer script and scene import exist');
  assert.ok(html.indexOf('footera-weather.js?v=21340')>0&&html.indexOf('footera-weather.js?v=21340')<html.indexOf(rendererScript));
  assert.match(html,/id="matchWeather"/);
- assert.match(scene,/from '\.\/3d-weather\.mjs\?v=21340'/);
- for(const f of ['./3d-weather.mjs?v=21340','./footera-weather.js?v=21340','./'+rendererModule,'./'+rendererScript])assert.ok(sw.includes(`"${f}"`),f);
+ assert.match(scene,/from '\.\/3d-weather\.mjs\?v=21483'/);
+ for(const f of ['./3d-weather.mjs?v=21483','./footera-weather.js?v=21340','./'+rendererModule,'./'+rendererScript])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(match,/weather:match3DWeather\(current\)/);
  assert.match(app,/match\.weather=window\.FooteraWeather\?\.forMatch\(match\.resultId\)/);
 });

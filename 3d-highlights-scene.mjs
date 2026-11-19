@@ -76,7 +76,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {createStadiumWeather} from './3d-weather.mjs?v=21340';
+import {createStadiumWeather} from './3d-weather.mjs?v=21483';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21471';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
@@ -1500,9 +1500,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    impact:IMPACT_TIME,netArrival,sceneEnd:SCENE_END,homeName:event.homeName,awayName:event.awayName,crowdRows}):null;
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
+   // V21.483: phones draw each fan head with 48 instead of 70 triangles (a few pixels on screen):
+   // about 160.000 fewer triangles per frame, every fan stays.
    // V21.358: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
    const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),crowdLife?crowdLife.material('torso'):mat('#ffffff'),specs.length);
-   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
+   const head=new THREE.InstancedMesh(geo(high?'crowd-head-human':'crowd-head-human-phone',()=>{const g=high?new THREE.SphereGeometry(.123,7,6):new THREE.SphereGeometry(.123,6,5),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),crowdLife?crowdLife.material('head'):mat('#ffffff',{vertexColors:true}),specs.length);
    const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),crowdLife?crowdLife.material('arm'):mat('#ffffff'),specs.length*2);
    const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6,1,true)),crowdLife?crowdLife.material('leg'):mat('#ffffff'),specs.length*2);
    for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
@@ -1725,6 +1727,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }catch(_){if(sub){try{field.remove(sub.root);disposeManagerParts(sub.owned)}catch(__){}}coachBench.subsFailed=true}
   }
   mountCoach(0);
+  // V21.483: when the body is ready, the whole bench sits down before the first
+  // picture. Mounting one substitute every 0.25 s during the walk-out froze single
+  // frames for 50-300 ms on phones (seven times per kick-off).
+  if(coachBench?.figure)for(let k=0;k<SUB_SEATS.length&&!coachBench.subsFailed&&coachBench.subs.length===k;k++)mountSub(0);
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
    if(crowdDetailReduced)return;
@@ -3040,7 +3046,22 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.371 Stadion-Sound: the ball's world position and the attacked goal.
   const soundBall=new THREE.Vector3(),soundGoal=worldPosition([0,0,-52.5],direction);
   function soundProbe(){ball.getWorldPosition(soundBall);return{ball:[soundBall.x,soundBall.y,soundBall.z],goal:soundGoal}}
-  return{update,resize,dispose,inspect,reduceQuality,soundProbe,lineClearIndex:lineClearer?lineClearer.index:-1,duration:SCENE_END,celebrationSpot:celebrationPlan?.spot||null};
+  // V21.483: build every shader and upload every texture before the first
+  // picture, while the loading label is still up. Before, materials that only
+  // appear later (scarves, ticker tape, cards, referee, bench, celebration props)
+  // were compiled in the middle of the scene: a visible hang of 50-400 ms each
+  // time on a phone. compile() also covers hidden objects.
+  function prewarm(){
+   try{renderer.compile(scene,camera)}catch(_){}
+   try{
+    const seen=new Set(),warm=t=>{if(t&&t.isTexture&&!seen.has(t)&&t.image){seen.add(t);renderer.initTexture(t)}};
+    scene.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){
+     for(const k in m)warm(m[k]);
+     if(m.uniforms)for(const k in m.uniforms)warm(m.uniforms[k]?.value);
+    }});
+   }catch(_){}
+  }
+  return{update,resize,dispose,inspect,reduceQuality,soundProbe,prewarm,lineClearIndex:lineClearer?lineClearer.index:-1,duration:SCENE_END,celebrationSpot:celebrationPlan?.spot||null};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
 }
 export function play(event,signal){
@@ -3181,7 +3202,7 @@ export function play(event,signal){
    layer.dataset.capturedMotion=modelInfo.capturedMotionEnabled?'ready':'off';
    // Optional extra device information; the main badge always shows.
    if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores} · ${layer.dataset.humanModel}`;
-   const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
+   const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);world.prewarm?.();
    function replayFrame(now){
     const r=replayState;
     if(r.last!==undefined)r.elapsed+=Math.max(0,Math.min(realtimeTest?2000:100,now-r.last))/1000;r.last=now;
