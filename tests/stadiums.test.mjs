@@ -53,7 +53,7 @@ test('stadium shot before kick-off: high above the roof, then into the bowl, wit
  assert.match(scene,/fh3d-stadium-title/);assert.match(scene,/WILLKOMMEN IM/);
  assert.match(read('3d-highlights.css'),/\.fh3d-stadium-title\.visible\{opacity:1/);
  const hl=read('3d-highlights.js');assert.match(hl,/venue:event\.venue==='away'\?'away':'home'/);
- const qm=read('3d-highlights-match.js');assert.equal(qm.match(/\.\.\.match3DStadium\(current\)/g).length,2,'match scenes and ceremonies');
+ const qm=read('3d-highlights-match.js');assert.equal(qm.match(/\.\.\.match3DStadium\(current\)/g).length,3,'match scenes, ceremonies and substitutions (V21.482)');
 });
 
 test('own stadium in the club identity; every second match away in the opponent ground',()=>{

@@ -11,7 +11,8 @@ test('V21.81: broken MakeHuman variant is not enabled by localStorage in live Ma
  // V21.192: the live Matchday picks the new human squad or Quaternius, never the old lab model.
  assert.match(scene,/const modelVariant=footeraHumanPlayersWanted\(\)&&isFooteraHumanModelReady\(\)\?'human':'quaternius'/);
  assert.doesNotMatch(scene,/const modelVariant=[^;]*'makehuman'/);
- assert.match(scene,/makeScene\(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant\)/);
+ // V21.482: sceneEvent is the same event (a VAR-disallowed goal is built as a goal).
+ assert.match(scene,/makeScene\(renderer,sceneEvent,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant\)/);
 });
 test('V21.81: diagnostics remain honest and cannot re-enable failed model',()=>{
  assert.match(diagnostics,/NICHT FREIGEGEBEN/);
