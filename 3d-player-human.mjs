@@ -566,16 +566,25 @@ export function footeraTidyKit(geometry,topology,smooth=true){
  if(nrm)nrm.needsUpdate=true;if(tan)tan.needsUpdate=true;if(si)si.needsUpdate=true;if(sw)sw.needsUpdate=true;
 }
 // Per vertex: distance in metres to the neck, sleeve and hem openings.
+// Computed once per source garment (bind pose) and shared by every player:
+// the per-player build fit moves the cloth by millimetres, far below the
+// 1-2 cm trim bands, and this loop is too slow to repeat for 23 players.
+const kitTrimCache=new WeakMap();
 export function footeraKitTrimDistances(geometry,topology){
+ if(topology&&kitTrimCache.has(topology))return kitTrimCache.get(topology);
+ const out=kitTrimDistancesNow(geometry,topology);if(topology)kitTrimCache.set(topology,out);return out;
+}
+function kitTrimDistancesNow(geometry,topology){
  const p=geometry.getAttribute('position');
  if(!p||!topology||topology.rings.length<2)return null;
- const out=new Float32Array(p.count*3).fill(1),segs=[[],[],[]];
+ const out=new Float32Array(p.count*3).fill(1),segs=[[],[],[]],xyz=new Float32Array(p.count*3);
+ for(let i=0;i<p.count;i++){xyz[i*3]=p.getX(i);xyz[i*3+1]=p.getY(i);xyz[i*3+2]=p.getZ(i)}
  for(const R of topology.rings){const m=R.ring.length;for(let i=0;i<(R.closed?m:m-1);i++){
   const a=R.ring[i],b=R.ring[(i+1)%m],ax=p.getX(a),ay=p.getY(a),az=p.getZ(a);
   segs[R.kind].push([ax,ay,az,p.getX(b)-ax,p.getY(b)-ay,p.getZ(b)-az]);
  }}
  for(let i=0;i<p.count;i++){
-  const px=p.getX(i),py=p.getY(i),pz=p.getZ(i);
+  const px=xyz[i*3],py=xyz[i*3+1],pz=xyz[i*3+2];
   for(let k=0;k<3;k++){let d=1;for(const [ax,ay,az,dx,dy,dz] of segs[k]){
    const l=dx*dx+dy*dy+dz*dz,t=l>0?Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy+(pz-az)*dz)/l)):0;
    d=Math.min(d,Math.hypot(px-ax-dx*t,py-ay-dy*t,pz-az-dz*t));
