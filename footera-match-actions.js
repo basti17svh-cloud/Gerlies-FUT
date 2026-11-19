@@ -146,7 +146,7 @@
  }
  function goalChance(xg,row,shot={},keeper=null,defender=null){
   const skill=shotSkill(row,shot),distance=shot.actionKind==='distance',fresh=.90+clamp(row?.fitness??100,35,100)*.001;
-  const relevant=shot.creationType==='freekick'?['dead-ball']:shot.finish==='header'?['power-header']:shot.finish==='volley'||shot.finish==='bicycle'?['acrobatic']:shot.finish==='finesse'?['finesse-shot','trivela']:shot.finish==='power'?['power-shot']:shot.finish==='chip'?['chip-shot']:shot.finish==='low_driven'?['low-driven-shot']:[];
+  const relevant=shot.creationType==='freekick'&&shot.finish!=='header'?['dead-ball']:shot.finish==='header'?['power-header']:shot.finish==='volley'||shot.finish==='bicycle'?['acrobatic']:shot.finish==='finesse'?['finesse-shot','trivela']:shot.finish==='power'?['power-shot']:shot.finish==='chip'?['chip-shot']:shot.finish==='low_driven'?['low-driven-shot']:[];
   const creative=shot.tightLateGame&&['finesse','volley','bicycle','chip'].includes(shot.finish)?(style(row,'gamechanger')>1?.18:style(row,'gamechanger')>0?.08:0):0;
   const outside=shot.finish==='normal'&&['dribble','cutback'].includes(shot.actionKind)?(style(row,'trivela')>1?.18:style(row,'trivela')>0?.08:0):0;
   const technique=(style(row,...relevant)>1?1.40:style(row,...relevant)>0?1.16:1)+creative+outside;
@@ -160,6 +160,28 @@
  function staminaMultiplier(raw={},row=null){
   const t=tactics(raw);return (1+(t.pressing-50)*.004+(t.depth-50)*.001+(t.buildUp==='fast'?.06:0))*(style(row,'relentless')>1?.82:style(row,'relentless')>0?.92:1);
  }
- const api={SKILL_LEVELS,playerTraits,footFactor,actionFoot,skillFor,tactics,attackWeights,pick,shotSkill,attackerWeight,finishFor,buildSkill,restartBuildSkill,duelSkill,defendSkill,matchupBalance,chanceQuality,goalChance,staminaMultiplier};
+ // V21.479 Fouls: every free kick and penalty starts with a foul. Where and how
+ // it happened comes from a stable hash of the attack (no RNG draw, so the
+ // simulated balance stays exactly the same); the zone decides the free kick.
+ const FOUL_ZONE_WEIGHTS=Object.freeze([['center',20],['side',20],['arc',15],['far',11],['corner',11],['flank',23]]);
+ const FOUL_KIND_WEIGHTS=Object.freeze({
+  box:[['trip',30],['behind',24],['push',22],['pull',16],['slide',8]],
+  flank:[['slide',26],['pull',24],['push',18],['trip',20],['behind',12]],
+  other:[['trip',28],['slide',24],['behind',16],['pull',16],['push',16]]
+ });
+ const FOUL_VARIANTS=Object.freeze({arc:'arc',center:'',side:'side',far:'far',corner:'edge',flank:'cross',box:''});
+ function foulHash(text){let h=2166136261;for(const ch of String(text)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}h^=h>>>16;h=Math.imul(h,0x45d9f3b);h^=h>>>16;return(h>>>0)/4294967296}
+ function weighted(list,u){const total=list.reduce((n,x)=>n+x[1],0);let r=u*total;for(const [id,w] of list){if((r-=w)<0)return id}return list[0][0]}
+ function foulPlan(creationType,key=''){
+  if(!['freekick','penalty'].includes(creationType))return null;
+  const zone=creationType==='penalty'?'box':weighted(FOUL_ZONE_WEIGHTS,foulHash(key+':zone'));
+  const kind=weighted(FOUL_KIND_WEIGHTS[zone]||FOUL_KIND_WEIGHTS.other,foulHash(key+':kind'));
+  // A quarter of the free kicks in the middle are a rehearsed trick (laid off, then shot).
+  const variant=zone==='center'&&foulHash(key+':trick')<.3?'trick':FOUL_VARIANTS[zone];
+  // Booked: rash fouls more often; in the box and from behind most often.
+  const cardChance=(zone==='box'?.42:['arc','center'].includes(zone)?.34:.24)+(['behind','slide'].includes(kind)?.14:kind==='pull'?.06:0);
+  return Object.freeze({zone,kind,variant,mirror:zone!=='center'&&foulHash(key+':side')<.5||variant==='trick'&&foulHash(key+':side')<.5,card:foulHash(key+':card')<cardChance?'yellow':''});
+ }
+ const api={SKILL_LEVELS,foulPlan,playerTraits,footFactor,actionFoot,skillFor,tactics,attackWeights,pick,shotSkill,attackerWeight,finishFor,buildSkill,restartBuildSkill,duelSkill,defendSkill,matchupBalance,chanceQuality,goalChance,staminaMultiplier};
  root.FooteraMatchActions=Object.freeze(api);if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

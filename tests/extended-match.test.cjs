@@ -3,7 +3,7 @@ test('all six live scenes keep continuous ball/player paths and a genuine finish
  const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
  for(const sequence of E.EXTENDED_SEQUENCES){
   const kind=E.extendedKind(sequence),variant=E.extendedVariant(sequence),mirror=E.extendedMirrored(sequence);
-  const finish=kind==='corner'?(variant==='edge'?'volley':'header'):'normal',event={id:kind,sceneKind:kind,restartSide:(kind==='throw_in'?!mirror:mirror)?'right':'left',restartVariant:variant||'base',restartMirror:mirror,finish};
+  const finish=kind==='corner'?(variant==='edge'?'volley':'header'):kind==='free_kick'&&variant==='cross'?'header':'normal',event={id:kind,sceneKind:kind,restartSide:(kind==='throw_in'?!mirror:mirror)?'right':'left',restartVariant:variant||'base',restartMirror:mirror,finish};
   // The turnover counter is retired from live selection since 17.10.2026; its scene data is still checked below.
   if(kind!=='turnover_counter')assert.equal(H.choosePresentation(event).sequence,sequence);
   assert.equal(M.normalizeSequence(sequence),sequence);

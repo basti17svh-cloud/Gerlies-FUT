@@ -1,14 +1,14 @@
-import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-playstyle-moments.mjs?v=21455';
+import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-playstyle-moments.mjs?v=21479';
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
-import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21455';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21455';
-import {createSceneSound} from './3d-stadium-sound.mjs?v=21478';
+import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21479';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21479';
+import {createSceneSound} from './3d-stadium-sound.mjs?v=21479';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21471';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21471';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21479';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow,footeraHumanModelStatus,footeraRealBodyLoaded} from './3d-player-human.mjs?v=21471';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21471';
@@ -80,7 +80,8 @@ import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21471';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception} from './3d-playbook.mjs?v=21455';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall,isDefenseInterception,isDefenseSlide,isFoulScene} from './3d-playbook.mjs?v=21479';
+import {parseFoul,foulFocus,foulCloseUp,foulGrab,cardRaise,refereeSignal,foulSettleTime,FOUL_TIMES,FOUL_FALL,FOUL_ZONES,REFEREE_ACTOR,REFEREE_KIT} from './3d-fouls.mjs?v=21479';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
 import {isDreamGoal,dreamGoal,dreamStyle,dreamContact,dreamImpact,dreamFlightPoint,dreamGateParam,dreamFinishPose,dreamFacesAway} from './3d-dream-goals.mjs?v=21455';
 
@@ -283,7 +284,9 @@ export function controlCarrier(time,sequence='central'){
   if(time<1.42)return{index:-1,weight:0};
   const release=isDefenseInterception(seq)?3.2:4.03;
   if(time<release)return{index:0,weight:.83*smooth((time-1.42)/.18)*(1-smooth((time-release+.18)/.18))};
-  return time>4.4?{index:8,weight:smooth((time-(seq.startsWith('defense_slide_tackle')?5.8:4.4))/.23)*.9}:{index:-1,weight:0};
+  // V21.479: after a foul nobody has the ball; it lies loose until the free kick.
+  if(isFoulScene(seq))return{index:-1,weight:0};
+  return time>4.4?{index:8,weight:smooth((time-(isDefenseSlide(seq)?5.8:4.4))/.23)*.9}:{index:-1,weight:0};
  }
  const wideEntry=(base.startsWith('wing_')||base.startsWith('cutback_'))&&seq!=='diagonal_switch';
  if((wideEntry||INVERTED_SEQUENCES.has(seq)||seq==='dribble')&&time<ENTRY_RECEIVE){
@@ -673,6 +676,14 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   targetZ=mix(bp[2],recovered[2],.18+.38*won)+won*2.5*direction;
   targetY=.88;
   phase=time<1.42?'build':time<4.4?'press':'recovery';
+  // V21.479 Fouls: follow the duel, then settle on the spot of the foul
+  // (attacker on the turf, fouler, referee) instead of a counter attack.
+  if(isFoulScene(seq)){
+   const f=foulFocus(time,seq),w=worldPosition([f[0],.85,f[1]],direction);
+   const settle=smooth((time-4.4)/1.4);
+   targetX=mix(mix(bp[0],w[0],.5),w[0],settle);targetZ=mix(mix(bp[2],w[2],.5),w[2],settle);targetY=.88;
+   phase=time<1.42?'build':time<4.4?'press':'foul';
+  }
  }
  if(seq==='diagonal_switch'){
   targetX=mix(targetX,goal[0],.46);
@@ -684,6 +695,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // Track the ball with a fixed TV-side offset rather than an unrelated rail.
  // Far-wing, set-piece and finish positions remain exactly the same distance.
  distance=BROADCAST_CAMERA_DISTANCE;
+ // V21.479: a foul is a duel between two players: the TV camera comes in closer.
+ if(isFoulScene(seq))distance=mix(BROADCAST_CAMERA_DISTANCE,25.5,smooth((time-1.6)/2.2));
  fov=Math.max(30.5,fov);
  const target=[targetX,targetY,targetZ],
   // V21.196: ball wins share the normal TV rail. Their old steep, tilted
@@ -951,7 +964,9 @@ export function runPosition(index,time,sequence='central'){
    const at=defensePosition(0,4.4,seq),prev=defensePosition(0,4.3,seq),dx=at[0]-prev[0],dz=at[1]-prev[1],n=Math.hypot(dx,dz)||1,u=smooth(clamp((time-4.4)/1.1));
    return[at[0]+dx/n*2.4*u,at[1]+dz/n*2.4*u];
   }
-  const point=defensePosition(index,time,seq);if(point)return point}
+  const point=defensePosition(index,time,seq);if(point)return point;
+  // V21.479: the other attackers ease up once the referee has blown for a foul.
+  if(isFoulScene(seq))time=foulSettleTime(time)}
  if(INVERTED_SEQUENCES.has(seq)){
   if(index===0)return invertedRunPosition(seq,time);
   if(index===1){const side=sequenceSide(seq);return lerp([side*27,-25],[side*20,-41],smooth(time/6.8))}
@@ -1169,6 +1184,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const resources=new Set(),track=o=>(resources.add(o),o);
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence),base=baseSequence(sequence),finish=normalizeFinish(event.finish),keeperAction=String(event.keeperAction||'classic'),defenderAction=String(event.defenderAction||'jockey'),defenderIndex=Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<16?event.defenderIndex:8;
  const extended=extendedKind(sequence);
+ // V21.479 Fouls: the attacker goes down, the referee (actor 15 in black) whistles and books.
+ const foul=parseFoul(sequence),refereeIndex=foul?REFEREE_ACTOR:-1;
  const placement=event.shotPlacement||null;
  const eventBallPosition=(type,time,seq=sequence,style=finish,action=keeperAction)=>ballPosition(type,time,seq,style,action,placement);
  const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
@@ -1185,7 +1202,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const labFocusedPreview=labDuelPreview||labTrackingPreview;
  const labBallAt=t=>eventBallPosition(event.type,t,sequence,finish,keeperAction);
  const trackingTimeline=labTrackingPreview?createTrackingTimeline(defenderAction,sequence,t=>playerPosition(0,t,event.type,sequence),DURATION):null;
- const defensiveUnit=labFocusedPreview||extended?null:createDefensiveUnit({
+ const defensiveUnit=labFocusedPreview||extended||isFoulScene(sequence)?null:createDefensiveUnit({
   positionAt:(i,t)=>playerPosition(i,t,event.type,sequence,placement,finish),ballAt:t=>eventBallPosition(event.type,t),
   defenderIndex,ballWon:event.type==='ball_won',duration:DURATION
  });
@@ -1865,8 +1882,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // defence 8-15), so name, face and haircut always belong to one player.
   const squadNames=RUNS.map((r,i)=>ceremony&&event.squadNames?.[i]?event.squadNames[i]:i===0&&event.playerName?event.playerName:
    i===defenderIndex&&event.defenderName?event.defenderName:event.squadNames?.[i]?event.squadNames[i]:'footballer '+i);
-  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
-   squadNames[i],false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
+  // V21.479: in a foul scene actor 15 is the referee: black kit, no number, no name.
+  if(refereeIndex>=0){squadNames[refereeIndex]='Schiedsrichter';squadNumbers[refereeIndex]=0}
+  const kitFor=i=>i===refereeIndex?REFEREE_KIT:RUNS[i].team==='attack'?attackKit:defendKit;
+  const players=RUNS.map((r,i)=>player(kitFor(i),
+   squadNames[i],false,detailedActors.has(i),squadNumbers[i],i===0,i===refereeIndex?null:event.playerSkinTones?.[i]));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true,event.keeperSkinTone);
   const buildKeeper=extended==='keeper_buildout'?player({shirt:'#e8b545',shirtSecondary:'#e8b545',pattern:'solid',shorts:'#273a37',socks:'#e8b545'},event.buildKeeperName||'Aufbau-Torwart',true,true,1,false,event.buildKeeperSkinTone):null;
   // Use a single CC0 source and one skeleton clone for EACH visible player.
@@ -1877,7 +1897,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Real names only on real players; every shirt wears its own club's crest
   // (V21.471: the defending side and its keeper too, not a blank shield).
   const squadCrest=footeraCrestImageNow(event.attackCrestHTML||event.teamCrestHTML),opponentCrest=footeraCrestImageNow(event.defendCrestHTML);
-  const humanLook=(i,number,skinTone)=>({number,skinTone:resolvePlayerSkinTone(skinTone),custom:event.playerLooks?.[i]||null,
+  const humanLook=(i,number,skinTone)=>i===refereeIndex?{number:0,skinTone:resolvePlayerSkinTone(skinTone),custom:{hair:'short02',beard:'none'},shirtName:'',crest:null,boots:'#111417',captain:false}:({number,skinTone:resolvePlayerSkinTone(skinTone),custom:event.playerLooks?.[i]||null,
    shirtName:/^footballer /.test(squadNames[i]||'')?'':undefined,crest:RUNS[i]?.team==='attack'?squadCrest:opponentCrest,
    captain:Array.isArray(event.captainActors)&&event.captainActors.includes(i)});
   const importedPlayers=new Array(players.length).fill(null);
@@ -1906,11 +1926,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    try{
     if(allQuaternius){
      for(let i=0;i<players.length;i++){
-      const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
+      const actor=players[i],kit=kitFor(i);
       const name=humanSquad?squadNames[i]:i===0?event.playerName:'footballer '+i;
       const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex||humanSquad&&footeraHDWanted()&&huggers.some(h=>h.index===i)),
        squadVariant,actor.skinned||humanSquad?null:lowKitAtlas(kit,squadNumbers[i],event.playerSkinTones?.[i]),
-       humanLook(i,squadNumbers[i],event.playerSkinTones?.[i]));
+       humanLook(i,squadNumbers[i],i===refereeIndex?null:event.playerSkinTones?.[i]));
       if(!glb)throw new Error('GLB unavailable on field player '+i);
       importedPlayers[i]=glb;staged.push(glb);
      }
@@ -2254,6 +2274,46 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.296: the two side huggers lay an arm round the scorer, the
   // hand on his far shoulder (the GLB solves the arm with two-bone IK).
   const embraceFar=new THREE.Vector3(),embraceNeck=new THREE.Vector3(),embraceOther=new THREE.Vector3(),embraceHome=new THREE.Vector3();
+  // V21.479 Fouls: the fouler grabs the shirt or pushes with his arm, the
+  // referee points the way of the free kick (or to the spot) and holds the
+  // card up; the arm is the same two-bone IK as the hug.
+  const cardColor=foul?(event.foulCard==='red'?'#e0242e':event.foulCard==='yellow'?'#ffd31c':''):'';
+  const foulCardMesh=cardColor?(()=>{const m=new THREE.Mesh(track(new THREE.PlaneGeometry(.075,.105)),track(new THREE.MeshBasicMaterial({color:cardColor,side:THREE.DoubleSide,toneMapped:false})));m.name='FooteraRefereeCard';m.visible=false;m.renderOrder=3;scene.add(m);return m})():null;
+  const foulRoot=new THREE.Vector3(),foulPoint=new THREE.Vector3(),foulHandA=new THREE.Vector3(),foulHandB=new THREE.Vector3();
+  function foulArms(time){
+   const fouler=squadMotionFrames[defenderIndex],ref=squadMotionFrames[refereeIndex],grab=foulGrab(time,sequence);
+   if(fouler){
+    if(grab){foulPoint.set(grab.target[0],grab.height,grab.target[1]);field.localToWorld(foulPoint);fouler.embrace={target:foulPoint.clone(),weight:grab.weight}}
+    else fouler.embrace=null;
+   }
+   if(!ref)return;
+   const up=cardColor?cardRaise(time):0,signal=refereeSignal(time);
+   players[refereeIndex].root.getWorldPosition(foulRoot);
+   if(up>.001){
+    // Straight up, a little towards the player he books.
+    players[defenderIndex].root.getWorldPosition(foulPoint).sub(foulRoot).setY(0);
+    if(foulPoint.lengthSq()>1e-4)foulPoint.setLength(.22);
+    ref.embrace={target:foulRoot.clone().add(foulPoint).setY(foulRoot.y+2.42),weight:up};
+   }else if(signal>.001){
+    // Free kick: arm out towards the goal it goes to; penalty: down to the spot.
+    const penalty=FOUL_ZONES[foul.zone]?.restart==='penalty';
+    if(penalty)foulPoint.set(0,.1,-41.5);else foulPoint.set(players[refereeIndex].root.position.x,1.55,players[refereeIndex].root.position.z-2);
+    field.localToWorld(foulPoint);
+    if(!penalty){foulPoint.sub(foulRoot).setY(0).setLength(.85);foulPoint.add(foulRoot).setY(foulRoot.y+1.48)}
+    else{foulPoint.sub(foulRoot);foulPoint.setLength(.8);foulPoint.add(foulRoot);foulPoint.y=foulRoot.y+1.1}
+    ref.embrace={target:foulPoint.clone(),weight:signal};
+   }else ref.embrace=null;
+  }
+  function foulCard(time){
+   if(!foulCardMesh)return;
+   const up=cardRaise(time);foulCardMesh.visible=up>.6;
+   if(!foulCardMesh.visible)return;
+   const glb=importedPlayers[refereeIndex];
+   if(glb?.handWorld&&glb.handWorld(0,foulHandA)&&glb.handWorld(1,foulHandB))foulPoint.copy(foulHandA.y>foulHandB.y?foulHandA:foulHandB);
+   else players[refereeIndex].root.getWorldPosition(foulPoint).setY(2.3);
+   foulCardMesh.position.copy(foulPoint);foulCardMesh.position.y+=.075;
+   foulCardMesh.quaternion.copy(camera.quaternion);foulCardMesh.scale.setScalar(1.35);
+  }
   function embraceScorer(){
    const scorer=importedPlayer?.model;
    for(const h of huggers){
@@ -2441,7 +2501,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }
     // One contact pose at the actual possession change, then a complete recovery.
     if(winningDefender){
-     if(sequence.startsWith('defense_slide_tackle')){contactPose=applyContactStage(p,'slide_attempt',time-(4.4-SLIDE_CONTACT),true,1);markTackle(i,4.4,1)}
+     if(isDefenseSlide(sequence)){contactPose=applyContactStage(p,'slide_attempt',time-(4.4-SLIDE_CONTACT),true,1);markTackle(i,4.4,1)}
+     // V21.479: shirt pull and push use the arms (below), not a poke at the ball.
+     else if(foul&&['pull','push'].includes(foul.kind)){}
      else{
       const touch=smooth((time-4.12)/.25)*(1-smooth((time-4.48)/.34));
       p.legs[1].rotation.x=mix(p.legs[1].rotation.x,-.62,touch);
@@ -2701,7 +2763,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      if(i===0&&time>=4.9||hugWeight(i,time)>0)return;
      const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence);
      const dx=after[0]-before[0],dz=after[1]-before[1],speed=clamp(Math.hypot(dx,dz)/.04*rate/6.5);
-     const wall=extended==='free_kick'&&i>=8&&i<=11&&physical<8.6;
+     // V21.479: at the crossed free kick only two stand in the wall, and they turn to run once it is struck.
+     const crossKick=/^extended_free_kick_cross/.test(sequence),wall=extended==='free_kick'&&i>=8&&i<=(crossKick?9:11)&&physical<(crossKick?6.4:8.6);
      const heading=wall?extendedWallHeading(sequence):extended==='throw_in'&&i===1&&physical<3.5?Math.PI/2*(extendedMirrored(sequence)?-1:1):
       Math.hypot(dx,dz)>.001?Math.atan2(-dx,-dz):p.root.rotation.y;
      const stride=gaitPhase(i,time),control=carrierIndex===i?carrierState.weight:0;
@@ -2719,7 +2782,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(buildKeeper){resetPose(buildKeeper);const pos=extendedPosition(16,time,sequence);buildKeeper.root.position.set(pos[0],0,pos[1]);poseExtendedActor(buildKeeper,16,time,sequence);}
    }
    // V21.369: the attacker taken out by a slide tackle trips and gets up again.
-   importedMotionFrame.fall=event.type==='ball_won'&&sequence.startsWith('defense_slide_tackle')?{contact:4.4,weight:1,mirror:0}:null;
+   importedMotionFrame.fall=foul?{contact:FOUL_FALL.contact,weight:1,mirror:0,hold:FOUL_FALL.hold}:event.type==='ball_won'&&isDefenseSlide(sequence)?{contact:4.4,weight:1,mirror:0}:null;
    if(event.type==='ball_won'){
     importedMotionFrame.grounded=true;
     for(const frame of squadMotionFrames)frame.grounded=true;
@@ -2792,7 +2855,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
+   if(foul)foulArms(time);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
+   if(foul)foulCard(time);
    // V21.369: the thrown-in ball sits between the taker's captured hands until release.
    const throwIn=squadMotionFrames[1]?.throwIn;
    if(throwIn&&throwIn.seconds<THROW_IN_RELEASE&&importedPlayers[1]?.handWorld&&importedPlayers[1].handWorld(0,keeperHandWorld)&&importedPlayers[1].handWorld(1,keeperContactWorld)){
@@ -2837,6 +2902,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     camera.fov=mix(camera.fov,desiredFov,follow);
    }else{
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;
+   }
+   // V21.479: the TV cuts close to the referee as the card goes up.
+   if(cardColor&&!replay&&time>=FOUL_TIMES.card-.15&&time<FOUL_TIMES.cardDown+.15){
+    const r=players[refereeIndex].root.getWorldPosition(new THREE.Vector3()),f=players[defenderIndex].root.getWorldPosition(new THREE.Vector3());
+    // Side on to the two of them, from the TV side, far enough back for a phone picture.
+    const mid=r.clone().lerp(f,.45),gap=Math.max(1.2,Math.hypot(f.x-r.x,f.z-r.z));
+    let px=-(f.z-r.z)/gap,pz=(f.x-r.x)/gap;if(px<0){px=-px;pz=-pz}
+    const half=Math.atan(Math.tan(33*Math.PI/360)*Math.min(1.4,camera.aspect)),back=clamp((gap*.5+.9)/Math.tan(half),5.8,13)-(time-FOUL_TIMES.card)*.15;
+    camera.position.set(mid.x+px*back,mid.y+1.7,mid.z+pz*back);camTarget.set(mid.x,mid.y+1.35,mid.z);camera.fov=33;currentCameraPhase='card';
    }
    if(celebrationActive&&time>=CELEBRATION_CUT&&!replay){
     // TV close-up: cut to a camera ahead of the scorer on the broadcast side,
@@ -3167,6 +3241,14 @@ export function play(event,signal){
       else if(ceremony){headline.textContent='ABPFIFF';name.textContent=`${event.homeName||'Heim'} ${event.homeScore??0} : ${event.awayScore??0} ${event.awayName||'Gast'}`;detail.textContent=event.result==='draw'?'Unentschieden':`Sieg für ${event.team==='away'?event.awayName||'Gast':event.homeName||'Heim'}`}
       else if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({classic:' · Gefangen',fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
+      else if(event.type==='ball_won'&&parseFoul(event.sequence)){const foul=parseFoul(event.sequence);
+       // V21.479 Fouls: who fouled, how, and what follows.
+       const penalty=FOUL_ZONES[foul.zone]?.restart==='penalty',victim=event.playerName||'den Angreifer';
+       headline.textContent=event.foulCard==='red'?'ROTE KARTE':event.foulCard==='yellow'?'GELBE KARTE':penalty?'ELFMETER':'FOUL';
+       name.textContent=event.defenderName||'VERTEIDIGER';
+       const how=({slide:'Zu späte Grätsche gegen ',trip:'Bein gestellt gegen ',behind:'Von hinten in die Beine von ',pull:'Am Trikot gezogen: ',push:'Gestoßen: '})[foul.kind]||'Foul an ';
+       const next=penalty?'Elfmeter!':({arc:'Freistoß an der Strafraumgrenze',center:'Freistoß aus gut 20 Metern',side:'Freistoß aus gut 20 Metern',far:'Freistoß aus knapp 30 Metern',corner:'Freistoß an der Strafraumecke',flank:'Freistoß an der Außenlinie'})[foul.zone]||'Freistoß';
+       detail.textContent=how+victim+' · '+next}
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       // V21.365: name the defender who clears (defending actors 8-15), not the shooter.

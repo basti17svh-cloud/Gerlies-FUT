@@ -1,9 +1,9 @@
-import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21455';
+import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21479';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),smooth=v=>{v=clamp(v);return v*v*(3-2*v)},mix=(a,b,u)=>a+(b-a)*u;
 // V21.453 Standards: every restart has several authored variants. A sequence
 // is 'extended_<kind>[_<variant>][_right]'; '_right' mirrors the whole scene.
-export const EXTENDED_VARIANTS=Object.freeze({corner:Object.freeze(['near','far','short','edge']),free_kick:Object.freeze(['side','far','edge']),penalty:Object.freeze(['stutter','angled']),throw_in:Object.freeze([])});
-const MIRRORS={corner:['','near','far','short','edge'],free_kick:['side','far','edge'],penalty:['angled'],throw_in:['']};
+export const EXTENDED_VARIANTS=Object.freeze({corner:Object.freeze(['near','far','short','edge']),free_kick:Object.freeze(['side','far','edge','arc','cross','trick']),penalty:Object.freeze(['stutter','angled']),throw_in:Object.freeze([])});
+const MIRRORS={corner:['','near','far','short','edge'],free_kick:['side','far','edge','arc','cross','trick'],penalty:['angled'],throw_in:['']};
 export const EXTENDED_SEQUENCES=[...EXTENDED_HIGHLIGHT_TYPES.map(k=>'extended_'+k),'extended_corner_right',
  ...Object.entries(EXTENDED_VARIANTS).flatMap(([k,list])=>list.map(v=>'extended_'+k+'_'+v)),
  ...Object.entries(MIRRORS).flatMap(([k,list])=>list.filter(v=>v||k!=='corner').map(v=>'extended_'+k+(v?'_'+v:'')+'_right'))];
@@ -50,9 +50,15 @@ const R={
  throw_in:{1:[[0,34.15,-20],[3.2,34.15,-20],[5,34.15,-20],[9,28,-27],[12,26,-34]],6:[[0,24,-23],[3,24,-23],[5,23,-25],[8,20,-28],[10,14,-32],[12,10,-35]],0:[[0,9,-28],[5,9,-28],[8,7,-31],[10,3,-35],[12,1,-39]]}
 };
 // Ball spots of the free-kick variants (left side; '_right' mirrors them).
-const FREE_KICK_SPOT={free_kick:[0,-29.5],free_kick_side:[-9.5,-31],free_kick_far:[-3,-23.2],free_kick_edge:[-15,-35]};
+// V21.479 (after a foul): at the edge of the box ('arc'), a cross from the
+// touchline ('cross') and a laid-off trick free kick ('trick').
+const FREE_KICK_SPOT={free_kick:[0,-29.5],free_kick_side:[-9.5,-31],free_kick_far:[-3,-23.2],free_kick_edge:[-15,-35],
+ free_kick_arc:[-1.5,-35.4],free_kick_cross:[-29.15,-38.05],free_kick_trick:[0,-29.5]};
+export const freeKickSpot=seq=>{const p=FREE_KICK_SPOT[variantKey(seq)];return p?[p[0]*mirrorSign(seq),p[1]]:null};
 // Off-centre and long free kicks need a slightly wider lens to keep taker and both posts.
-const FREE_KICK_ZOOM={free_kick_side:1.3,free_kick_far:1.3,free_kick_edge:1.38};
+// A cross from the far touchline: aim nearer the goal and open the lens so taker and goal share the frame.
+const FAR_X=.3,FAR_Z=-44,FAR_ZOOM=1.3;
+const FREE_KICK_ZOOM={free_kick_side:1.3,free_kick_far:1.3,free_kick_edge:1.38,free_kick_arc:1.18,free_kick_cross:1.32,free_kick_trick:1.22};
 const goalUnit=([x,z])=>{const dx=-x,dz=-52.5-z,l=Math.hypot(dx,dz);return[dx/l,dz/l]};
 function freeKickRun(spot){
  // Short angled run-up that ends with the standing foot beside the ball.
@@ -78,6 +84,15 @@ const RV={
  free_kick_side:{0:freeKickRun(FREE_KICK_SPOT.free_kick_side)},
  free_kick_far:{0:freeKickRun(FREE_KICK_SPOT.free_kick_far)},
  free_kick_edge:{0:freeKickRun(FREE_KICK_SPOT.free_kick_edge)},
+ free_kick_arc:{0:freeKickRun(FREE_KICK_SPOT.free_kick_arc)},
+ // The cross: the taker (1) runs up and crosses at 6.4 s, the header (0) attacks the near post.
+ free_kick_cross:{
+  1:[[0,-31.3,-35.5],[5.1,-31.3,-35.5],[6.4,-29.25,-37.6],[7.4,-28.6,-38.5]],
+  0:[[0,-2.6,-36.6],[5.3,-2.9,-37.2],[7.1,-2.4,-43.6],[8,-2.1,-46.1]]},
+ // The trick: one stands over the ball and squares it, the other runs onto it and shoots first time.
+ free_kick_trick:{
+  1:[[0,-.1,-29.05],[7.2,-.1,-29.05],[7.6,-.05,-29.25],[8.6,.4,-29.9]],
+  0:[[0,-3.4,-26.4],[5.9,-3.4,-26.4],[7.3,-2.3,-27.9],[8,-1.55,-28.85]]},
  // A stutter: slow approach, a little hop and pause, then the quick strike.
  penalty_stutter:{0:[[0,0,-37.3],[6,0,-37.3],[7.3,-.02,-38.9],[7.8,-.03,-39.1],[8.45,-.05,-39.6],[9,-.105,-40.69]]},
  // A long, wide run-up from the side.
@@ -114,10 +129,17 @@ const RESTART_FORMATIONS={
  }
 };
 const RESTART_RELEASE={penalty:9,free_kick:8,corner:4.4,throw_in:3.2};
+const CROSS_MARKERS=[[-4.6,-40.5],[1.6,-42.2]],CROSS_MARKER_TARGETS=[[-3.4,-44.6],[.4,-45.6]];
 function freeKickShape(key,attack,j,target){
  const spot=FREE_KICK_SPOT[key],base=RESTART_FORMATIONS.free_kick,src=(attack?(target?base.targets.attack:base.attack):(target?base.targets.defend:base.defend))[j];
  if(!src||key==='free_kick')return src;
  const [ux,uz]=goalUnit(spot);
+ if(key==='free_kick_cross'){
+  // A cross from the touchline: a two-man wall, everyone else in or around the box.
+  if(!attack&&j<2){const off=j?.3:-.3,d=9.15;return[spot[0]+ux*d-uz*off,spot[1]+uz*d+ux*off]}
+  if(!attack&&j<4)return(target?CROSS_MARKER_TARGETS:CROSS_MARKERS)[j-2];
+  return src;
+ }
  if(!attack&&j<4){
   // The wall stands 9.15 m from the ball on the line to goal, shifted to cover the near post.
   const off=[-.84,-.28,.28,.84][j]+(spot[0]<0?-.35:.35),d=9.15+(target?1.6+j*.35:0);
@@ -132,9 +154,12 @@ function restartPosition(index,seconds,kind,key=kind){
  const start=fk?freeKickShape(key,attack,j,false):(attack?shape?.attack:shape?.defend)?.[j];
  if(!start)return null;
  const end=fk?freeKickShape(key,attack,j,true)||start:(attack?shape.targets.attack:shape.targets.defend)[j]||start;
- const release=RESTART_RELEASE[kind],wall=kind==='free_kick'&&!attack&&j<4;
+ // V21.479: the box moves when the cross is struck, not after the 'shot'.
+ const release=key==='free_kick_cross'?5.7:RESTART_RELEASE[kind],wall=kind==='free_kick'&&!attack&&(key==='free_kick_cross'?j<2:j<4);
  // Micro-positioning before delivery stays behind the penalty line and arc.
- const drift=wall?0:kind==='penalty'?.075:.18;
+ // The two markers at a crossed free kick hold their man instead of shuffling.
+ const marker=key==='free_kick_cross'&&!attack&&j<4;
+ const drift=wall||marker?0:kind==='penalty'?.075:.18;
  const idle=drift*Math.sin(seconds*(.62+(index%4)*.09)+index*.83)
    *smooth(seconds/1.8)*(1-smooth((seconds-release+.38)/.42));
  // Individual reaction timing prevents synchronized sprints into the box.
@@ -156,10 +181,10 @@ export function extendedPosition(index,time,seq){
  const progress=smooth(t/shots[kind]),initial=kind==='keeper_buildout'?24:0;
  return[(j-3)*6+(attack?0:2),mix(initial+(attack?10:0)-(j%3)*6,(attack?-23:-38)-(j%3)*3,progress)];
 }
-export function extendedContact(seq,base){const p=extendedPosition(0,5.4,seq);return p?[p[0]+base[0],['penalty','free_kick'].includes(extendedKind(seq))?.14:base[1],p[1]+base[2]+37]:null}
+export function extendedContact(seq,base){const p=extendedPosition(0,5.4,seq);return p?[p[0]+base[0],['penalty','free_kick'].includes(extendedKind(seq))&&variantKey(seq)!=='free_kick_cross'?.14:base[1],p[1]+base[2]+37]:null}
 const foot=(i,t,seq)=>{const p=extendedPosition(i,t/extendedTiming(seq).shot*5.4,seq);return[p[0]+.1,i===16?1.08:.14,p[1]+(extendedKind(seq)==='turnover_counter'&&i>=8&&i<16?.45:-.45)]};
 // Physical seconds, exact receiver endpoints; the final pass meets the actual finishing contact.
-const VARIANT_PASSES={corner_near:[[1,0,5.6,7.4,3.1]],corner_far:[[1,0,5.6,7.4,4.8]],corner_edge:[[1,0,5.6,7.4,4.7]],corner_short:[[1,6,4.4,5.2,.1],[6,0,5.8,7.4,3.4]]};
+const VARIANT_PASSES={free_kick_cross:[[1,0,6.4,8,3.4]],free_kick_trick:[[1,0,7.3,8,0]],corner_near:[[1,0,5.6,7.4,3.1]],corner_far:[[1,0,5.6,7.4,4.8]],corner_edge:[[1,0,5.6,7.4,4.7]],corner_short:[[1,6,4.4,5.2,.1],[6,0,5.8,7.4,3.4]]};
 // Wall players turn to face the ball, wherever the free kick is taken.
 export function extendedWallHeading(seq){
  const key=variantKey(seq),spot=FREE_KICK_SPOT[key];if(!spot)return Math.PI;
@@ -176,7 +201,9 @@ export function extendedControl(time,seq){const k=extendedKind(seq),t=extendedSe
  let owner=k==='keeper_buildout'?16:6;for(const [a,b,start,end]of extendedPasses(seq)){if(t>=start&&t<end)return{index:-1,weight:0};if(t>=end)owner=b}return{index:owner,weight:.85}}
 export function extendedBall(time,seq,contact){
  const k=extendedKind(seq),t=extendedSeconds(seq,time);if(time>=5.4)return contact.slice();
- if(k==='penalty'||k==='free_kick')return contact.slice();
+ if(k==='penalty'||k==='free_kick'&&!extendedPasses(seq).length)return contact.slice();
+ // V21.479: the crossed or squared free kick lies at the taker's boot until he plays it.
+ if(k==='free_kick'){const delivery=extendedPasses(seq)[0][2];if(t<delivery)return foot(1,delivery,seq)}
  // Opponent combines in midfield; the first pass and receiving touch are
  // visible BEFORE our defender presses and wins a real duel.
  if(k==='turnover_counter'){
@@ -218,7 +245,9 @@ export function extendedCamera(seq,time,direction,aspect,ball){
   target[2]=mix(target[2],(ball[2]-51.25)/2,smooth((time-5.4)/1.25));
  }
  if(kind==='penalty'){target[0]=0;target[2]=-44}
- if(kind==='free_kick'){const spot=FREE_KICK_SPOT[variantKey(seq)]||FREE_KICK_SPOT.free_kick;target[0]=spot[0]*.4*mirrorSign(seq);target[2]=-38+(spot[1]+29.5)*.65}
+ if(kind==='free_kick'){const spot=FREE_KICK_SPOT[variantKey(seq)]||FREE_KICK_SPOT.free_kick;target[0]=spot[0]*.4*mirrorSign(seq);target[2]=-38+(spot[1]+29.5)*.65;
+  // The cross: taker and box, then over to the near post as the ball comes in.
+  if(variantKey(seq)==='free_kick_cross'){const u=smooth((t-6.2)/1.6),far=spot[0]*mirrorSign(seq)*direction<0;target[0]=mix(spot[0]*(far?FAR_X:.55),-3,u)*mirrorSign(seq);target[2]=mix(far?FAR_Z:-41.5,-45.5,u)}}
  if(kind==='corner'){target[0]=mix(extendedMirrored(seq)?16:-16,0,smooth(extendedSeconds(seq,time)/shots.corner));target[2]=extendedVariant(seq)==='edge'?mix(-44,-40,smooth((t-5.2)/2.2)):-44}
  if(kind==='throw_in'){target[0]=mix(19*mirrorSign(seq),0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
@@ -232,7 +261,7 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  // so the whole goal fits next to the ball (counter) or the taker (free kick).
  const wide=width=>2*Math.atan(width/aspect)*180/Math.PI;
  const fov=kind==='turnover_counter'?Math.max(portrait?42:32,wide(.384)):
-  kind==='free_kick'?Math.max(portrait?38:35.5,wide(.355))*(FREE_KICK_ZOOM[variantKey(seq)]||1):(portrait?29.4:28.6);
+  kind==='free_kick'?Math.max(portrait?38:35.5,wide(.355))*(FREE_KICK_ZOOM[variantKey(seq)]||1)*(variantKey(seq)==='free_kick_cross'&&FREE_KICK_SPOT.free_kick_cross[0]*mirrorSign(seq)*direction<0?FAR_ZOOM:1):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // V21.195 set-piece TV angles, cut in directly (not through the stabilized
@@ -248,7 +277,7 @@ export function extendedSetPieceCamera(seq,time,direction,aspect,ball=null){
  const angled=kind==='penalty'&&extendedVariant(seq)==='angled';
  // The wide run-up camera hands over to the TV camera right after the strike.
  const behind=kind==='penalty'&&time<(angled?6.1:7.7)?(angled?{from:[-3.9,2.2,-30.9],to:[.4,1.0,-50.5],fov:portrait?30.5:25,mirror:extendedMirrored(seq)}:{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?30.5:25}):
-  kind==='free_kick'&&time<7.3?freeKickBehind(seq,portrait):null;
+  kind==='free_kick'&&time<7.3&&variantKey(seq)!=='free_kick_cross'?freeKickBehind(seq,portrait):null;
  // V21.203 (Basti): corners stay in the normal TV camera, no corner-flag angle.
  if(!behind)return null;
  const f=v=>[v[0]*(behind.mirror?-1:1)*direction,v[1],v[2]*direction],position=f(behind.from),target=f(behind.to);
@@ -270,14 +299,14 @@ export function poseExtendedActor(p,index,time,seq){
   p.elbows[1].rotation.x=.14+.045*Math.sin(t*.75+index);
  }
  // Only the four wall players are aligned, with nonidentical jump timings.
- if(kind==='free_kick'&&index>=8&&index<=11){
+ if(kind==='free_kick'&&index>=8&&index<=(variantKey(seq)==='free_kick_cross'?9:11)){
   // Tuck hands in front of the hips/torso instead of holding both arms out.
   // Root heading PI faces the freekick taker at positive local Z.
   p.arms[0].rotation.x=-.10;p.arms[1].rotation.x=-.10;
   p.arms[0].rotation.z=-.08;p.arms[1].rotation.z=.08;
   p.elbows[0].rotation.x=-.28;p.elbows[1].rotation.x=-.28;
-  const delay=(index-8)*.065;
-  const jump=smooth((t-7.91-delay)/.14)*(1-smooth((t-8.19-delay)/.21));
+  const delay=(index-8)*.065,strike=variantKey(seq)==='free_kick_cross'?6.4:8;
+  const jump=smooth((t-strike+.09-delay)/.14)*(1-smooth((t-strike+.19-delay)/.21));
   p.rig.position.y+=.23*jump;p.upper.rotation.x-=.08*jump;
  }
  for(const [passer,,release]of extendedPasses(seq))if(index===passer&&!(kind==='throw_in'&&index===1)&&index!==16){const u=clamp((t-release+.3)/.7),w=Math.sin(Math.PI*u);p.legs[1].rotation.x=mix(-.6,1,u)*w;p.knees[1].rotation.x=-.45*w;}

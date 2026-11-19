@@ -274,7 +274,7 @@ function queueMatch3D(event){
 
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(presentation);
- presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':String(event.sequence||'').startsWith('defense_slide_tackle')?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
+ presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':/^defense_(?:slide_tackle|foul_(?:slide|behind)_)/.test(String(event.sequence||''))?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
  // Goal-line clearance: the card shows the defender who clears, not the shooter.
  // The scene picks the clearing actor (8-15) by position, so every defending actor gets its card.
  presentation.defendCardsHTML=presentation.keeperAction==='line_clear'&&presentation.defendRows?presentation.defendRows.map((row,i)=>row?match3DCardHTML(presentation.defendSide,row,current,presentation.defendNames?.[i]):''):[];
@@ -374,10 +374,22 @@ function queueMatchDefensive3D(action,attackingSide,attacker){
  if(queued){match.defenseHighlightsShown=shown+1;match.lastDefenseHighlightMinute=minute;match.lastDefenseSequence=sequence}
  return queued;
 }
+// V21.479 Fouls: the foul before a free kick or penalty, as its own short scene
+// (attacker brought down, whistle, referee, card). Presentation of a recorded foul only.
+function queueMatchFoul3D(foul,attackingSide,victim){
+ if(!foul||!match||!FooteraHighlights.accepts('ball_won'))return false;
+ const shown=Number(match.foulHighlightsShown||0);if(shown>=4)return false;
+ const sequence='defense_foul_'+foul.kind+'_'+foul.zone+(foul.mirror?'_wide':'');
+ const queued=queueMatch3D({id:'foul:'+((match.fouls||[]).length-1),type:'ball_won',minute:foul.minute,team:attackingSide,
+  playerId:attackingSide==='home'?String(victim?.uid||''):Number(victim?.index??-1),playerName:foul.victim||victim?.name||'Angreifer',
+  defenderUid:foul.uid,defenderSourceIndex:foul.index,defenseKind:'tackle',defensePhase:'duel',sequence,finish:'normal',foulCard:foul.card||''});
+ if(queued)match.foulHighlightsShown=shown+1;
+ return queued;
+}
 function queueMatchGoal3D(event){
  const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
-  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',tightLateGame:event.tightLateGame,shotFoot:event.shotFoot,creatorFoot:event.creatorFoot,preferredFoot:event.preferredFoot,weakFoot:event.weakFoot,skillMoves:event.skillMoves,skillMove:event.skillMove,actionKind:event.actionKind,sceneKind:event.sceneKind,restartSide:event.restartSide,finish:event.finish,defenderSourceIndex:event.defenderIndex,scoreBeforeHome,scoreBeforeAway});
+  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',tightLateGame:event.tightLateGame,shotFoot:event.shotFoot,creatorFoot:event.creatorFoot,preferredFoot:event.preferredFoot,weakFoot:event.weakFoot,skillMoves:event.skillMoves,skillMove:event.skillMove,actionKind:event.actionKind,sceneKind:event.sceneKind,restartSide:event.restartSide,restartVariant:event.restartVariant,restartMirror:event.restartMirror,finish:event.finish,defenderSourceIndex:event.defenderIndex,scoreBeforeHome,scoreBeforeAway});
  // Keep the original goal tick's early return (including its RNG consumption).
  if(queued)match.highlightActive=true;
  return queued;
@@ -389,7 +401,7 @@ function queueMatchChance3D(shot){
  if(!type)return false;
  const id=`shot:${match.shotEvents.length}`,current=match;
  const queued=queueMatch3D({id,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
-  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,preferredFoot:shot.preferredFoot,weakFoot:shot.weakFoot,skillMoves:shot.skillMoves,skillMove:shot.skillMove,actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
+  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,preferredFoot:shot.preferredFoot,weakFoot:shot.weakFoot,skillMoves:shot.skillMoves,skillMove:shot.skillMove,actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,restartVariant:shot.restartVariant,restartMirror:shot.restartMirror,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
  if(queued&&current.line3DClearId===id)shot.lineClear3D=true;
  return queued;
 }

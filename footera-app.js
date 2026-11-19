@@ -364,6 +364,41 @@ function matchSetPieceTaker(side,type){
  const assignments=side==="home"?match?.assignments:match?.opponentProfile?.assignments,key=type==="penalty"?"penalties":"freeKicks",uid=String(assignments?.[key]||"");
  return rows.find(r=>uid&&String(r.uid||r.entry?.uid||match?.opponentProfile?.items?.[r.index]?.uid)===uid)||rows.sort((a,b)=>FooteraMatchActions.shotSkill(b,{creationType:type})-FooteraMatchActions.shotSkill(a,{creationType:type}))[0]||null
 }
+// V21.479: who heads in a free kick crossed from the touchline (not the taker).
+function matchSetPieceHeader(side,taker){
+ const same=r=>side==="home"?String(r.uid)===String(taker?.uid):Number(r.index)===Number(taker?.index);
+ const rows=matchActorRows(side).filter(r=>r.slot!=="GK"&&!['GK','TW','TH'].includes(r.base?.position)&&!same(r));
+ const skill=r=>FooteraMatchActions.shotSkill(r,{finish:"header"})*((r.styles||[]).some(s=>s.id==="power-header"||s.id==="aerial")?1.12:1);
+ const best=rows.sort((a,b)=>skill(b)-skill(a)).slice(0,2);
+ // The two best in the air take turns, so it is not always the same man.
+ return best[(match?.fouls||[]).length%Math.max(1,best.length)]||null;
+}
+const MATCH_FOUL_PLACES=Object.freeze({arc:"an der Strafraumgrenze",center:"rund 22 Meter vor dem Tor",side:"halblinks vor dem Strafraum",far:"knapp 30 Meter vor dem Tor",corner:"an der Strafraumecke",flank:"an der Außenlinie",box:"im Strafraum"});
+// V21.479 Fouls: booking, ticker and the 3D foul scene before a free kick or penalty.
+function matchRecordFoul(side,defendingSide,plan,fouler,victim,context={}){
+ if(!match||!plan||!fouler)return false;
+ const minute=Math.min(120,Math.floor(match.minute)),team=side==="home"?matchHomeTeamName():matchAwayTeamName(),dteam=defendingSide==="home"?matchHomeTeamName():matchAwayTeamName();
+ const foulerName=matchEventPlayerName(fouler,fouler.name||"Verteidiger"),victimName=victim?matchEventPlayerName(victim,victim.name||"Angreifer"):"";
+ const booked=new Set((match.yellowCards||[]).map(c=>`${c.side}:${c.uid||c.index}`)),key=defendingSide==="home"?`home:${fouler.uid}`:`away:${fouler.index}`;
+ // A player already on a yellow is not booked again here (no second-yellow dismissals from this).
+ const card=plan.card&&!booked.has(key)&&(match.yellowCards||[]).length<8?plan.card:"";
+ const mirrored=plan.mirror?(plan.zone==="flank"||plan.zone==="side"||plan.zone==="corner"?"rechts":""):"";
+ const foul={side:defendingSide,victimSide:side,minute,at:match.minute,zone:plan.zone,kind:plan.kind,variant:plan.variant,mirror:!!plan.mirror,card,
+  uid:defendingSide==="home"?String(fouler.uid||""):"",index:Number(fouler.index??-1),name:foulerName,victim:victimName,victimUid:side==="home"?String(victim?.uid||""):"",victimIndex:Number(victim?.index??-1)};
+ (match.fouls||(match.fouls=[])).push(foul);
+ const place=(MATCH_FOUL_PLACES[plan.zone]||"").replace("halblinks",mirrored==="rechts"?"halbrechts":"halblinks");
+ let text="";
+ try{if(typeof FooteraCommentary!=="undefined"&&FooteraCommentary.foul)text=FooteraCommentary.foul(match,{...foul,place,team,opponent:dteam})}catch(e){}
+ if(!text)text=`Foul von ${foulerName} an ${victimName} ${place}. ${plan.zone==="box"?"Elfmeter!":"Freistoß."}`;
+ recordMatchScene(`${defendingSide}-foul`,text);matchCommentaryTicker(text,plan.zone==="box"?"note":"");
+ if(card){
+  match.yellowCards.push({side:defendingSide,uid:foul.uid,index:defendingSide==="home"?Number(fouler.index??-1):foul.index,name:foulerName,minute});
+  recordMatchEvent("yellow",defendingSide,foulerName);addLog(`Gelbe Karte für ${foulerName}.`,defendingSide);matchCardCommentary("yellow",foulerName,dteam);
+ }
+ const queued=typeof queueMatchFoul3D==="function"&&queueMatchFoul3D(foul,side,victim);
+ foul.shown3D=!!queued;
+ return!!queued
+}
 const SEASON_REWARDS=[
  {level:1,sp:0,reward:{coins:500}},{level:2,sp:500,reward:{pack:"silver",qty:1}},{level:3,sp:1000,reward:{coins:1500}},
  {level:4,sp:1800,reward:{pack:"gold",qty:1}},{level:5,sp:2800,reward:{points:100}},{level:6,sp:4000,reward:{pack:"82",qty:1}},
@@ -9077,7 +9112,7 @@ function renderMatchScene(){
  const scene=match.lastScene,kind=scene.kind;
  $("matchLiveStage").dataset.scene=kind;
  $("matchSceneMinute").textContent=`${scene.minute}'`;
- $("matchSceneType").textContent=kind.endsWith("-goal")?"TOR":kind.endsWith("-save")?"PARADE":kind.endsWith("-post")?"PFOSTEN":kind.endsWith("-block")?"GEBLOCKT":kind.endsWith("-defense")?"BALLGEWINN":kind.endsWith("-chance")?"TORSCHUSS":kind.endsWith("-attack")?"ANGRIFF":kind.endsWith("-card")?"ROTE KARTE":kind.endsWith("-injury")?"VERLETZUNG":"SPIEL LÄUFT";
+ $("matchSceneType").textContent=kind.endsWith("-goal")?"TOR":kind.endsWith("-save")?"PARADE":kind.endsWith("-post")?"PFOSTEN":kind.endsWith("-block")?"GEBLOCKT":kind.endsWith("-defense")?"BALLGEWINN":kind.endsWith("-chance")?"TORSCHUSS":kind.endsWith("-attack")?"ANGRIFF":kind.endsWith("-card")?"ROTE KARTE":kind.endsWith("-foul")?"FOUL":kind.endsWith("-injury")?"VERLETZUNG":"SPIEL LÄUFT";
  $("matchSceneText").textContent=scene.text;
  const ball=$("matchLiveStage").querySelector(".match-ball");
  ball.style.animation="none";void ball.offsetWidth;ball.style.animation=""
@@ -9167,7 +9202,7 @@ function resolveMissedMatchShot(shot,team){
  if(shot.outcome==="block"&&roll>saveCut+.12)match.nextRestart={side:shot.side,kind:"corner",flank:(match.shotEvents?.length||0)%2?"left":"right",at:match.minute};
  // Refine only the presentation of already missed shots using the EXISTING roll.
  // No extra random draw, goal check, shot, xG or defensive action is introduced.
- shot.highlightType=shot.outcome==="wide"&&roll>=.965?"shot_post":(Number(shot.xg)>=.16||(typeof FooteraHighlights!=="undefined"&&FooteraHighlights.getMode()==="all"))?(shot.outcome==="save"?"big_chance_saved":shot.outcome==="wide"?"big_chance_missed":""):"";
+ shot.highlightType=shot.outcome==="wide"&&roll>=.965?"shot_post":(Number(shot.xg)>=.16||shot.foul3D||(typeof FooteraHighlights!=="undefined"&&FooteraHighlights.getMode()==="all"))?(shot.outcome==="save"?"big_chance_saved":shot.outcome==="wide"?"big_chance_missed":""):"";
  // Presentation metadata only: name the actual goalkeeper on saved chances.
  const keeperRow=shot.outcome==="save"&&action?matchActorRows(action.side).find(row=>row.index===action.index):null;
  shot.goalkeeperName=shot.outcome==="save"?(keeperRow?matchEventPlayerName(keeperRow,"Torwart"):action?.name||"Torwart"):"";
@@ -9239,7 +9274,7 @@ function chooseOpponentAssist(excludeIndex){return chooseMatchCreator("away",exc
 function logGoal(side,scorer,assist,type,shot={}){
  const team=side==="home"?matchHomeTeamName():matchAwayTeamName(),minute=Math.min(120,Math.floor(match.minute));
  const event={
-  tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,skillMove:shot.skillMove,skillMoves:shot.skillMoves,weakFoot:shot.weakFoot,preferredFoot:shot.preferredFoot,sceneKind:shot.sceneKind,restartSide:shot.restartSide,defenderIndex:shot.defenderIndex,actionKind:shot.actionKind,finish:shot.finish,shotId:shot.id,side,minute,at:match.minute,playerName:matchEventPlayerName(scorer,"Spieler"),scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
+  tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,skillMove:shot.skillMove,skillMoves:shot.skillMoves,weakFoot:shot.weakFoot,preferredFoot:shot.preferredFoot,sceneKind:shot.sceneKind,restartSide:shot.restartSide,restartVariant:shot.restartVariant,restartMirror:shot.restartMirror,defenderIndex:shot.defenderIndex,actionKind:shot.actionKind,finish:shot.finish,shotId:shot.id,side,minute,at:match.minute,playerName:matchEventPlayerName(scorer,"Spieler"),scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
   scorerUid:side==="home"?String(scorer?.uid||""):"",
   assistUid:side==="home"?String(assist?.uid||""):"",
   scorerIndex:side==="away"?Number(scorer?.index??-1):-1,
@@ -9288,7 +9323,7 @@ function matchShotCommentary(kind,shot,extra={}){
  const side=shot.side,defending=side==="home"?"away":"home",rows=matchActorRows(defending);
  const keeper=extra.keeper||shot.goalkeeperName||matchEventPlayerName(rows.find(r=>r.slot==="GK"),"");
  const defender=extra.defender||matchEventPlayerName(rows.find(r=>r.index===Number(shot.defenderIndex)),"");
- return matchCommentaryLine(kind,{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:shot.creationType,finish:shot.finish,skillMove:shot.skillMove,xg:shot.xg,side,defendingSide:defending,team:side==="home"?matchHomeTeamName():matchAwayTeamName(),opponent:side==="home"?matchAwayTeamName():matchHomeTeamName(),shooter:shot.shooter,creator:shot.creator,keeper,defender,outcome:kind,scoreFor:side==="home"?match.home:match.away,scoreAgainst:side==="home"?match.away:match.home,...extra})
+ return matchCommentaryLine(kind,{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:shot.creationType,finish:shot.finish,skillMove:shot.skillMove,xg:shot.xg,side,defendingSide:defending,team:side==="home"?matchHomeTeamName():matchAwayTeamName(),opponent:side==="home"?matchAwayTeamName():matchHomeTeamName(),shooter:shot.shooter,creator:shot.creator,keeper,defender,outcome:kind,restartVariant:shot.restartVariant,foulZone:shot.foulZone,scoreFor:side==="home"?match.home:match.away,scoreAgainst:side==="home"?match.away:match.home,...extra})
 }
 function matchCardCommentary(color,name,team){
  if(typeof FooteraCommentary==="undefined"||!match)return;
@@ -9340,11 +9375,19 @@ function simAttack(homeSide){
  if(restart?.kind==="corner")kind="cross";else if(counter)kind="through";
  if(restart&&["corner","throw_in"].includes(restart.kind))creator=matchRestartCreator(side,restart.kind,restart.flank);
  const setRoll=Math.random(),creationType=restart||counter?(kind==="dribble"?"solo":"assist"):setRoll<.009?"penalty":setRoll<.031?"freekick":kind==="dribble"?"solo":"assist";
- const setPiece=creationType==="penalty"||creationType==="freekick",attacker=setPiece?matchSetPieceTaker(side,creationType):chooseMatchAttacker(side,kind,restart&&["corner","throw_in"].includes(restart.kind)?(side==="home"?creator.uid:creator.index):null);
+ const setPiece=creationType==="penalty"||creationType==="freekick",taker=setPiece?matchSetPieceTaker(side,creationType):chooseMatchAttacker(side,kind,restart&&["corner","throw_in"].includes(restart.kind)?(side==="home"?creator.uid:creator.index):null);
+ // V21.479 Fouls: every free kick and penalty comes from a foul. Zone, kind and
+ // booking come from a stable hash (no extra RNG draw). A foul near the
+ // touchline is crossed in by the free-kick taker and headed by the best header.
+ const foulPlan=setPiece&&typeof FooteraMatchActions.foulPlan==="function"?FooteraMatchActions.foulPlan(creationType,`${match.resultId||match.mode||""}|${Math.round(match.minute*100)}|${side}|${(match.shotEvents||[]).length}`):null;
+ const crossKick=foulPlan?.variant==="cross"&&!!taker,attacker=crossKick?(matchSetPieceHeader(side,taker)||taker):taker;
  if(!attacker)return; // No fictional shot when only a goalkeeper is available.
+ const fouled=crossKick?attacker:creator;
+ if(crossKick&&attacker!==taker)creator=taker;
  if(!setPiece&&(side==="home"?creator.uid===attacker.uid:creator.index===attacker.index))creator=chooseMatchCreator(side,side==="home"?attacker.uid:attacker.index);
  const sceneKind=setPiece?(creationType==="freekick"?"free_kick":"penalty"):restart?.kind|| (counter?"turnover_counter":"");
- const context={sceneKind,restartSide:restart?.flank||"left",tightLateGame:match.minute>=70&&Math.abs(match.home-match.away)<=1,actionKind:setPiece?creationType:kind,finish:setPiece?"normal":actions.finishFor(attacker,kind,Math.random()),creationType};
+ const context={sceneKind,restartSide:restart?.flank||"left",tightLateGame:match.minute>=70&&Math.abs(match.home-match.away)<=1,actionKind:setPiece?creationType:kind,finish:crossKick?"header":setPiece?"normal":actions.finishFor(attacker,kind,Math.random()),creationType};
+ if(foulPlan)Object.assign(context,{restartVariant:foulPlan.variant,restartMirror:!!foulPlan.mirror,foulZone:foulPlan.zone,foulKind:foulPlan.kind});
  const attackerTraits=actions.playerTraits(attacker),creatorTraits=actions.playerTraits(creator);
  if(context.finish!=='header'&&attackerTraits.preferredFoot)context.shotFoot=setPiece?attackerTraits.preferredFoot:actions.actionFoot(attacker,kind,Math.random());
  if(!setPiece&&kind==='dribble'&&attackerTraits.skillMoves)context.skillMove=actions.skillFor(attacker,kind,Math.random());
@@ -9375,10 +9418,12 @@ function simAttack(homeSide){
   if(action){if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordWin(match,defendingSide,"duel");recordMatchScene(`${defendingSide}-defense`,matchCommentaryLine(action.kind==="interception"?"interception":"tackle",{...context,phase:"duel",side,defendingSide,team,opponent:defendingSide==="home"?matchHomeTeamName():matchAwayTeamName(),creator:creator.name,shooter:attacker.name,defender:action.name})||`${action.name} stoppt ${attacker.name} im Zweikampf.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,attacker)}
   return
  }
+ // V21.479: the foul itself (booking, ticker, 3D scene) before the free kick or penalty.
+ if(foulPlan&&duelDefender)context.foul3D=matchRecordFoul(side,defendingSide,foulPlan,duelDefender,fouled,context);
  const baseXg=matchClamp(.09+Math.random()*.16+matchAttributeGap(buildMargin)*.0009+matchAttributeGap(duelMargin)*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014+aiTuning.xg+advantage.xg,.05,.52);
  const xg=actions.chanceQuality(baseXg,context,matchActionTactics(defendingSide));
  const creatorDifferent=side==="home"?creator.uid!==attacker.uid:creator.index!==attacker.index;
- const assist=creationType==="assist"?(creatorDifferent?creator:chooseMatchCreator(side,side==="home"?attacker.uid:attacker.index)):null;
+ const assist=crossKick&&creatorDifferent?creator:creationType==="assist"?(creatorDifferent?creator:chooseMatchCreator(side,side==="home"?attacker.uid:attacker.index)):null;
  const shot={...context,id:"attempt:"+(match.shotEvents?.length||0),side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:matchEventPlayerName(attacker,attacker.name),shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:actions.shotSkill(attacker,context),creator:assist?.name||"",creatorUid:assist?.uid||"",creatorIndex:assist?.index??-1,defenderIndex:duelDefender?.index??-1,goal:false,...(!homeSide&&match.opponentProfile?.kind==='generated'&&match.opponentProfile?.styleProfile?.id?{opponentStyle:String(match.opponentProfile.styleProfile.id)}:{})};
  if(homeSide){match.shotsHome++;match.xgHome+=xg}else{match.shotsAway++;match.xgAway+=xg}
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
@@ -9387,7 +9432,7 @@ function simAttack(homeSide){
  if(eventChance(goalChance)){
 
   shot.goal=true;shot.outcome="goal";shot.onTarget=true;if(homeSide)match.home++;else match.away++;
-  logGoal(side,attacker,assist,creationType,shot)
+  logGoal(side,attacker,assist,crossKick?"assist":creationType,shot)
  }else resolveMissedMatchShot(shot,team)
 }
 function simTick(){
@@ -10980,7 +11025,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.478";
+const GFUT_BUILD="V21.479";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11038,7 +11083,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21478",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21479",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

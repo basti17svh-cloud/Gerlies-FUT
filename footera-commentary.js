@@ -43,6 +43,13 @@
   throw_in:['Schneller Einwurf, {team} überrascht die Abwehr.','Einwurf weit in den Strafraum, {s} kommt an den Ball.','{c} wirft schnell ein und {team} ist sofort im Angriff.'],
   keeper_buildout:['Der Torwart leitet schnell ein, {team} spielt sich nach vorne.','Abstoß kurz, dann geht es über drei Stationen bis vor das Tor.','{team} baut geduldig von hinten auf, am Ende ist {s} frei.','Langer Abwurf, {team} ist sofort in der gegnerischen Hälfte.','{team} löst sich mit flachen Pässen aus der eigenen Hälfte.','Von hinten heraus gespielt, {c} öffnet das Spiel für {s}.'],
   freekick:['Freistoß aus rund 20 Metern, {s} legt sich den Ball zurecht.','Gefährlicher Freistoß für {team}. {s} läuft an.','{s} schaut auf die Mauer, dann auf das Tor.'],
+  // V21.479: the free kick after the foul, by where it is taken.
+  freekick_arc:['Freistoß direkt an der Strafraumgrenze! Die Mauer steht, {s} läuft an.','Aus 17 Metern, beste Position: {s} schnappt sich den Ball.','Halbhoch über die Mauer? {s} probiert es von der Strafraumkante.'],
+  freekick_side:['Freistoß halbseitig, gut 20 Meter. {s} hat den richtigen Fuß dafür.','{s} legt sich den Ball halbseitig vor dem Strafraum zurecht.'],
+  freekick_far:['Freistoß aus knapp 30 Metern. {s} nimmt ordentlich Anlauf.','Weit draußen, aber {s} traut sich das zu.'],
+  freekick_edge:['Freistoß an der Strafraumecke, {s} steht am Ball.','Spitzer Winkel an der Strafraumecke: {s} schaut auf das kurze Eck.'],
+  freekick_cross:['Freistoß an der Außenlinie. {c} schlägt ihn hoch in den Strafraum, {s} steigt hoch.','{c} bringt den Freistoß von der Seite scharf herein, {s} ist da.','Flanke aus dem Halbfeld nach dem Foul: {c} zirkelt sie auf {s}.'],
+  freekick_trick:['Einstudierte Variante! Kurz abgelegt, {s} zieht direkt ab.','Trickfreistoß von {team}: Einer tippt an, {s} schießt.','Die Mauer springt zu früh, der Ball wird quergelegt, {s} zieht ab.'],
   penalty:['Elfmeter für {team}! {s} schnappt sich den Ball.','Der Schiedsrichter zeigt auf den Punkt! {s} tritt an.','Strafstoß für {team}. {s} gegen {k}.']
  });
  const GOALS=Object.freeze({
@@ -138,7 +145,7 @@
  function leadFor(state,ctx){
   const v=ctx.vars,scene=ctx.sceneKind,type=ctx.creationType;
   if(type==='penalty')return choose(state,'lead-penalty',LEADS.penalty,v);
-  if(type==='freekick')return choose(state,'lead-freekick',LEADS.freekick,v);
+  if(type==='freekick'||scene==='free_kick'){const variant=String(ctx.restartVariant||'');return choose(state,'lead-freekick-'+variant,LEADS['freekick_'+variant]||LEADS.freekick,v)}
   if(scene==='corner')return choose(state,'lead-corner',LEADS.corner,v);
   if(scene==='throw_in')return choose(state,'lead-throw',LEADS.throw_in,v);
   if(scene==='keeper_buildout')return choose(state,'lead-keeper',LEADS.keeper_buildout,v);
@@ -176,11 +183,11 @@
   }
   const lead=leadFor(state,ctx);let result='';
   if(kind==='goal'){
-   const list=ctx.creationType==='penalty'?GOALS.penalty:ctx.creationType==='freekick'?GOALS.freekick:ctx.kind==='distance'?GOALS.distance:GOALS[finish]||GOALS.normal;
+   const list=ctx.creationType==='penalty'?GOALS.penalty:ctx.creationType==='freekick'&&ctx.restartVariant!=='cross'?GOALS.freekick:ctx.kind==='distance'?GOALS.distance:GOALS[finish]||GOALS.normal;
    result=choose(state,'goal-'+finish+(ctx.creationType||''),list,v);
    const drama=dramaFor(state,ctx);if(drama)result+=' '+drama;
   }else if(kind==='save'){
-   const list=ctx.creationType==='penalty'?SAVES.penalty:ctx.creationType==='freekick'?SAVES.freekick:big?SAVES.big:finish==='header'?SAVES.header:ctx.kind==='distance'?SAVES.distance:finish==='chip'?SAVES.chip:SAVES.normal;
+   const list=ctx.creationType==='penalty'?SAVES.penalty:ctx.creationType==='freekick'&&ctx.restartVariant!=='cross'?SAVES.freekick:big?SAVES.big:finish==='header'?SAVES.header:ctx.kind==='distance'?SAVES.distance:finish==='chip'?SAVES.chip:SAVES.normal;
    result=choose(state,'save-'+(big?'big':finish),list,v);
   }else if(kind==='block')result=choose(state,'block',BLOCKS,v);
   else if(kind==='post')result=choose(state,'post',POSTS,v);
@@ -192,6 +199,22 @@
   const note=kind==='goal'||big||kind==='save'?tacticNote(state,ctx,'attack'):'';
   return{text:[lead,result,note].filter(Boolean).join(' '),ticker:true,note:!!note};
  }
+ // V21.479 Fouls: the foul that brings the free kick or penalty.
+ const FOULS=Object.freeze({
+  slide:['{d} kommt mit der Grätsche viel zu spät und trifft {v} {p}.','Rüde Grätsche von {d} gegen {v} {p}.','{d} rutscht {v} in die Beine, der Schiedsrichter pfeift sofort.'],
+  trip:['{d} stellt {v} {p} das Bein.','{v} wird {p} von {d} gelegt.','{d} bringt {v} {p} zu Fall.'],
+  behind:['{d} geht {v} {p} von hinten in die Beine.','Von hinten! {d} holt {v} {p} von den Beinen.','{v} ist durch, {d} grätscht ihn {p} von hinten um.'],
+  pull:['{d} hält {v} {p} am Trikot fest.','Trikotzupfer von {d}, {v} geht {p} zu Boden.','{v} zieht davon, {d} kann ihn {p} nur noch am Trikot halten.'],
+  push:['{d} stößt {v} {p} in den Rücken.','Schubser von {d}, {v} fällt {p}.','{d} drückt {v} {p} mit beiden Armen weg.']
+ });
+ const FOUL_AFTER=Object.freeze({free_kick:['Freistoß für {team}.','Gefährlicher Freistoß für {team}.','Der Schiedsrichter pfeift: Freistoß.'],
+  box:['Elfmeter! Der Schiedsrichter zeigt auf den Punkt.','Strafstoß für {team}!','Klare Sache: Elfmeter für {team}.']});
+ function foul(state,f={}){
+  const v={d:f.name||'Der Verteidiger',v:f.victim||'den Angreifer',p:f.place||'',team:f.team||''};
+  const lead=choose(state,'foul-'+f.kind,FOULS[f.kind]||FOULS.trip,v).replace(/\s+\./g,'.').replace(/\s{2,}/g,' ');
+  const after=choose(state,'foul-after-'+(f.zone==='box'?'box':'fk'),f.zone==='box'?FOUL_AFTER.box:FOUL_AFTER.free_kick,v);
+  return[lead,after].filter(Boolean).join(' ');
+ }
  function card(state,color,name,team){
   const v={s:name,team};
   const list=color==='red'?['Rote Karte für {s}! {team} muss mit zehn Mann weiterspielen.','Platzverweis! {s} muss vom Feld.']:['Gelbe Karte für {s}.','{s} sieht Gelb nach einem taktischen Foul.','Verwarnung für {s}, das war zu spät.','{s} holt sich die Gelbe Karte ab.'];
@@ -202,7 +225,7 @@
  const MOVE_ORDER=Object.freeze(['wing','through','combination','dribble','distance','switch','counter','setpiece']);
  const MOVE_LABELS=Object.freeze({wing:'Über die Flügel',through:'Steilpässe',combination:'Kombinationen',dribble:'Dribblings',distance:'Fernschüsse',switch:'Seitenwechsel',counter:'Konter',setpiece:'Standards'});
  function moveOf(ctx){
-  if(ctx.creationType==='penalty'||ctx.creationType==='freekick'||['corner','throw_in'].includes(ctx.sceneKind))return'setpiece';
+  if(ctx.creationType==='penalty'||ctx.creationType==='freekick'||['corner','throw_in','free_kick'].includes(ctx.sceneKind))return'setpiece';
   if(ctx.sceneKind==='turnover_counter')return'counter';
   if(['cross','cutback'].includes(ctx.kind))return'wing';
   return MOVE_LABELS[ctx.kind]?ctx.kind:'combination';
@@ -258,6 +281,6 @@
   const st=stats(state),rows=MOVE_ORDER.map(k=>({key:k,label:MOVE_LABELS[k],home:st.home.attacks[k],away:st.away.attacks[k],homeGoals:st.home.goals[k],awayGoals:st.away.goals[k],homeChances:st.home.chances[k],awayChances:st.away.chances[k]})).filter(r=>r.home||r.away);
   return{rows,homePress:st.home.pressWins,awayPress:st.away.pressWins,homeDuels:st.home.duelWins,awayDuels:st.away.duelWins};
  }
- const api={describe,card,analysis,tips,report,recordAttack,recordWin,moveOf,SKILL_NAMES,KIND_LABELS,MOVE_LABELS,MOVE_ORDER,_hash:hash};
+ const api={describe,foul,card,analysis,tips,report,recordAttack,recordWin,moveOf,SKILL_NAMES,KIND_LABELS,MOVE_LABELS,MOVE_ORDER,_hash:hash};
  root.FooteraCommentary=Object.freeze(api);if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

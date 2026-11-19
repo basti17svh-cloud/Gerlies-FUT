@@ -34,17 +34,21 @@ test('every restart kind offers several variants and history avoids repeats',asy
 test('free kicks: wall at 9.15 m facing the ball, ball clears it, mirrored sides match',async()=>{
  const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
  for(const seq of E.EXTENDED_SEQUENCES.filter(s=>E.extendedKind(s)==='free_kick')){
-  const contact=M.shotContact(seq);
-  for(let j=8;j<=11;j++){
-   const w=E.extendedPosition(j,5.3,seq),d=Math.hypot(w[0]-contact[0],w[1]-contact[2]);
+  // V21.479: the cross is struck from the touchline over a two-man wall; the shot is a header later.
+  const cross=E.extendedVariant(seq)==='cross',fk=E.freeKickSpot(seq);
+  const contact=cross?[fk[0],.14,fk[1]]:M.shotContact(seq);
+  // The trick is laid off first: the wall lines up against the ball's original spot.
+  const ref=E.extendedVariant(seq)==='trick'?[fk[0],.14,fk[1]]:contact;
+  for(let j=8;j<=(cross?9:11);j++){
+   const w=E.extendedPosition(j,cross?4.2:5.3,seq),d=Math.hypot(w[0]-ref[0],w[1]-ref[2]);
    assert.ok(d>9&&d<10,seq+' wall distance '+d);
    // Heading faces the ball (heading 0 looks toward -Z).
-   const h=E.extendedWallHeading(seq),face=[-Math.sin(h),-Math.cos(h)],to=[contact[0]-w[0],contact[2]-w[1]];
+   const h=E.extendedWallHeading(seq),face=[-Math.sin(h),-Math.cos(h)],to=[ref[0]-w[0],ref[2]-w[1]];
    assert.ok((face[0]*to[0]+face[1]*to[1])/Math.hypot(...to)>.97,seq+' wall faces ball');
   }
-  const wall=E.extendedPosition(9,5.39,seq),reach=Math.hypot(wall[0]-contact[0],wall[1]-contact[2]);
+  const wall=E.extendedPosition(9,cross?4.3:5.39,seq),reach=Math.hypot(wall[0]-contact[0],wall[1]-contact[2]);
   let height=null;
-  for(let n=0;n<=400&&height===null;n++){const b=M.ballPosition('goal',5.4+n/400*1.25,seq,'normal');if(Math.hypot(b[0]-contact[0],b[2]-contact[2])>=reach)height=b[1]}
+  for(let n=0;n<=400&&height===null;n++){const b=M.ballPosition('goal',(cross?4.3:5.4)+n/400*1.25,seq,cross?'header':'normal');if(Math.hypot(b[0]-contact[0],b[2]-contact[2])>=reach)height=b[1]}
   assert.ok(height>2.4,seq+' over the jumping wall: '+height);
  }
  for(const base of ['extended_free_kick_side','extended_free_kick_edge','extended_corner_short','extended_penalty_angled','extended_throw_in'])
