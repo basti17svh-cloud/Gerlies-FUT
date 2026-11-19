@@ -223,32 +223,65 @@ export const SUB_BENCH_SEATS=Object.freeze([0,1,2,6,7]);
 const SUB_WAITING=Object.freeze([null,null,[14,-12],[9,3],[18,10.5],[4,-6],[21,-1.5],[11,15],
  [16,-8.5],[7,-1],[12,9],[2,4],[19,2.5],[24,13],[6,-14],null,[1,47]]);
 function walkTo(from,to,t0,t1,time){const u=smooth((time-t0)/(t1-t0));return[mix(from[0],to[0],u),mix(from[1],to[1],u)]}
-function substitutionActor(index,time){
- const T=SUB_TIMES;
+// V21.487 Mehrfachwechsel (Basti: "4 Spieler gehen rein und 4 raus"): up to four
+// pairs at once. Substitutes are actors 0,2,3,4, the players going off 1,5,6,7.
+// The pairs stand in a row along the touchline; after the slap every
+// substitute runs straight onto the pitch and the players going off walk in
+// single file round the official into the dugout, filling it from the far end.
+export const SUB_MAX=4;
+export const SUB_IN_ACTORS=Object.freeze([0,2,3,4]),SUB_OUT_ACTORS=Object.freeze([1,5,6,7]);
+const subCount=n=>Math.max(1,Math.min(SUB_MAX,Math.floor(Number(n)||1)));
+const SUB_ROW=2.3,SUB_W=[33.5,-3.9],SUB_V=[35.4,-4.9];
+const SUB_MULTI_SPOTS=[[35.9,-7.85],[35.85,-7],[35.8,-6.15],[35.75,-5.3]];
+// With several players going off the substitutes on the bench keep to the far end.
+export const SUB_BENCH_SEATS_MULTI=Object.freeze([0,1,2]);
+export function subTimes(n=1){const c=subCount(n),T=SUB_TIMES;if(c===1)return T;
+ return Object.freeze({...T,boardDown:T.boardDown+.3*(c-1),end:T.end+.7*(c-1)})}
+function subPair(k,n){
+ const c=subCount(n),T=subTimes(c);
+ if(c===1)return{inWait:SUB_IN_WAIT,inMeet:SUB_IN_MEET,outMeet:SUB_OUT_MEET,inTo:SUB_IN_TO,outFrom:SUB_OUT_FROM,outPath:[SUB_OUT_MEET,SUB_BENCH],outStart:.15,meet:T.meet,clap:T.clap,end:T.end};
+ const z=-2.2+SUB_ROW*k,outMeet=[33.02,z];
+ return{inWait:[34.1,z+1.05],inMeet:[33.75,z+.6],outMeet,inTo:[24,z+SUB_ROW/2+.6],inPath:[[33.75,z+.6],[32.4,z+SUB_ROW/2],[24,z+SUB_ROW/2+.6]],outFrom:[25.2,-8.8+SUB_ROW*k],
+  outPath:[outMeet,SUB_W,SUB_V,SUB_MULTI_SPOTS[k]],outStart:.6,meet:T.meet+.3*k,clap:T.clap+.3*k,end:T.end};
+}
+// A walk along a polyline: eased over the whole length, so it never jerks at a corner.
+function subWalkPath(path,t0,t1,time){
+ const lens=[];let total=0;for(let i=1;i<path.length;i++){const d=Math.hypot(path[i][0]-path[i-1][0],path[i][1]-path[i-1][1]);lens.push(d);total+=d}
+ let s=smooth((time-t0)/(t1-t0))*total;
+ for(let i=1;i<path.length;i++){const d=lens[i-1];if(s<=d||i===path.length-1){const u=d>0?Math.min(1,s/d):1;
+  return{p:[mix(path[i-1][0],path[i][0],u),mix(path[i-1][1],path[i][1],u)],dir:facing(path[i-1],path[i])}}s-=d}
+ return{p:path.at(-1),dir:0};
+}
+function substitutionActor(index,time,n=1){
+ const c=subCount(n),T=subTimes(c);
  if(index===15)return{x:SUB_OFFICIAL[0],z:SUB_OFFICIAL[1],heading:Math.PI/2,pose:null,s:time,weight:0};
- if(index===0){
+ const inK=SUB_IN_ACTORS.indexOf(index),outK=SUB_OUT_ACTORS.indexOf(index);
+ if(inK>=0&&inK<c){const P=subPair(inK,c);
   // Bouncing on the spot, a step to his team-mate, then onto the pitch.
-  const p=time<T.clap?walkTo(SUB_IN_WAIT,SUB_IN_MEET,T.meet-.9,T.meet-.1,time):walkTo(SUB_IN_MEET,SUB_IN_TO,T.clap,T.end-.2,time);
-  const heading=time<T.meet-.95?Math.PI/2-.3:time<T.clap+.1?facing(SUB_IN_MEET,SUB_OUT_MEET):facing(SUB_IN_MEET,SUB_IN_TO);
-  const bounce=time<T.meet-1.1;
-  return{x:p[0],z:p[1],heading,pose:bounce?'excited':null,s:time,weight:bounce?.55*smooth((T.meet-1.1-time)/.4):0};
+  const run=P.inPath&&time>=P.clap?subWalkPath(P.inPath,P.clap,P.end-.2,time):null;
+  const p=run?run.p:time<P.clap?walkTo(P.inWait,P.inMeet,P.meet-.9,P.meet-.1,time):walkTo(P.inMeet,P.inTo,P.clap,P.end-.2,time);
+  const heading=time<P.meet-.95?Math.PI/2-.3:time<P.clap+.1?facing(P.inMeet,P.outMeet):run?run.dir:facing(P.inMeet,P.inTo);
+  const bounce=time<P.meet-1.1;
+  return{x:p[0],z:p[1],heading,pose:bounce?'excited':null,s:time,weight:bounce?.55*smooth((P.meet-1.1-time)/.4):0};
  }
- if(index===1){
-  const p=time<T.clap?walkTo(SUB_OUT_FROM,SUB_OUT_MEET,0,T.meet-.05,time):walkTo(SUB_OUT_MEET,SUB_BENCH,T.clap+.15,T.end,time);
-  const heading=time<T.meet-.4?facing(SUB_OUT_FROM,SUB_OUT_MEET):time<T.clap+.15?facing(SUB_OUT_MEET,SUB_IN_MEET):facing(SUB_OUT_MEET,SUB_BENCH);
+ if(outK>=0&&outK<c){const P=subPair(outK,c);
+  let p,heading;
+  if(time<P.clap){p=walkTo(P.outFrom,P.outMeet,0,P.meet-.05,time);heading=time<P.meet-.4?facing(P.outFrom,P.outMeet):facing(P.outMeet,P.inMeet)}
+  else{const w=subWalkPath(P.outPath,P.clap+P.outStart,P.end,time);p=w.p;heading=time<P.clap+P.outStart?facing(P.outMeet,P.inMeet):w.dir}
   // Applause to the fans on the way off.
-  const clap=smooth((time-T.clap-.9)/.5);
-  return{x:p[0],z:p[1],heading,pose:clap>0?'waving':null,s:time-T.clap,weight:.7*clap};
+  const clap=smooth((time-P.clap-.9)/.5);
+  return{x:p[0],z:p[1],heading,pose:clap>0?'waving':null,s:time-P.clap,weight:.7*clap};
  }
  const spot=SUB_WAITING[index]||[10,0],sway=.18*Math.sin(time*.55+index*1.7);
  return{x:spot[0]+sway,z:spot[1]+.4*Math.sin(time*.31+index),heading:facing(spot,SUB_OFFICIAL)+.4*Math.sin(index*2.3),pose:index===16?'hands_on_hips':null,s:time,weight:index===16?smooth(time/.6):0};
 }
 // The board goes up and comes down again; the hand slap at the meeting point.
-export function subBoardRaise(time){return smooth((time-SUB_TIMES.boardUp)/.5)*(1-smooth((time-SUB_TIMES.boardDown)/.5))}
-export function subHighFive(time){const u=(time-SUB_TIMES.meet)/.55;return u<0||u>1?0:Math.sin(Math.PI*u)}
-export const SUB_HIGH_FIVE=Object.freeze([(SUB_IN_MEET[0]+SUB_OUT_MEET[0])/2,(SUB_IN_MEET[1]+SUB_OUT_MEET[1])/2]);
-export function ceremonyActor(kind,index,time,{draw=false}={}){
- if(kind==='substitution')return substitutionActor(index,time);
+export function subBoardRaise(time,n=1){const T=subTimes(n);return smooth((time-T.boardUp)/.5)*(1-smooth((time-T.boardDown)/.5))}
+export function subHighFive(time,k=0,n=1){const P=subPair(k,n),u=(time-P.meet)/.55;return u<0||u>1?0:Math.sin(Math.PI*u)}
+export function subHighFivePoint(k=0,n=1){const P=subPair(k,n);return[(P.inMeet[0]+P.outMeet[0])/2,(P.inMeet[1]+P.outMeet[1])/2]}
+export const SUB_HIGH_FIVE=Object.freeze(subHighFivePoint(0,1));
+export function ceremonyActor(kind,index,time,{draw=false,subs=1}={}){
+ if(kind==='substitution')return substitutionActor(index,time,subs);
  if(kind==='trophy')return trophyActor(index,time);
  return kind==='kickoff'?kickoffActor(index,time):fulltimeActor(index,time,draw);
 }
@@ -258,7 +291,7 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 // the stadium shot runs 4 s (V21.410, was 3.4), from high above the roof down into the bowl.
 export const CEREMONY_ARENA_SHOT=4;
 export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5,trophy:TROPHY_TIMES.cut,substitution:4.2});
-export function ceremonyEnd(kind,{coach=false}={}){return kind==='substitution'?SUB_TIMES.end:kind==='trophy'?TROPHY_TIMES.end:kind==='kickoff'&&coach?COACH_SHOT.end:10.4}
+export function ceremonyEnd(kind,{coach=false,subs=1}={}){return kind==='substitution'?subTimes(subs).end:kind==='trophy'?TROPHY_TIMES.end:kind==='kickoff'&&coach?COACH_SHOT.end:10.4}
 // V21.470 (Basti 2026-11-17: "Der Trainer soll nach dem Einlaufen der Spieler kurz an der
 // Auswechselbank eingeblendet werden und dann soll die Karte in dem Rahmen erscheinen"):
 // after the line-up the picture cuts to the user's manager at the bench (main-stand
@@ -272,7 +305,7 @@ export function coachCamera(time){
  return{position:[mix(mx-5.6,mx-4.2,u),mix(1.8,1.6,u),mix(mz+2.9,mz+1.9,u)],target:[mx+.35,mix(.82,.95,u),mz-.35],fov:30,phase:'coach'};
 }
 const CEREMONY_END=10.4;
-export function ceremonyCamera(kind,time){
+export function ceremonyCamera(kind,time,{subs=1}={}){
  if(kind==='kickoff'){
   // V21.382: the scene opens high in the corner of the floodlit arena.
   if(time<CEREMONY_ARENA_SHOT)return stadiumIntroCamera(time,CEREMONY_ARENA_SHOT);
@@ -282,7 +315,7 @@ export function ceremonyCamera(kind,time){
   return{position:[21.5,2.9,z],target:[9,-.55,z*.94],fov:31,phase:'lineup'};
  }
  if(kind==='trophy')return trophyCamera(time);
- if(kind==='substitution')return substitutionCamera(time);
+ if(kind==='substitution')return substitutionCamera(time,subs);
  const [gx,gz]=FULLTIME_CENTRE;
  // V21.439: a wide TV picture of the whole scene first (aimed a little below
  // the players: the result card covers the lower third), then a low camera
@@ -294,15 +327,17 @@ export function ceremonyCamera(kind,time){
 
 // V21.484: first from the pitch over the player walking off towards the board,
 // then low at the line for the hand slap, following the substitute onto the pitch.
-function substitutionCamera(time){
- const T=SUB_TIMES;
+function substitutionCamera(time,n=1){
+ const c=subCount(n),T=subTimes(c),P=subPair(0,c);
+ // V21.487 with several pairs the picture goes wider and moves along the row.
+ const row=(c-1)*SUB_ROW,dz=row*.5,wide=(c-1)*1.6,low=c>1?.3:0;
  // From the pitch towards the bench: the official with the board in front of the dugout.
  if(time<T.cut){const u=smooth(time/T.cut);
-  return{position:[mix(25,26.6,u),mix(3.4,2.9,u),mix(5.6,4.4,u)],target:[mix(33.6,34.2,u),1.2,mix(-4.9,-3.6,u)],fov:34,phase:'substitution-board'}}
- // Lower, the hand slap; then the substitute runs past while the other walks into the dugout.
- const go=smooth((time-T.clap)/(T.end-.6-T.clap)),runner=time<T.clap?SUB_IN_MEET:walkTo(SUB_IN_MEET,SUB_IN_TO,T.clap,T.end-.2,time);
+  return{position:[mix(25,26.6,u)-row*.2,mix(3.4,2.9,u),mix(5.6,4.4,u)+dz+row*.25],target:[mix(33.6,34.2,u),1.2-low,mix(-4.9,-3.6,u)+dz*.8],fov:34+wide,phase:'substitution-board'}}
+ // Lower, the hand slap; then the substitutes run past while the others walk into the dugout.
+ const go=smooth((time-T.clap)/(T.end-.6-T.clap)),runner=time<P.clap?P.inMeet:walkTo(P.inMeet,P.inTo,P.clap,P.end-.2,time);
  // Aim between the substitute and the dugout so both stay in the picture.
- return{position:[mix(27.8,20.5,go),mix(1.9,2.6,go),mix(5.2,10.5,go)],target:[mix(33.4,mix(runner[0],35.5,.3),go),mix(1.35,1.1,go),mix(-2.2,mix(runner[1],-7,.3),go)],fov:mix(32,38,go),phase:'substitution'};
+ return{position:[mix(27.8,20.5,go),mix(1.9,2.6,go),mix(5.2,10.5,go)+dz*.7],target:[mix(33.4,mix(runner[0],35.5,.3),go),mix(1.35,1.1,go)-low,mix(-2.2+dz,mix(runner[1],-7,.3),go)],fov:mix(32,38,go)+wide,phase:'substitution'};
 }
 
 // V21.444 cup presentation: low in front of the stage down the guard of

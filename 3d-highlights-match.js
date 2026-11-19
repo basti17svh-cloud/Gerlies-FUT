@@ -348,24 +348,50 @@ function queueMatchSubstitutions3D(){
  // Only the newest change; one that is long past is left in the ticker.
  const sub=list[list.length-1];if(!sub||Number(match.minute)-Number(sub.minute)>4)return false;
  const side=sub.side==='away'?'away':'home',current=match;
- const pair=side==='home'?{inName:sub.incoming?.[0]?.name||'',inUid:sub.incoming?.[0]?.uid,outName:sub.outgoing?.[0]?.name||'',outUid:sub.outgoing?.[0]?.uid}:{inName:sub.in||'',outName:sub.out||'',inIndex:sub.index};
- if(!pair.inName||!pair.outName)return false;
+ // V21.487 Mehrfachwechsel (Basti: "4 Spieler gehen rein und 4 raus"): a home
+ // change carries all players of one confirmation; the CPU coach records one
+ // event per player, so its changes in the same minute are taken together.
+ let pairs=[];
+ if(side==='home'){const ins=Array.isArray(sub.incoming)?sub.incoming:[],outs=Array.isArray(sub.outgoing)?sub.outgoing:[];
+  for(let k=0;k<Math.min(4,ins.length,outs.length);k++)pairs.push({inName:ins[k]?.name||'',inUid:ins[k]?.uid,outName:outs[k]?.name||'',outUid:outs[k]?.uid})}
+ else{const group=[];for(let i=list.length-1;i>=at&&group.length<4;i--){const e=list[i];if(e?.side!=='away'||Number(e.minute)!==Number(sub.minute))break;group.unshift(e)}
+  pairs=group.map(e=>({inName:e.in||'',outName:e.out||'',inIndex:e.index}))}
+ pairs=pairs.filter(p=>p.inName&&p.outName);
+ const pair=pairs[0];if(!pair)return false;
  const rows=s=>typeof matchActorRows==='function'?(matchActorRows(s)||[]):[];
  const field=s=>rows(s).filter(r=>!/^(GK|TW|TH)$/i.test(String(r.slot||'')));
- const own=field(side),incoming=own.find(r=>side==='home'?String(r.uid)===String(pair.inUid):Number(r.index)===Number(pair.inIndex))||own.find(r=>r.name===pair.inName)||null;
+ const own=field(side),findIn=p=>own.find(r=>side==='home'?String(r.uid)===String(p.inUid):Number(r.index)===Number(p.inIndex))||own.find(r=>r.name===p.inName)||null;
+ const incoming=findIn(pair);
  const defending=side==='home'?'away':'home';
  const goalie=rows(defending).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')))||null;
- const base={type:'ceremony',team:side,playerId:side==='home'?incoming?.uid??pair.inUid:incoming?.index??pair.inIndex,playerName:pair.inName};
+ const baseFor=(p,row)=>({type:'ceremony',team:side,playerId:side==='home'?row?.uid??p.inUid:row?.index??p.inIndex,playerName:p.inName});
+ const base=baseFor(pair,incoming);
  const numbers=match3DShirtNumbers(base,current,null,goalie,8);
  const valid=v=>{const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=99?n:0};
- const inNumber=valid(numbers.shirtNumbers?.[0])||valid(current.shirtNumbers?.[pair.inUid])||18;
- let outNumber=side==='home'?valid(current.shirtNumbers?.[pair.outUid]):0;
- if(!outNumber||outNumber===inNumber)outNumber=[7,11,9,10,8,6,17,14].find(n=>n!==inNumber);
- const shirtNumbers=[...(numbers.shirtNumbers||[])];shirtNumbers[0]=inNumber;shirtNumbers[1]=outNumber;
- // Looks and names in the same order as every other scene; actor 1 is the player
- // going off (no longer in the line-up), so he keeps a neutral look.
- const skin=match3DSkinTones(base),names=[...skin.squadNames];names[0]=pair.inName;names[1]=pair.outName;names[15]='';
- const tones=[...skin.playerSkinTones],looks=[...skin.playerLooks];tones[1]=null;looks[1]=null;tones[15]=null;looks[15]=null;
+ const skin=match3DSkinTones(base);
+ const shirtNumbers=[...(numbers.shirtNumbers||[])],names=[...skin.squadNames],tones=[...skin.playerSkinTones],looks=[...skin.playerLooks],feet=[...(skin.playerFeet||[])];
+ // Actors of each pair (same order as 3d-ceremony SUB_IN_ACTORS / SUB_OUT_ACTORS).
+ const IN=[0,2,3,4],OUT=[1,5,6,7],used=new Set([...IN.slice(0,pairs.length),...OUT.slice(0,pairs.length)]);
+ // Team-mates still waiting on the pitch keep their own look; a substitute never stands there twice.
+ const inNames=new Set(pairs.map(p=>p.inName)),keep=[];
+ for(let i=1;i<8;i++)if(!inNames.has(names[i]))keep.push({from:i,name:names[i],tone:tones[i],look:looks[i],foot:feet[i],number:shirtNumbers[i]});
+ const free=[1,2,3,4,5,6,7].filter(i=>!used.has(i));
+ const moved=new Map();
+ free.forEach((i,j)=>{const r=keep[j]||{from:-1,name:'',tone:null,look:null,foot:'',number:shirtNumbers[i]};if(r.from>=0)moved.set(r.from,i);names[i]=r.name;tones[i]=r.tone;looks[i]=r.look;feet[i]=r.foot;shirtNumbers[i]=r.number});
+ const taken=new Set();
+ const pick=(...c)=>{for(const n of c){const v=valid(n);if(v&&!taken.has(v)){taken.add(v);return v}}for(const n of [18,7,11,9,10,8,6,17,14,20,21,22,23,19,16,13]){if(!taken.has(n)){taken.add(n);return n}}return 0};
+ const subPairs=pairs.map((p,k)=>{
+  const row=k===0?incoming:findIn(p),pb=k===0?base:baseFor(p,row);
+  const inNumber=k===0?pick(numbers.shirtNumbers?.[0],current.shirtNumbers?.[p.inUid]):pick(side==='home'?current.shirtNumbers?.[p.inUid]:null,match3DShirtNumbers(pb,current,null,goalie,8).shirtNumbers?.[0]);
+  const outNumber=pick(side==='home'?current.shirtNumbers?.[p.outUid]:0);
+  const a=IN[k],b=OUT[k];names[a]=p.inName;names[b]=p.outName;shirtNumbers[a]=inNumber;shirtNumbers[b]=outNumber;
+  if(k>0){const look=match3DSkinTones(pb);tones[a]=look.playerSkinTones?.[0]??null;looks[a]=look.playerLooks?.[0]??null;feet[a]=look.playerFeet?.[0]||''}
+  // The player going off is no longer in the line-up, so he keeps a neutral look.
+  tones[b]=null;looks[b]=null;feet[b]='';
+  return{inName:p.inName,outName:p.outName,inNumber,outNumber};
+ });
+ names[15]='';tones[15]=null;looks[15]=null;
+ const {inNumber,outNumber}=subPairs[0];
  ensureMatch3DQueue(current);
  const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
  const home=current.kickoffKits?.home||identity?.kits?.home;
@@ -374,9 +400,10 @@ function queueMatchSubstitutions3D(){
  const crest=s=>match3DPresentationMeta({type:'goal',team:s,playerName:''},current).teamCrestHTML;
  const queued=match3DQueue.enqueue({...base,id:'substitution:'+list.length+':'+side,weather:match3DWeather(current),...match3DStadium(current),ceremony:'substitution',
   minute:Math.floor(Number(sub.minute)||current.minute||60),period:1,coach:side==='home'?(()=>{try{return globalThis.FooteraManager?.forKickoff?.()||null}catch(e){return null}})():null,sequence:'central',finish:'normal',outName:pair.outName,inNumber,outNumber,
+  subPairs:subPairs.length>1?subPairs:[],
   homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
   teamCrestHTML:crest(side),defendCrestHTML:crest(defending),keeperName:goalie?.name||'',
-  shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:(numbers.captainActors||[]).filter(i=>i!==0&&i!==1),keeperCaptain:numbers.keeperCaptain,...skin,squadNames:names,playerSkinTones:tones,playerLooks:looks,
+  shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:(numbers.captainActors||[]).map(i=>i>=8?i:moved.has(i)?moved.get(i):-1).filter(i=>i>=0&&!used.has(i)),keeperCaptain:numbers.keeperCaptain,...skin,squadNames:names,playerSkinTones:tones,playerLooks:looks,playerFeet:feet,
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
  if(queued)match.subScenesShown=shown+1;
