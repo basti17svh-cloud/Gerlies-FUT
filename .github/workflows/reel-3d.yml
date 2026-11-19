@@ -1,0 +1,69 @@
+name: Reel 3D captures Best of TOTW vs Icons (temporary, never merge)
+on:
+  push:
+    branches: ['claude/project-thread-r50yve']
+    paths:
+      - 'reel-render/request.txt'
+permissions:
+  contents: write
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.p.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        run: echo "matrix=$(jq -c . reel-render/plan.json)" >> "$GITHUB_OUTPUT"
+  capture:
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter ffmpeg
+      - name: Capture
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+          FROM: ${{ matrix.from || '0' }}
+          MAXF: ${{ matrix.maxf || '1100' }}
+        run: |
+          node reel-render/cap.cjs /tmp/cap/${{ matrix.name }} '${{ matrix.id }}' '${{ matrix.coach || '' }}'
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
+          cp /tmp/cap/${{ matrix.name }}/meta.json out/${{ matrix.name }}.json
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reel-${{ matrix.name }}
+          path: out/
+  commit:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/arts
+      - name: Commit
+        run: |
+          mkdir -p reel-render/cap
+          find /tmp/arts -type f \( -name '*.mp4' -o -name '*.json' \) -exec cp {} reel-render/cap/ \;
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add reel-render/cap
+          git diff --cached --quiet && exit 0
+          git commit -m 'reel: 3D captures Best of TOTW vs Icons [skip ci]'
+          for i in 1 2 3; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push origin HEAD:"${GITHUB_REF_NAME}" && break; sleep 5; done
