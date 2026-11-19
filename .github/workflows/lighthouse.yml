@@ -1,0 +1,48 @@
+name: Ladezeit (Lighthouse)
+# V21.480 (Basti 19.11.2026): every pull request measures how fast Footera starts on a simulated
+# mid-range phone (Lighthouse CI, Apache-2.0, https://github.com/GoogleChrome/lighthouse-ci),
+# once for the PR and once for main, and writes both side by side into the job summary.
+# Never blocks a merge: it only warns when the PR starts clearly slower than main.
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lighthouse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: pr
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Lighthouse CI
+        run: npm install --prefix /tmp/lhci @lhci/cli@0.14.0
+      - name: Measure main
+        working-directory: main
+        continue-on-error: true
+        run: /tmp/lhci/node_modules/.bin/lhci collect --config=../pr/lighthouserc.json && /tmp/lhci/node_modules/.bin/lhci upload --config=../pr/lighthouserc.json --outputDir=../lhci-main
+      - name: Measure this PR
+        working-directory: pr
+        run: /tmp/lhci/node_modules/.bin/lhci collect --config=lighthouserc.json && /tmp/lhci/node_modules/.bin/lhci upload --config=lighthouserc.json --outputDir=../lhci-pr
+      - name: Summary
+        if: always()
+        run: node pr/scripts/lighthouse-summary.cjs lhci-main lhci-pr >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: |
+            lhci-pr
+            lhci-main
+          retention-days: 14
