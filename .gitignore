@@ -1,1 +1,4 @@
 /test-artifacts/
+/node_modules
+/lhci-report/
+/.lighthouseci/
