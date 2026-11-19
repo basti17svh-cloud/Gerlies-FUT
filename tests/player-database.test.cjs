@@ -106,3 +106,30 @@ test('the database holds the current game, not the previous one',()=>{
  assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27 (he plays for Chicago Fire)');
  assert.equal(load().players.find(p=>p.id==='232411')?.team,'RB Leipzig','Nkunku plays for RB Leipzig (CLUB_OVERRIDES in the build script)');
 });
+
+test('V21.481: the sliced start-up parser yields exactly the same players',async()=>{
+ const{ctx,players,text}=load();
+ ctx.setTimeout=setTimeout;
+ const sliced=await vm.runInContext('(text)=>parsePlayersCsvSliced(text,2)',ctx)(text);
+ assert.equal(sliced.length,players.length);
+ assert.equal(JSON.stringify(sliced),JSON.stringify(players));
+ assert.match(html,/const players=await parsePlayersCsvSliced\(text\);/,'syncDatabase uses the sliced parser');
+});
+
+test('V21.481: the TOTW name index finds the same players as the full scan',()=>{
+ const{players}=load();
+ const ctx={};vm.createContext(ctx);
+ vm.runInContext([line(/^function normalizeKey\(.*$/m),'let PLAYERS=[];',section('function totwSearchKeys(','function uniqueTotwPlayer('),'globalThis.setPlayers=x=>{PLAYERS=x};'].join('\n'),ctx);
+ ctx.setPlayers(players);
+ const infos=[];
+ for(let i=0;i<players.length;i+=97){const p=players[i];infos.push({names:[p.fullName||p.name,p.name]},{eaId:p.id,names:[p.name]},{names:[String(p.name).split(' ').pop()]})}
+ infos.push({names:['Isco']},{names:['Nobody Atall']},{eaId:'999999999',names:['Kylian Mbappé']});
+ let checked=0;
+ for(const info of infos){
+  const full=vm.runInContext('(info)=>PLAYERS.filter(p=>totwAliasMatch(p,info)===100)',ctx)(info);
+  const fast=ctx.totwPlayersMatching(info);
+  assert.equal(fast.length,full.length,JSON.stringify(info));
+  fast.forEach((p,k)=>assert.equal(p,full[k],JSON.stringify(info)));checked++;
+ }
+ assert.ok(checked>600);
+});
