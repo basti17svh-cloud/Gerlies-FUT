@@ -20,7 +20,7 @@ test('Nov 12 switches from previous release at 19 Berlin, with fresh stable IDs 
  assert.deepEqual(Array.from(r,s=>s.name),['Rochdale – York City','Stockport County – Reading','Granada CF – UD Las Palmas','Real Oviedo – Girona FC']);
  assert.equal(old[0].releaseKey,'2026-11-05');assert.equal(r.length,4);assert.equal(new Set(r.map(s=>s.id)).size,4);assert.equal(new Set(r.map(s=>s.groupSet)).size,1);
  for(const at of ['2026-11-13T00:00:00Z','2026-11-16T12:00:00Z','2026-11-19T17:59:59.999Z'])assert.deepEqual(Array.from(rows(c,at),s=>s.id),Array.from(r,s=>s.id));
- assert.equal(rows(c,END).length,0);
+ assert.ok(rows(c,END).every(s=>s.releaseKey!=='2026-11-12'),'old fixtures expire even when a new release exists');
  for(let i=0;i<4;i++){
   const s=r[i];assert.equal(s.groupSet,'top_partien_2026-11-12_fixtures');assert.match(s.id,/^top_partien_2026-11-12_fixtures_[a-z-]+$/);assert.equal(s.expiresAt,Date.parse(END));assert.ok(Date.parse(s.kickoffAt)>Date.parse(RELEASE)&&Date.parse(s.kickoffAt)<Date.parse(END));
   assert.ok(!old.some(o=>o.id===s.id));for(const a of s.matchClubs.flat())assert.ok(!old.some(o=>o.matchClubs.flat().includes(a)));

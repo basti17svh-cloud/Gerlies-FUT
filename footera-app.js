@@ -3842,6 +3842,12 @@ const MARQUEE_RELEASES={
   {key:"stockport-reading",name:"Stockport County – Reading",league:"EFL League One",nation:"England",kickoffAt:"2026-11-14T16:00:00+01:00",sourceUrl:"https://www.readingfc.co.uk/news/2026/november/03/stockport-county-league-one-away-tickets/",clubs:[["Stockport","Stockport County"],["Reading","Reading FC"]]},
   {key:"granada-las-palmas",name:"Granada CF – UD Las Palmas",league:"LaLiga 2",nation:"Spain",kickoffAt:"2026-11-15T16:15:00+01:00",sourceUrl:"https://www.laliga.com/laliga-hypermotion/resultados/2026-27/jornada-14",clubs:[["Granada CF","Granada"],["UD Las Palmas","Las Palmas"]]},
   {key:"oviedo-girona",name:"Real Oviedo – Girona FC",league:"LaLiga 2",nation:"Spain",kickoffAt:"2026-11-14T21:00:00+01:00",sourceUrl:"https://www.laliga.com/laliga-hypermotion/resultados/2026-27/jornada-14",clubs:[["R. Oviedo","Real Oviedo","Oviedo"],["Girona FC","Girona"]]}
+ ],
+ "2026-11-19":[
+  {key:"werder-hamburg",name:"Werder Bremen – Hamburger SV",league:"Bundesliga",nation:"Germany",kickoffAt:"2026-11-22T17:30:00+01:00",sourceUrl:"https://www.hsv.de/teams/maenner/spielplan",clubs:[["SV Werder Bremen","Werder Bremen","Werder"],["Hamburger SV","Hamburg","HSV"]]},
+  {key:"liverpool-man-utd",name:"Liverpool – Manchester United",league:"Premier League",nation:"England",kickoffAt:"2026-11-22T17:30:00+01:00",sourceUrl:"https://www.premierleague.com/en/news/4725574",clubs:[["Liverpool","Liverpool FC"],["Man Utd","Manchester United","Man United"]]},
+  {key:"atalanta-inter",name:"Atalanta – Inter",league:"Serie A",nation:"Italy",kickoffAt:"2026-11-22T20:45:00+01:00",sourceUrl:"https://www.inter.it/en/news/inter-schedule-tickets-matches-november-december-san-siro",clubs:[["Atalanta","Atalanta BC"],["Inter","Inter Milan","Internazionale"]]},
+  {key:"sevilla-betis",name:"Sevilla FC – Real Betis",league:"LALIGA EA SPORTS",nation:"Spain",kickoffAt:"2026-11-21T18:30:00+01:00",sourceUrl:"https://www.laliga.com/laliga-easports/resultados/2026-27/jornada-13",clubs:[["Sevilla FC","Sevilla"],["Real Betis","Real Betis Balompié","Betis"]]}
  ]
 };
 
@@ -11083,7 +11089,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.484";
+const GFUT_BUILD="V21.485";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11141,7 +11147,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21484",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21485",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
