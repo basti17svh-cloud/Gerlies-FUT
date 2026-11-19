@@ -4761,7 +4761,13 @@ const LOCAL_LEAGUE_LOGOS={
  "nwsl":"./assets/leagues/nwsl.png",
  "nederland vrouwen liga":"./assets/leagues/nederland-vrouwen-liga.jpg",
  "scottish women s league":"./assets/leagues/scottish-women-s-league.png",
- "sverige liga":"./assets/leagues/sverige-liga.png"
+ "sverige liga":"./assets/leagues/sverige-liga.png",
+ // Men's leagues whose API-Sports logo stays blank (Ligue 1) or tiny (Süper Lig) on the cards, or is missing.
+ "ligue 1":"./assets/leagues/ligue-1-white.png",
+ "trendyol super lig":"./assets/leagues/trendyol-super-lig-mark.png",
+ "roshn saudi league":"./assets/leagues/roshn-saudi-league.png",
+ "efl championship":"./assets/leagues/efl-championship.png",
+ "lpf":"./assets/leagues/lpf-mark.png"
 };
 // The game shows some leagues under their full name (LEAGUE_NAME_ALIASES); those find the logo too.
 const LOCAL_LEAGUE_LOGO_CACHE=new Map();
@@ -4794,8 +4800,18 @@ function isWomensAffiliation(team,p={}){
 }
 // EA ships the women's teams with their own team ids and crests, so only EA's crest is exact for them.
 function womensClubLogo(p){const url=String(p?.clubLogo||"").trim();return /^https:\/\/drop-assets\.ea\.com\//.test(url)?url:""}
+// Crests missing from the pinned collection (scripts/fetch-league-logos.cjs -> assets/badges/local-clubs.json).
+const LOCAL_CLUB_BADGES={
+ "al hilal":{name:"Al Hilal",league:"ROSHN Saudi League",url:"./assets/badges/club-al-hilal.png"},
+ "al qadsiah":{name:"Al Qadsiah",league:"ROSHN Saudi League",url:"./assets/badges/club-al-qadsiah.png"},
+ "estudiantes":{name:"Estudiantes",league:"LPF",url:"./assets/badges/club-estudiantes.png"},
+ "west ham":{name:"West Ham",league:"",url:"./assets/badges/club-west-ham.png"},
+ "west ham united":{name:"West Ham",league:"",url:"./assets/badges/club-west-ham.png"},
+ "paris sg":{name:"Paris Saint-Germain",league:"Ligue 1",url:"./assets/badges/ce22ba5e30cb.png"}
+};
 function verifiedClubBadge(team,p={}){
- return isWomensAffiliation(team,p)?null:VERIFIED_BADGES.clubs?.[normalizeKey(team)]||null
+ if(isWomensAffiliation(team,p))return null;
+ const key=normalizeKey(team);return VERIFIED_BADGES.clubs?.[key]||LOCAL_CLUB_BADGES[key]||null
 }
 async function loadVerifiedBadges(){
  try{
@@ -11089,7 +11105,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.486";
+const GFUT_BUILD="V21.489";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11147,7 +11163,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21486",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21489",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
