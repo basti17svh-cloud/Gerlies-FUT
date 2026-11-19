@@ -58,6 +58,12 @@
 .home-hero-card[data-theme="blackfriday"] .home-momentum-count{color:#d4ff2a}
 .home-hero-card[data-theme="blackfriday"] .home-momentum-roster.teaser .face img{filter:brightness(0) drop-shadow(0 0 3px #b8f000)!important}
 .home-hero-card[data-theme="blackfriday"] .home-momentum-roster.teaser .card-shell:after{color:#d4ff2a;text-shadow:0 0 10px #b8f000}
+/* Revealed teaser cards (BLACKFRIDAY_TEASER_REVEALS): full card, clickable, no "?" */
+.home-momentum-roster.teaser .home-momentum-player.revealed{pointer-events:auto}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-roster.teaser .home-momentum-player.revealed .face img,.home-momentum-roster.teaser .home-momentum-player.revealed .face img{filter:none!important}
+.home-momentum-roster.teaser .home-momentum-player.revealed :is(.ovr,.pos,.pname,.stats,.card-flag,.card-club,.card-league,.card-alt-positions,.playstyle-badge,.ps-badge){visibility:visible}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-roster.teaser .home-momentum-player.revealed .card-shell:after,.home-momentum-roster.teaser .home-momentum-player.revealed .card-shell:after{content:none}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-player.revealed .card-shell{filter:drop-shadow(0 0 10px #d4ff2acc)}
 @media(max-width:640px){.home-hero-card[data-theme="blackfriday"]{min-height:360px}}
 @media(max-width:560px){
  .home-hero-card[data-theme="blackfriday"]{padding:15px 10px 22px;gap:9px}

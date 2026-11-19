@@ -158,3 +158,17 @@ test('card art, CSS and evolutions are wired up for the release',()=>{
  const cosmetic=fs.readFileSync(path.join(root,'footera-cosmetic-evolutions.js'),'utf8');
  assert.match(cosmetic,/\{id:"blackfriday",[^\n]*activeFrom:"2026-11-27T19:00:00\+01:00",activeUntilAt:"2026-12-11T19:00:00\+01:00"\}/);
 });
+
+test('teaser reveals (Basti 2026-11-19: social reveal = in-game reveal) only uncover Team-1 players before launch',()=>{
+ const c=setup(),src=section('const BLACKFRIDAY_TEASER_REVEALS=','\n');
+ const reveals=vm.runInNewContext(src.replace('const BLACKFRIDAY_TEASER_REVEALS=','')+';');
+ assert.ok(reveals.length>=1);
+ const team=new Set(c.BLACKFRIDAY_EVENT.players.map(p=>p.name)),secret=[c.BLACKFRIDAY_EVENT.sbcPlayer,c.BLACKFRIDAY_TEAM2_EVENT.sbcPlayer,c.BLACKFRIDAY_SUNDAY_SBC_EVENT.sbcPlayer,...c.EVENT_OBJECTIVES.filter(t=>t.eventType==='blackfriday-objective').map(t=>t.player)].filter(Boolean).map(p=>p.name);
+ for(const r of reveals){
+  assert.ok(team.has(r.name),`${r.name} is a Team-1 card`);
+  assert.ok(!secret.includes(r.name),`${r.name} is no SBC/objective player`);
+  assert.ok(at(r.at)<at(c.BLACKFRIDAY_EVENT.activeFrom),'reveal happens before the launch');
+ }
+ assert.match(html,/class="home-momentum-player\$\{hero\.teaser&&!secret\?" revealed":""\}"/);
+ assert.match(html,/aria-label="\$\{secret\?"Geheime Karte":/);
+});
