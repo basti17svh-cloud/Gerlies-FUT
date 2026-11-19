@@ -9245,6 +9245,10 @@ function resolveMissedMatchShot(shot,team){
  // Refine only the presentation of already missed shots using the EXISTING roll.
  // No extra random draw, goal check, shot, xG or defensive action is introduced.
  shot.highlightType=shot.outcome==="wide"&&roll>=.965?"shot_post":(Number(shot.xg)>=.16||shot.foul3D||(typeof FooteraHighlights!=="undefined"&&FooteraHighlights.getMode()==="all"))?(shot.outcome==="save"?"big_chance_saved":shot.outcome==="wide"?"big_chance_missed":""):"";
+ // V21.484 VAR (rare): a big missed chance is shown as a goal ruled out for
+ // offside. Still a miss in every stat; no extra random draw.
+ if(shot.highlightType==="big_chance_missed"&&!match.varOffsideShown&&typeof FooteraMatchActions.varPlan==="function"&&
+  FooteraMatchActions.varPlan("miss",matchVarKey(shot.side),{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:shot.creationType,foul:!!shot.foul3D})==="offside"){shot.varCheck="offside";match.varOffsideShown=1}
  // Presentation metadata only: name the actual goalkeeper on saved chances.
  const keeperRow=shot.outcome==="save"&&action?matchActorRows(action.side).find(row=>row.index===action.index):null;
  shot.goalkeeperName=shot.outcome==="save"?(keeperRow?matchEventPlayerName(keeperRow,"Torwart"):action?.name||"Torwart"):"";
@@ -9258,6 +9262,7 @@ function resolveMissedMatchShot(shot,team){
   recordMatchScene(`${action.side}-${kind}`,matchShotCommentary(kind,shot,{keeper:kind==="save"?shot.goalkeeperName||action.name:"",defender:kind==="block"?action.name:""})||text);addLog(text)
  }else if(shot.highlightType==="shot_post")recordMatchScene(`${shot.side}-post`,matchShotCommentary("post",shot)||`${shot.shooter} trifft den Pfosten · ${team}.`);
  else if(shot.lineClear3D)recordMatchScene(`${shot.side==="home"?"away":"home"}-block`,matchShotCommentary("lineclear",shot)||`Auf der Linie geklärt gegen ${shot.shooter}.`);
+ else if(shot.varCheck==="offside")recordMatchScene(`${shot.side}-chance`,matchVarCommentary("offside",shot.shooter,team));
  else recordMatchScene(`${shot.side}-chance`,matchShotCommentary("wide",shot)||`${shot.shooter} schießt vorbei · ${team}.`)
 }
 function recordMatchEvent(kind,side,text){
@@ -9323,12 +9328,14 @@ function logGoal(side,scorer,assist,type,shot={}){
   assistIndex:side==="away"?Number(assist?.index??-1):-1,
   scoreHome:match.home,scoreAway:match.away
  };
+ // V21.484 VAR (rare): the goal is checked for offside and stands.
+ if(!match.varStandsShown&&typeof FooteraMatchActions.varPlan==="function"&&FooteraMatchActions.varPlan("goal",matchVarKey(side),{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:type,foul:!!shot.foul3D})==="stands"){event.varCheck="stands";match.varStandsShown=1}
  match.goalEvents=match.goalEvents||[];match.goalEvents.push(event);
  const in3D=typeof queueMatchGoal3D==="function"&&queueMatchGoal3D(event);
  recordMatchEvent("goal",side,`${event.scorer} · ${team}`);
  if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordAttack(match,side,shot,"goal");
  const scorerGoals=match.goalEvents.filter(e=>e.side===side&&e.scorer===event.scorer).length,deficit=match.maxDeficit||(match.maxDeficit={home:0,away:0});
- recordMatchScene(`${side}-goal`,matchShotCommentary("goal",{...shot,side,shooter:event.scorer,creator:event.assist,creationType:type},{scorerGoals,maxDeficit:deficit[side]})||`${event.scorer} trifft für ${team}!`);
+ recordMatchScene(`${side}-goal`,((matchShotCommentary("goal",{...shot,side,shooter:event.scorer,creator:event.assist,creationType:type},{scorerGoals,maxDeficit:deficit[side]})||`${event.scorer} trifft für ${team}!`)+(event.varCheck==="stands"?" "+matchVarCommentary("stands",event.scorer,team):"")));
  deficit.home=Math.max(deficit.home,match.away-match.home);deficit.away=Math.max(deficit.away,match.home-match.away);
  if(typeof document!=="undefined"&&!in3D)showMatchGoalMoment(event,scorer);
  if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`,side);return}
@@ -9359,6 +9366,13 @@ function matchCommentaryLine(kind,ctx,ticker=true){
   if(ticker&&out.ticker)matchCommentaryTicker(out.text,kind==="goal"?"goal":out.note?"note":"");
   return out.text
  }catch(e){return""}
+}
+function matchVarKey(side){return `${match.resultId||match.mode||""}|${Math.round(match.minute*100)}|${side}|${(match.shotEvents||[]).length}`}
+// V21.484: the ticker lines around a VAR check.
+function matchVarCommentary(kind,name,team){
+ const pick=list=>list[Math.abs(Math.round((match?.minute||0)*7))%list.length];
+ return kind==="offside"?pick([`${name} trifft – doch der VAR schaltet sich ein: Abseits! Das Tor zählt nicht.`,`Der Ball ist drin, aber die Fahne geht hoch. Nach VAR-Check: Abseits, kein Tor für ${team}.`,`Jubel bei ${team} – zu früh. Der Videoassistent erkennt Abseits bei ${name}.`]):
+  pick([`VAR-Check … und das Tor zählt!`,`Der Videoassistent prüft auf Abseits – kein Vergehen, der Treffer zählt.`,`Kurze Aufregung, der VAR schaut nach: alles korrekt, Tor!`]);
 }
 function matchShotCommentary(kind,shot,extra={}){
  if(!match||!shot)return"";
@@ -9488,6 +9502,8 @@ function simTick(){
  advanceMatchFitness(step);match.minute+=step;
  // V21.472: the CPU coach reads score, flanks and fatigue (no RNG draws).
  if(typeof FooteraOpponentStyles!=='undefined'&&FooteraOpponentStyles.think)FooteraOpponentStyles.think(match);
+ // V21.484: a confirmed change (yours after the pause, or the CPU coach's) as its own 3D scene. Display only.
+ if(typeof queueMatchSubstitutions3D==='function')queueMatchSubstitutions3D();
  const homeTactic=tacticMods(match.tactic,match.customTactics),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced",match.opponentProfile?.customTactics),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower(),balance=FooteraMatchActions.matchupBalance(powerNow,matchOpponentPower(),matchChemistry("home"),matchChemistry("away"));
  // Track a bounded 90-minute control target rather than drifting almost
@@ -11067,7 +11083,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.483";
+const GFUT_BUILD="V21.484";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11125,7 +11141,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21483",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21484",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -34,7 +34,7 @@
     ...(GOAL_STYLES.includes(event.shotPlacement.style)?{style:event.shotPlacement.style}:{})
    }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
-   defenderAction:String(event.defenderAction||'jockey'),foulCard:['yellow','red'].includes(event.foulCard)?event.foulCard:'',keeperAction:String(event.keeperAction||'classic'),
+   defenderAction:String(event.defenderAction||'jockey'),foulCard:['yellow','red'].includes(event.foulCard)?event.foulCard:'',varCheck:['stands','offside'].includes(event.varCheck)?event.varCheck:'',keeperAction:String(event.keeperAction||'classic'),
    signature:cleanSignature(event.signature),signatures:Object.freeze((Array.isArray(event.signatures)?event.signatures:event.signature?[event.signature]:[]).map(cleanSignature).filter(Boolean).slice(0,10)),
    creatorActor:Number.isInteger(event.creatorActor)&&event.creatorActor>=1&&event.creatorActor<=7?event.creatorActor:creatorActor(event.sequence),defensePhase:String(event.defensePhase||''),tightLateGame:event.tightLateGame===true,weather:cleanWeather(event.weather),
    buildKeeperStyles:Object.freeze((Array.isArray(event.buildKeeperStyles)?event.buildKeeperStyles:[]).map(s=>Object.freeze({id:String(s.id||''),plus:!!s.plus}))),
@@ -57,7 +57,11 @@
    keeperCaptain:event.keeperCaptain===true,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
    // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
-   ceremony:['kickoff','fulltime','trophy'].includes(event.ceremony)?event.ceremony:'',
+   ceremony:['kickoff','fulltime','trophy','substitution'].includes(event.ceremony)?event.ceremony:'',
+   // V21.484 substitution: who goes off and both numbers for the fourth official's board.
+   outName:String(event.outName||'').replace(/[<>]/g,'').slice(0,40),
+   inNumber:Number.isInteger(Number(event.inNumber))&&Number(event.inNumber)>=1&&Number(event.inNumber)<=99?Number(event.inNumber):0,
+   outNumber:Number.isInteger(Number(event.outNumber))&&Number(event.outNumber)>=1&&Number(event.outNumber)<=99?Number(event.outNumber):0,
    // V21.444 Pokalübergabe: the cup's name and metal (bronze/silver/gold).
    trophyName:String(event.trophyName||'').replace(/[<>]/g,'').slice(0,28),trophyTone:['bronze','silver','gold'].includes(event.trophyTone)?event.trophyTone:'gold',result:['win','draw'].includes(event.result)?event.result:'',
    homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
@@ -70,7 +74,7 @@
    // V21.427 Fan-Choreo (walk-out tifo): plain values only.
    choreo:cleanChoreo(event.choreo),
    // V21.470: the user's manager at the bench after the walk-out (plain look values and his card markup).
-   coach:event.ceremony==='kickoff'?cleanCoach(event.coach):null,
+   coach:['kickoff','substitution'].includes(event.ceremony)?cleanCoach(event.coach):null,
    replay:event.replay!==false});
  }
  function cleanCoach(c){
@@ -87,7 +91,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21483').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21484').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -102,7 +106,7 @@
   if(signal.aborted)return 'skipped';
   const host=stage();if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':event.ceremony==='trophy'?'SIEGEREHRUNG':'LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':event.ceremony==='trophy'?'SIEGEREHRUNG':event.ceremony==='substitution'?'WECHSEL':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   // V21.252 (Basti): no skip button while loading; it appears with the running scene.
   loading.append(text,top);host.append(loading);
@@ -609,12 +613,25 @@
   const mirror=canMirror&&(typeof event.restartMirror==='boolean'?event.restartMirror:kind==='corner'?event.restartSide==='right':kind==='throw_in'?event.restartSide==='left':(mixHash(key+':restart-side')&1)===1);
   return 'extended_'+kind+(variant?'_'+variant:'')+(mirror?'_right':'');
  }
+ // V21.484: plays whose final pass is played forward to the scorer, who is
+ // clearly ahead of the ball at the release (a ball played back is never
+ // offside) and within ~3.5 m of the second-last defender (tests/substitution-var-v21482).
+ const VAR_OFFSIDE_SCENES=Object.freeze(['whipped_header_left','whipped_header_right','keeper_rush_dink_right','blindside_chip_through_left','blindside_seam_left','centerback_draw_then_slip','last_man_reverse_run','touchline_flyby_right','wide_third_man_cross','backpost_late_arrival','overlap_double_exchange','wing_decoy_switch','low_square_dummy']);
  function choosePresentation(event,history=[]){
   // Retired: extended_turnover_counter. Its scripted interception left
   // defenders motionless and the final runner offside. Preserve the simulator's
   // real chance outcome but select a normal, continuous 3D attacking play.
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
   if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:restartSequence(event,history),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:15,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
+  // V21.484 VAR: a goal ruled out for offside comes from a play whose final pass
+  // finds the scorer close to the last defender (the scene nudges him beyond it).
+  if(event.varCheck==='offside'){
+   const pool=VAR_OFFSIDE_SCENES.map(id=>PLAYBOOK_SCENES.find(v=>v.id===id)||VISUAL_SCENES.find(v=>v.id===id)).filter(Boolean);
+   const recent=new Set((Array.isArray(history)?history:[]).slice(-4).map(x=>x?.sequence));
+   const usable=pool.filter(v=>!recent.has(v.id)),list=usable.length?usable:pool;
+   const v=list[visualHash([event.matchId||'',event.id||'',event.minute||'',event.playerName||''].join('|'))%list.length];
+   if(v)return Object.freeze({sequence:v.id,family:v.family,finish:v.finish,seconds:v.seconds||10.4,signature:signatureStyle(event,v.finish)});
+  }
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const skillStars=Number(event.skillMoves)||0,requestedSkill=event.actionKind==='dribble'&&SKILL_LEVELS[event.skillMove]&&skillStars>=SKILL_LEVELS[event.skillMove]?event.skillMove:'';
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
@@ -741,6 +758,6 @@
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
  const dreamFinish=sequence=>DREAM_RULES[sequence]?.finish||null;
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,DREAM_RULES,dreamFinish,choosePresentation,signatureStyle,signatureMoments,creatorActor,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,stage,getMode:()=>mode};
+ const api={VAR_OFFSIDE_SCENES,TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,DREAM_RULES,dreamFinish,choosePresentation,signatureStyle,signatureMoments,creatorActor,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,stage,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

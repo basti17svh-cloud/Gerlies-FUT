@@ -272,8 +272,10 @@ function queueMatch3D(event){
   presentation.defendRows=shirtInfo.defendRows;presentation.defendSide=shirtInfo.defendSide;
 
 
- presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
- const reactions=FooteraHighlights.chooseReactions(presentation);
+ // V21.484: a goal ruled out for offside is shown as a goal (ball in the net) until the VAR check.
+ const visual=presentation.varCheck==='offside'?{...presentation,type:'goal'}:presentation;
+ presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(visual,match3DQueue.history||[]);
+ const reactions=FooteraHighlights.chooseReactions(visual);
  presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':/^defense_(?:slide_tackle|foul_(?:slide|behind)_)/.test(String(event.sequence||''))?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
  // Goal-line clearance: the card shows the defender who clears, not the shooter.
  // The scene picks the clearing actor (8-15) by position, so every defending actor gets its card.
@@ -334,6 +336,52 @@ function queueMatchCeremony3D(kind){
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
 }
+// V21.484 Spielerwechsel: the change at the touchline (fourth official's board,
+// hand slap, the substitute runs on). Shows recorded substitutions only, at
+// most two per match, each pair once; no RNG, no match state besides the counter.
+function queueMatchSubstitutions3D(){
+ if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts('ceremony')||!match||match.paused||match.finished)return false;
+ const list=Array.isArray(match.substitutionEvents)?match.substitutionEvents:[];
+ let at=Number(match.subScenesSeen||0);if(at>=list.length)return false;
+ const shown=Number(match.subScenesShown||0);match.subScenesSeen=list.length;
+ if(shown>=2)return false;
+ // Only the newest change; one that is long past is left in the ticker.
+ const sub=list[list.length-1];if(!sub||Number(match.minute)-Number(sub.minute)>4)return false;
+ const side=sub.side==='away'?'away':'home',current=match;
+ const pair=side==='home'?{inName:sub.incoming?.[0]?.name||'',inUid:sub.incoming?.[0]?.uid,outName:sub.outgoing?.[0]?.name||'',outUid:sub.outgoing?.[0]?.uid}:{inName:sub.in||'',outName:sub.out||'',inIndex:sub.index};
+ if(!pair.inName||!pair.outName)return false;
+ const rows=s=>typeof matchActorRows==='function'?(matchActorRows(s)||[]):[];
+ const field=s=>rows(s).filter(r=>!/^(GK|TW|TH)$/i.test(String(r.slot||'')));
+ const own=field(side),incoming=own.find(r=>side==='home'?String(r.uid)===String(pair.inUid):Number(r.index)===Number(pair.inIndex))||own.find(r=>r.name===pair.inName)||null;
+ const defending=side==='home'?'away':'home';
+ const goalie=rows(defending).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')))||null;
+ const base={type:'ceremony',team:side,playerId:side==='home'?incoming?.uid??pair.inUid:incoming?.index??pair.inIndex,playerName:pair.inName};
+ const numbers=match3DShirtNumbers(base,current,null,goalie,8);
+ const valid=v=>{const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=99?n:0};
+ const inNumber=valid(numbers.shirtNumbers?.[0])||valid(current.shirtNumbers?.[pair.inUid])||18;
+ let outNumber=side==='home'?valid(current.shirtNumbers?.[pair.outUid]):0;
+ if(!outNumber||outNumber===inNumber)outNumber=[7,11,9,10,8,6,17,14].find(n=>n!==inNumber);
+ const shirtNumbers=[...(numbers.shirtNumbers||[])];shirtNumbers[0]=inNumber;shirtNumbers[1]=outNumber;
+ // Looks and names in the same order as every other scene; actor 1 is the player
+ // going off (no longer in the line-up), so he keeps a neutral look.
+ const skin=match3DSkinTones(base),names=[...skin.squadNames];names[0]=pair.inName;names[1]=pair.outName;names[15]='';
+ const tones=[...skin.playerSkinTones],looks=[...skin.playerLooks];tones[1]=null;looks[1]=null;tones[15]=null;looks[15]=null;
+ ensureMatch3DQueue(current);
+ const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
+ const home=current.kickoffKits?.home||identity?.kits?.home;
+ const opponentIdentity=current.opponentProfile?.clubIdentity;
+ const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
+ const crest=s=>match3DPresentationMeta({type:'goal',team:s,playerName:''},current).teamCrestHTML;
+ const queued=match3DQueue.enqueue({...base,id:'substitution:'+list.length+':'+side,weather:match3DWeather(current),...match3DStadium(current),ceremony:'substitution',
+  minute:Math.floor(Number(sub.minute)||current.minute||60),period:1,coach:side==='home'?(()=>{try{return globalThis.FooteraManager?.forKickoff?.()||null}catch(e){return null}})():null,sequence:'central',finish:'normal',outName:pair.outName,inNumber,outNumber,
+  homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
+  teamCrestHTML:crest(side),defendCrestHTML:crest(defending),keeperName:goalie?.name||'',
+  shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:(numbers.captainActors||[]).filter(i=>i!==0&&i!==1),keeperCaptain:numbers.keeperCaptain,...skin,squadNames:names,playerSkinTones:tones,playerLooks:looks,
+  homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
+  awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
+ if(queued)match.subScenesShown=shown+1;
+ return queued;
+}
 // V21.444 Pokalübergabe: after a won cup final (tournament stage 3) the
 // cup presentation follows the final-whistle scene. Display data only.
 const MATCH3D_TROPHY_TONES={bronze:'bronze',silver:'silver',open:'gold'};
@@ -388,7 +436,7 @@ function queueMatchFoul3D(foul,attackingSide,victim){
 }
 function queueMatchGoal3D(event){
  const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
- const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
+ const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',varCheck:event.varCheck==='stands'?'stands':'',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
   assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',tightLateGame:event.tightLateGame,shotFoot:event.shotFoot,creatorFoot:event.creatorFoot,preferredFoot:event.preferredFoot,weakFoot:event.weakFoot,skillMoves:event.skillMoves,skillMove:event.skillMove,actionKind:event.actionKind,sceneKind:event.sceneKind,restartSide:event.restartSide,restartVariant:event.restartVariant,restartMirror:event.restartMirror,finish:event.finish,defenderSourceIndex:event.defenderIndex,scoreBeforeHome,scoreBeforeAway});
  // Keep the original goal tick's early return (including its RNG consumption).
  if(queued)match.highlightActive=true;
@@ -400,7 +448,7 @@ function queueMatchChance3D(shot){
  const type=shot.highlightType||'';
  if(!type)return false;
  const id=`shot:${match.shotEvents.length}`,current=match;
- const queued=queueMatch3D({id,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
+ const queued=queueMatch3D({id,type,varCheck:shot.varCheck==='offside'?'offside':'',minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
   goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,preferredFoot:shot.preferredFoot,weakFoot:shot.weakFoot,skillMoves:shot.skillMoves,skillMove:shot.skillMove,actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,restartVariant:shot.restartVariant,restartMirror:shot.restartMirror,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
  if(queued&&current.line3DClearId===id)shot.lineClear3D=true;
  return queued;
