@@ -301,3 +301,13 @@ test('3D photos never render automatically when the chat opens',()=>{
  assert.match(js,/historyHTML\(v.msgs\)/,'display is limited to the recent chat messages');
  assert.match(css,/\.kb-history-more/,'previous messages remain accessible');
 });
+
+test('V21.487: Siegerfoto renders in HD, is kept in IndexedDB and falls back to the old size',()=>{
+ assert.match(src,/PHOTO_HD=1600/,'HD width');
+ assert.match(src,/render\(m\.photo\.signing\?1280:PHOTO_HD\)/,'HD first, signing portrait 1280 x 1600');
+ assert.match(src,/r=await render\(mobile\?720:PHOTO_SAFE\)/,'smaller retry when the phone cannot do HD');
+ assert.match(src,/indexedDB\.open\(PHOTO_DB,1\)/,'HD photos live in IndexedDB, not next to the save');
+ assert.match(src,/PHOTO_KEY="footera-kabine-photos-v2"/,'old 720 px cache is not shown again');
+ const hydrate=src.slice(src.indexOf('function hydratePhotos(){'),src.indexOf('function developPhoto(id)'));
+ assert.match(hydrate,/loadPhoto\(id\)/,'cached HD photos come back when the chat opens');
+});

@@ -57,6 +57,19 @@ export function sceneWeatherFor(event){
  if(forced&&forced!==event?.weather?.kind)return {kind:forced,intensity:.8,temperature:forced==='snow'?-2:forced==='rain'?6:10};
  return event?.weather||null;
 }
+// V21.487: backing-buffer sharpness per device tier. ratio(w,h) gives the
+// pixel ratio for a canvas of w x h CSS pixels: the screen's own ratio up to the
+// tier cap, kept inside a pixel budget (megapixels). reduce() falls back to the
+// pre-V21.487 caps once (slow frames) and says whether anything changed.
+export function footeraSharpness({dpr=1,weak=false,mobileStandard=false,high=false}={}){
+ const tiers=weak?{cap:1.75,low:1.3,budget:.9}:mobileStandard?{cap:3,low:2,budget:1.6}:high?{cap:2.5,low:2.25,budget:4.2}:{cap:1.7,low:1.7,budget:2.4};
+ let cap=tiers.cap;
+ return{
+  ratio(w,h){const area=Math.max(1,w*h),budget=Math.sqrt(tiers.budget*1e6/area);return Math.max(1,Math.min(dpr,cap,Math.max(tiers.low,budget)))},
+  reduce(){if(cap<=tiers.low)return false;cap=tiers.low;return true},
+  get cap(){return cap}
+ };
+}
 export function footeraHumanPlayersWanted(){
  try{if(['quaternius','legacy'].includes(globalThis.localStorage?.getItem('footera-3d-player-model')))return false}catch(_){}
  return true;
@@ -3274,7 +3287,12 @@ export function play(event,signal){
     weak=memory<4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
    // Edge smoothing on every tier: without it pitch lines and stands looked pixelated.
    renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
-   renderer.setPixelRatio(Math.min(dpr,weak?1.3:mobileStandard?2:high?2.25:1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+   // V21.487 (Basti: Nahaufnahmen "sehr verpixelt"): phones draw at their real
+   // screen sharpness (up to 3x) instead of 2x, LOW phones at 1.75x instead of
+   // 1.3x, within a pixel budget per tier. Slow frames step back to the old values.
+   const sharp=footeraSharpness({dpr,weak,mobileStandard,high});
+   let msaa=4;try{const gl=renderer.getContext();msaa=gl.getParameter(gl.SAMPLES)||0}catch(_){}layer.dataset.msaa=String(msaa);
+   renderer.setPixelRatio(sharp.ratio(innerWidth*.9,innerHeight*.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
    // V21.42 rollout: fluid motion is standard on capable devices.
    // Low-spec phones keep the established instanced route; QA/users can force
    // legacy without affecting results: localStorage footera-3d-motion-mode=legacy.
@@ -3308,7 +3326,7 @@ export function play(event,signal){
    layer.dataset.capturedMotion=modelInfo.capturedMotionEnabled?'ready':'off';
    // Optional extra device information; the main badge always shows.
    if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores} · ${layer.dataset.humanModel}`;
-   const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);world.prewarm?.();
+   const resize=()=>{const r=canvas.getBoundingClientRect(),w=Math.max(1,r.width),h=Math.max(1,r.height);renderer.setPixelRatio(sharp.ratio(w,h));world.resize(w,h);layer.dataset.pixelRatio=renderer.getPixelRatio().toFixed(2)};resize();observer=new ResizeObserver(resize);observer.observe(layer);world.prewarm?.();
    // V21.484 VAR review: the frozen final pass with both lines, then the decision.
    function varFrame(now){
     const r=varState;
@@ -3349,7 +3367,7 @@ export function play(event,signal){
      const sample=playback.tick(now);
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
      if(frames>=24&&verySlowFrames/frames>.65&&!realtimeTest){finish('fallback');return}
-     if(frames===40&&slowFrames>14){quality='adaptive';world.reduceQuality()}
+     if(frames===40&&slowFrames>14){quality='adaptive';world.reduceQuality();if(sharp.reduce())resize()}
      const displayTime=sample.time;
      world.update(displayTime);
      if(goalClip)try{goalClip.frame(displayTime>=goalArrival,false)}catch(_){}
@@ -3368,7 +3386,7 @@ export function play(event,signal){
       const count=(active?1:0)+(state.capturedContext?.activeCount||0);
       const off=!state.capturedMotionEnabled||!clip||clip.capturedSource!=='Quaternius CC0';
       layer.dataset.capturedMotion=off?'off':count?'active':'ready';
-      modelStatus.dataset.motionCaption=off?'CC0 AUS':count?`CC0 AKTIV · ${count}`:'CC0 BEREIT';
+      modelStatus.dataset.motionCaption=(off?'CC0 AUS':count?`CC0 AKTIV · ${count}`:'CC0 BEREIT')+` · ${renderer.getPixelRatio().toFixed(1).replace('.',',')}×${msaa>1?'':' · OHNE AA'}`;
       layer.dataset.capturedActors=String(count);
      }
      if(event.type==='goal'&&!impactSent&&displayTime>=goalArrival){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
