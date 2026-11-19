@@ -51,6 +51,16 @@ function snowflakeGlyph(ctx,cx,cy,r,color){
  }
  ctx.restore();
 }
+// Dark LED panel: deep green-black gradient, a soft glow line on top and
+// bottom, lime slashes beside the wordmark and fine LED pixel rows.
+function ledBackdrop(ctx,accent,slashes=true){
+ const bg=ctx.createLinearGradient(0,0,0,HEIGHT);bg.addColorStop(0,'#0b1712');bg.addColorStop(.55,'#07100c');bg.addColorStop(1,'#040a07');
+ ctx.fillStyle=bg;ctx.fillRect(0,0,WIDTH,HEIGHT);
+ const slash=(x0,count,tone)=>{for(let i=0;i<count;i++){const x=x0+i*34;ctx.fillStyle=tone;ctx.globalAlpha=.85-i*.16;ctx.beginPath();ctx.moveTo(x+60,0);ctx.lineTo(x+78,0);ctx.lineTo(x+18,HEIGHT);ctx.lineTo(x,HEIGHT);ctx.fill()}ctx.globalAlpha=1};
+ if(slashes)for(const x of [268,1590])slash(x,4,'#3ddc6a');
+ ctx.fillStyle='rgba(255,255,255,.035)';for(let y=3;y<HEIGHT;y+=6)ctx.fillRect(0,y,WIDTH,2);
+ ctx.fillStyle=accent;ctx.fillRect(0,0,WIDTH,6);ctx.fillStyle='#0f3a22';ctx.fillRect(0,250,WIDTH,6);
+}
 export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
  if(kind==='halloween'){
   ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
@@ -81,16 +91,15 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
  }
  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
  const instagram=kind==='instagram',tiktok=kind==='tiktok';
- ctx.fillStyle=instagram?'#fffaf8':tiktok?'#121212':'#0d1b24';
- ctx.fillRect(0,0,WIDTH,HEIGHT);
- ctx.fillStyle=instagram?'#e83191':tiktok?'#25f4ee':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
- ctx.fillStyle=instagram?'#d6d9db':tiktok?'#fe2c55':'#374955';ctx.fillRect(0,249,WIDTH,7);
+ // V21.467 Zielbild: every regular board is a dark LED panel with lime
+ // speed slashes, so the touchline reads as one broadcast-style ribbon.
+ ledBackdrop(ctx,instagram?'#e83191':tiktok?'#25f4ee':'#45ff7a',!instagram&&!tiktok);
  ctx.textBaseline='middle';ctx.textAlign='center';
  if(instagram){
   // Equal spacing: logo / handle / logo, readable from the match camera.
   instagramGlyph(ctx,58,29,198);
   instagramGlyph(ctx,WIDTH-58-198,29,198);
-  ctx.fillStyle='#111e26';ctx.font='800 174px Arial, sans-serif';
+  ctx.fillStyle='#ffffff';ctx.font='800 174px Arial, sans-serif';
   ctx.fillText('official_footera',WIDTH/2,136,1440);
  }else if(tiktok){
   // Same layout as the Instagram board: logo / handle / logo.

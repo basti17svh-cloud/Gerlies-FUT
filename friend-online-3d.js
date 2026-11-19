@@ -96,6 +96,7 @@
    playerStyles:styles(scorer),creatorStyles:styles(creator),keeperStyles:styles(goalie),defenderStyles:styles(defender),
    scorerSlot:scorer?.slot||'',creatorSlot:creator?.slot||'',
    playerCardHTML:card(shown),teamName:teamName(duel,shownSide),teamCrestHTML:crest(duel,shownSide),
+   attackCrestHTML:crest(duel,team),defendCrestHTML:crest(duel,defending),
    keeperSkinTone:tone(goalie),keeperLook:look(goalie),keeperShirtNumber:1,
    ...squadLayout(attack,defend,scorer,defender),...kitFields(duel)};
   if(type==='goal'){const before=scoreBefore(events,i);event.scoreBeforeHome=before.home;event.scoreBeforeAway=before.away}
