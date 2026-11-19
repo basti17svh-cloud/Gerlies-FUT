@@ -9319,6 +9319,13 @@ function matchTacticReportHTML(){
   return `<section class="match-report-moves"><div class="match-report-section-title"><strong>Spielzüge</strong><span>So hat eure Taktik gespielt</span></div><div class="match-moves-head"><span>${esc(matchHomeTeamName())}</span><span>${esc(matchAwayTeamName())}</span></div>${r.rows.map(x=>`<div class="match-move-row"><div class="bar home"><i style="width:${Math.round(x.home/max*100)}%"></i><b>${x.home}${goals(x.homeGoals)}</b></div><span>${esc(x.label)}</span><div class="bar away"><i style="width:${Math.round(x.away/max*100)}%"></i><b>${x.away}${goals(x.awayGoals)}</b></div></div>`).join("")}<div class="match-move-row press"><div class="bar home"><b>${r.homePress}</b></div><span>Ballgewinne im Aufbau</span><div class="bar away"><b>${r.awayPress}</b></div></div></section>`
  }catch(e){return""}
 }
+// V21.472: what the CPU coach decided during the match, for the report.
+function matchOpponentBrainHTML(){
+ if(typeof FooteraOpponentStyles==="undefined"||!FooteraOpponentStyles.decisions||!match)return"";
+ const rows=FooteraOpponentStyles.decisions(match);if(!rows.length)return"";
+ const icon=k=>k==="sub"?"↔":k==="flank"?"🛡":"🧠";
+ return `<section class="match-report-moves match-report-brain"><div class="match-report-section-title"><strong>Gegner-Trainer</strong><span>So hat ${esc(matchAwayTeamName())} reagiert</span></div>${rows.map(r=>`<div class="match-brain-row"><time>${r.minute}'</time><i aria-hidden="true">${icon(r.kind)}</i><span>${esc(r.text)}</span></div>`).join("")}</section>`
+}
 function simAttack(homeSide){
  const pending=match.nextRestart,restart=pending&&match.minute-pending.at<=5?pending:null;delete match.nextRestart;
  if(restart)homeSide=restart.side==="home";
@@ -9342,10 +9349,12 @@ function simAttack(homeSide){
  if(context.finish!=='header'&&attackerTraits.preferredFoot)context.shotFoot=setPiece?attackerTraits.preferredFoot:actions.actionFoot(attacker,kind,Math.random());
  if(!setPiece&&kind==='dribble'&&attackerTraits.skillMoves)context.skillMove=actions.skillFor(attacker,kind,Math.random());
  if(creatorTraits.preferredFoot)context.creatorFoot=actions.actionFoot(creator,kind,Math.random());
+ if(typeof FooteraOpponentStyles!=='undefined'&&FooteraOpponentStyles.attackFlank){const flank=homeSide?FooteraOpponentStyles.attackFlank(kind,creator,attacker,match.shotEvents?.length||0):'';if(flank){context.attackFlank=flank;context.attackFlankPlayer=(['cross','cutback'].includes(kind)?creator:attacker)?.name||''}}
+ const flankTune=typeof FooteraOpponentStyles!=='undefined'&&FooteraOpponentStyles.flankTuning?FooteraOpponentStyles.flankTuning(match,side,kind,context.attackFlank):{build:0,duel:0,xg:0};
  context.skillMoves=attackerTraits.skillMoves;context.weakFoot=attackerTraits.weakFoot;context.preferredFoot=attackerTraits.preferredFoot;
  const buildDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const buildAttack=actions.restartBuildSkill(creator,kind,sceneKind,matchActorRows(side).find(r=>r.slot==="GK"),context),buildDefense=buildDefender?actions.defendSkill(buildDefender,kind,"build"):defenseProfile.defense,buildMargin=matchClamp(buildAttack-buildDefense,-30,30),buildProfileGap=matchAttributeGap(attackProfile.build-defenseProfile.defense);
- const buildChance=matchClamp(.72+buildMargin*.0055+buildProfileGap*.001+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.014+aiTuning.build+advantage.build,.42,.90);
+ const buildChance=matchClamp(.72+buildMargin*.0055+buildProfileGap*.001+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.014+aiTuning.build+flankTune.build+advantage.build,.42,.90);
  recordMatchScene(`${side}-build`,`${creator.name} treibt den Spielaufbau von ${team} an.`);
  if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordAttack(match,side,context,"attack");
  if(!setPiece&&!eventChance(buildChance-(actions.tactics(matchActionTactics(defendingSide)).pressing-50)*.0008)){
@@ -9357,7 +9366,7 @@ function simAttack(homeSide){
  }
  const duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const duelAttack=actions.duelSkill(attacker,kind,context),duelDefense=duelDefender?actions.defendSkill(duelDefender,kind,"duel"):defenseProfile.defense,duelMargin=matchClamp(duelAttack-duelDefense,-30,30),duelProfileGap=matchAttributeGap(attackProfile.transition-defenseProfile.defense);
- const duelChance=matchClamp(.60+duelMargin*.006+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016+aiTuning.duel+advantage.duel,.28,.86);
+ const duelChance=matchClamp(.60+duelMargin*.006+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016+aiTuning.duel+flankTune.duel+advantage.duel,.28,.86);
  if(!setPiece&&!eventChance(duelChance)){
   const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);if(action)action.phase="duel";
   if(action)match.nextCounter={side:defendingSide,at:match.minute,uid:action.uid,index:action.index};
@@ -9388,6 +9397,8 @@ function simTick(){
  const step=Math.min(boundary-match.minute,baseStep);
  if(step<=0){resolveEndOfPhase();return}
  advanceMatchFitness(step);match.minute+=step;
+ // V21.472: the CPU coach reads score, flanks and fatigue (no RNG draws).
+ if(typeof FooteraOpponentStyles!=='undefined'&&FooteraOpponentStyles.think)FooteraOpponentStyles.think(match);
  const homeTactic=tacticMods(match.tactic,match.customTactics),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced",match.opponentProfile?.customTactics),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower(),balance=FooteraMatchActions.matchupBalance(powerNow,matchOpponentPower(),matchChemistry("home"),matchChemistry("away"));
  // Track a bounded 90-minute control target rather than drifting almost
@@ -9916,6 +9927,7 @@ function renderMatchReport(){
  ${globalThis.FooteraKabine?.buttonHTML?.()||""}
  <section class="match-report-events"><div class="match-report-section-title"><strong>Timeline</strong><span>Tore, Karten, Wechsel</span></div><div class="match-report-event-list">${timeline.length?timeline.map(e=>`<div class="match-report-event ${e.side} ${e.kind}"><time>${e.minute}'</time><i>${e.icon}</i><div><strong>${esc(e.title)}</strong><span>${esc(e.detail)}</span></div></div>`).join(""):'<div class="match-report-empty">Keine besonderen Ereignisse.</div>'}</div></section>
  ${matchTacticReportHTML()}
+ ${matchOpponentBrainHTML()}
  <details class="match-report-performance-details"><summary><div><strong>Spielerleistungen</strong><span>${esc(matchHomeTeamName())} · Bewertungen & Statistiken</span></div><i aria-hidden="true">⌄</i></summary>${performanceSummary}<div class="match-report-teams">${matchReportPerformanceHTML(matchHomeTeamName(),homeRows)}${matchReportPerformanceHTML(matchAwayTeamName(),awayRows)}</div></details>`
 }
 function applyClubGoalStats(){
@@ -10966,7 +10978,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.471";
+const GFUT_BUILD="V21.473";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11024,7 +11036,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21471",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21473",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
