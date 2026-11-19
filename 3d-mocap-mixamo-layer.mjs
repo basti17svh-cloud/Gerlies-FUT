@@ -432,11 +432,13 @@ export function createThrowInCaptureLayer(bones,playerRoot){
 // moment and gets back up (Mixamo 'soccer trip' + 'standing up'). Game
 // seconds after the tackle contact; the root path comes from the scene.
 export const FALL=Object.freeze({down:.6,standStart:1.55,standUp:3.0,end:3.6});
-export function fallCaptureWeights(t){
- const body=smooth(t,-.12,.05)*(1-smooth(t,FALL.standUp-.05,FALL.end));
- const stand=smooth(t,FALL.standStart-.2,FALL.standStart+.1);
+// V21.479: hold = extra seconds on the turf after a foul (0 = the old timing).
+export function fallCaptureWeights(t,hold=0){
+ const h=Math.max(0,Number(hold)||0),standStart=FALL.standStart+h,standUp=FALL.standUp+h,end=FALL.end+h;
+ const body=smooth(t,-.12,.05)*(1-smooth(t,standUp-.05,end));
+ const stand=smooth(t,standStart-.2,standStart+.1);
  // Lying on the turf: from the landing until the hips are up again.
- const ground=smooth(t,FALL.down-.3,FALL.down)*(1-smooth(t,FALL.standStart+.5,FALL.standUp-.3));
+ const ground=smooth(t,FALL.down-.3,FALL.down)*(1-smooth(t,standStart+.5,standUp-.3));
  return{body,stand,ground};
 }
 export function createFallCaptureLayer(bones,playerRoot){
@@ -447,13 +449,13 @@ export function createFallCaptureLayer(bones,playerRoot){
  function apply(time=0,fall=null){
   state.clip='none';state.weight=0;state.ground=0;
   if(!fall||!Number.isFinite(fall.contact))return state;
-  const t=time-fall.contact,w=fallCaptureWeights(t),k=clamp(fall.weight??1),body=w.body*k;
+  const hold=Math.max(0,Number(fall.hold)||0),t=time-fall.contact,w=fallCaptureWeights(t,hold),k=clamp(fall.weight??1),body=w.body*k;
   if(body<=.001)return state;
   const mirror=fall.mirror?1:0,trip=rig.clips.trip,up=rig.clips.stand_up;
   const tripTime=trip.keys.hit+t*(trip.keys.down-trip.keys.hit)/FALL.down;
   rig.pose('trip',clamp(tripTime*trip.rate,0,trip.frames-1),{body,legs:body},mirror);
   if(w.stand>.001){
-   const s=up.keys.lying+Math.max(0,t-FALL.standStart)*(up.keys.up-up.keys.lying)/(FALL.standUp-FALL.standStart);
+   const s=up.keys.lying+Math.max(0,t-hold-FALL.standStart)*(up.keys.up-up.keys.lying)/(FALL.standUp-FALL.standStart);
    rig.pose('stand_up',clamp(s*up.rate,0,up.frames-1),{body:body*w.stand,legs:body*w.stand},mirror);
   }
   state.clip=w.stand>.5?'stand_up':'trip';state.weight=body;state.ground=w.ground*k;

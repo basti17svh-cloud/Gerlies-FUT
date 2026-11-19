@@ -300,15 +300,17 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 
 
 test('visual, playbook, defensive and extended scenes correspond to actual renderer IDs without changing outcome',async()=>{
- const M=await import('../3d-highlights-scene.mjs');
+ const M=await import('../3d-highlights-scene.mjs'),F=await import('../3d-fouls.mjs');
  const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in',
   // V21.453 Standards: authored variants and mirrored sides.
   'extended_corner_near','extended_corner_far','extended_corner_short','extended_corner_edge','extended_free_kick_side','extended_free_kick_far','extended_free_kick_edge','extended_penalty_stutter','extended_penalty_angled',
-  'extended_corner_near_right','extended_corner_far_right','extended_corner_short_right','extended_corner_edge_right','extended_free_kick_side_right','extended_free_kick_far_right','extended_free_kick_edge_right','extended_penalty_angled_right','extended_throw_in_right'];
+  'extended_corner_near_right','extended_corner_far_right','extended_corner_short_right','extended_corner_edge_right','extended_free_kick_side_right','extended_free_kick_far_right','extended_free_kick_edge_right','extended_penalty_angled_right','extended_throw_in_right',
+  // V21.479 free kicks after a foul.
+  'extended_free_kick_arc','extended_free_kick_cross','extended_free_kick_trick','extended_free_kick_arc_right','extended_free_kick_cross_right','extended_free_kick_trick_right'];
  assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,247);
- assert.equal(M.PLAY_SEQUENCES.length,330);
+ assert.equal(M.PLAY_SEQUENCES.length,406); // V21.479: +70 fouls, +6 free kicks
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',
-  'defense_standing_tackle_duel','defense_standing_tackle_duel_wide','defense_slide_tackle_duel','defense_slide_tackle_duel_wide','defense_standing_tackle_chase','defense_standing_tackle_chase_wide','defense_slide_tackle_chase','defense_slide_tackle_chase_wide','defense_interception_lane','defense_interception_lane_wide',...extended]),new Set(M.PLAY_SEQUENCES));
+  'defense_standing_tackle_duel','defense_standing_tackle_duel_wide','defense_slide_tackle_duel','defense_slide_tackle_duel_wide','defense_standing_tackle_chase','defense_standing_tackle_chase_wide','defense_slide_tackle_chase','defense_slide_tackle_chase_wide','defense_interception_lane','defense_interception_lane_wide',...F.FOUL_SCENES,...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
   assert.ok(finishes.has(v.finish),v.id);
@@ -968,7 +970,8 @@ test('V21.165: closer counter has constant 32m camera clearance with ball, activ
 
 test('V21.166: ball-won defenders carry upfield, boots grounded, camera follows the recovery',async()=>{
  const M=await import('../3d-highlights-scene.mjs'),P=await import('../3d-playbook.mjs');
- for(const sequence of P.DEFENSIVE_SCENES){
+ // V21.479 fouls are no ball win: the whistle stops play (tests/fouls-v21479).
+ for(const sequence of P.DEFENSIVE_SCENES.filter(s=>!P.isFoulScene(s))){
   const start=P.defensePosition(8,4.5,sequence),finish=P.defensePosition(8,9.7,sequence);
   assert.ok(finish[1]>start[1]+12,'winner must advance AWAY from defended -Z goal');
   for(const direction of [-1,1])for(const t of [0,2,4.3,5.4,7.8,9.5]){

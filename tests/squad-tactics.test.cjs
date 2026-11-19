@@ -36,6 +36,7 @@ test("individual tactics persist per saved team and feed the match simulation wi
 
 test("set-piece assignments are resolved before finishing, without replacing the scorer afterward",()=>{
  assert.match(js,/normalizeAssignments/);
- assert.match(html,/attacker=setPiece\?matchSetPieceTaker\(side,creationType\)/);
+ // V21.479: the taker may cross to a header; both are resolved before the finish.
+ assert.match(html,/taker=setPiece\?matchSetPieceTaker\(side,creationType\)/);
  assert.doesNotMatch(js,/scorer=picked/);
 });

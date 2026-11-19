@@ -63,8 +63,8 @@ test('V21.350: attack counts, analysis, halftime tips and the report use the sam
 
 test('V21.350: the match uses the commentary and shows it in a live ticker',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8'),app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
- assert.ok(html.indexOf('footera-commentary.js?v=21365')>0&&html.indexOf('footera-commentary.js?v=21365')<html.indexOf('footera-app.js?v='));
- assert.ok(sw.includes('"./footera-commentary.js?v=21365"'));
+ assert.ok(html.indexOf('footera-commentary.js?v=21479')>0&&html.indexOf('footera-commentary.js?v=21479')<html.indexOf('footera-app.js?v='));
+ assert.ok(sw.includes('"./footera-commentary.js?v=21479"'));
  assert.match(html,/id="matchTicker"/);
  const sim=app.slice(app.indexOf('function simAttack('),app.indexOf('function simTick('));
  assert.match(sim,/recordAttack\(match,side,context,"attack"\)/);

@@ -36,7 +36,8 @@ test('defensive roles stay assigned, respect running limits and preserve attacki
 test('interception visibly interrupts a pass; tackles start in opposition possession and recover continuously',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const P=await import('../3d-playbook.mjs');
- for(const sequence of P.DEFENSIVE_SCENES){
+ // V21.479 fouls are no ball win: the whistle stops play (tests/fouls-v21479).
+ for(const sequence of P.DEFENSIVE_SCENES.filter(s=>!P.isFoulScene(s))){
   assert.equal(M.controlCarrier(0,sequence).index,1);
   assert.equal(M.controlCarrier(2,sequence).index,0);
   assert.equal(M.controlCarrier(4.6,sequence).index,8);

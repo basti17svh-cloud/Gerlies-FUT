@@ -67,6 +67,11 @@ export function outcomeCues(event,{impactTime,goalArrival,ceremonyCut}={}){
  }else if(type==='big_chance_missed'||type==='big_chance_saved'){
   cues.push({time:at+.12,cue:'groan',size:home?.8:.4});
   if(type==='big_chance_saved')cues.push({time:at+.9,cue:'applause',seconds:2.4,level:home?.3:.55});
+ }else if(type==='ball_won'&&/^defense_foul_/.test(String(event.sequence||''))){
+  // V21.479 Fouls: the referee blows straight after the contact (penalty: long and hard),
+  // the crowd of the fouled team howls.
+  const penalty=/_box(?:_wide)?$/.test(String(event.sequence));
+  cues.push({time:4.62,cue:'whistle',pattern:penalty?'long':'short'},{time:4.75,cue:'groan',size:home?.7:.35});
  }else if(type==='ceremony'&&event.ceremony==='trophy'){
   // V21.444: applause for the guard of honour, the roar when the cup goes up.
   cues.push({time:.2,cue:'applause',seconds:4,level:.42},{time:8.5,cue:'roar',size:1},{time:9.2,cue:'applause',seconds:4,level:.6});
