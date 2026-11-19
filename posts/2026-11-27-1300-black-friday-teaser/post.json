@@ -1,0 +1,40 @@
+{
+  "kind": "teaser",
+  "theme": "blackfriday",
+  "postAt": "2026-11-27T13:00:00+01:00",
+  "title": "Teaser: BLACK FRIDAY TEAM 1",
+  "keys": [
+    "event-start:blackfriday-2026"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "⏳ HEUTE 19 UHR ⚡\n\nBLACK FRIDAY Team 1 kommt nach Footera: 18 neue Event-Karten.\nErkennst du schon jemanden? Tipp in die Kommentare 👇\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio 🖤\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "type": "reel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "BLACK FRIDAY: heute 19 Uhr ⚡",
+    "caption": "⏳ HEUTE 19 UHR ⚡\n\nBLACK FRIDAY Team 1 kommt nach Footera: 18 neue Event-Karten.\nErkennst du schon jemanden? Tipp in die Kommentare 👇\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio 🖤\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 3,
+    "text": "⏳ HEUTE 19 UHR ⚡\n\nBLACK FRIDAY Team 1 kommt nach Footera: 18 neue Event-Karten.\n\n👉 tinyurl.com/footera-play\n#footera"
+  },
+  "plan": {
+    "instagram": "reel",
+    "story": true,
+    "tiktok": "video",
+    "x": false
+  },
+  "id": "2026-11-27-1300-black-friday-teaser",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}
