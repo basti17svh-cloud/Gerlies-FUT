@@ -110,7 +110,7 @@
   const pow=s.playerOfWeek,ts=s.topScorer,best=s.best,powCard=pow?cardThumb(pow):"",bestCard=best?cardThumb(best):"";
   const facts=[
    pow?`<div class="wr-fact pow ${powCard?"has-card":""}">${powCard}<small>SPIELER DER WOCHE</small><strong>${escText(pow.name)}</strong><span>Ø ${pow.avg.toFixed(1)} · ${pow.n} ${pow.n===1?"Spiel":"Spiele"}${pow.goals?` · ${pow.goals} ${pow.goals===1?"Tor":"Tore"}`:""}${pow.potm?` · ${pow.potm}× Spieler des Spiels`:""}</span></div>`:"",
-   ts&&(!pow||ts.name!==pow.name)?`<div class="wr-fact top"><small>TORJÄGER</small><strong>${escText(ts.name)}</strong><span>${ts.goals} ${ts.goals===1?"Tor":"Tore"}${ts.assists?` · ${ts.assists} Vorlagen`:""}</span></div>`:"",
+   ts&&(!pow||ts.name!==pow.name)?`<div class="wr-fact top"><small>TORJÄGER</small><strong>${escText(ts.name)}</strong><span>${ts.goals} ${ts.goals===1?"Tor":"Tore"}${ts.assists?` · ${ts.assists} ${ts.assists===1?"Vorlage":"Vorlagen"}`:""}</span></div>`:"",
    best?`<div class="wr-fact pull ${bestCard?"has-card":""}">${bestCard}<small>BESTE ZIEHUNG</small><strong>${escText(best.name)} <em>${best.ovr}</em></strong><span>${escText(best.event||(best.special?"Spezialkarte":"aus "+s.packs+" "+(s.packs===1?"Pack":"Packs")))}</span></div>`:""
   ].join("");
   const record=s.matches?`<div class="wr-record"><span class="w">${s.wins} S</span><span class="d">${s.draws} U</span><span class="l">${s.losses} N</span></div>`:"";
@@ -146,8 +146,8 @@
    else{g.textAlign="right";g.fillText(detail,W-130,y+48,420)}
    g.textAlign="center";y+=h+22;
   };
-  if(s.playerOfWeek)await fact("SPIELER DER WOCHE",s.playerOfWeek.name,`Ø ${s.playerOfWeek.avg.toFixed(1)}${s.playerOfWeek.goals?` · ${s.playerOfWeek.goals} Tore`:""}`,"#7dffb2",s.playerOfWeek);
-  if(showScorer)await fact("TORJÄGER",s.topScorer.name,`${s.topScorer.goals} Tore`,"#f5d36b",null);
+  if(s.playerOfWeek)await fact("SPIELER DER WOCHE",s.playerOfWeek.name,`Ø ${s.playerOfWeek.avg.toFixed(1)}${s.playerOfWeek.goals?` · ${s.playerOfWeek.goals} ${s.playerOfWeek.goals===1?"Tor":"Tore"}`:""}`,"#7dffb2",s.playerOfWeek);
+  if(showScorer)await fact("TORJÄGER",s.topScorer.name,`${s.topScorer.goals} ${s.topScorer.goals===1?"Tor":"Tore"}`,"#f5d36b",null);
   if(s.best)await fact("BESTE ZIEHUNG",`${s.best.name} ${s.best.ovr}`,s.best.event||"aus "+s.packs+" Packs","#ffb36b",s.best);
   async function drawCardAt(item,x,cy,width){
    const draw=root.FooteraShare?.drawCard;if(!draw||typeof cardHTML!=="function"||typeof displayBase!=="function")return;

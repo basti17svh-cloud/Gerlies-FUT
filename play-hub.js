@@ -72,7 +72,7 @@
    let label="Champions öffnen",disabled=!ready;
    if(active){label=`Weiter zu Spiel ${Math.min(CHAMPIONS_MAX_GAMES,c.games+1)}`}
    else if(finished){label="Teilnahme beendet";disabled=true}
-   else if(!w.open){label="Champions öffnet Freitag";disabled=true}
+   else if(!w.open){const day=x=>new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",day:"2-digit",month:"2-digit"}).format(x),hour=new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"}).format(w.start);label=day(w.start)===day(new Date())?`Champions öffnet heute · ${hour}`:"Champions öffnet Freitag";disabled=true}
    else if(!qualified){label=`Noch ${fmt(CHAMPIONS_ENTRY_POINTS-c.qualPoints)} CP`;disabled=true}
    else label="Teilnahme starten";
    button.textContent=label;button.disabled=disabled

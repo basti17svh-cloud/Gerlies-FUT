@@ -59,7 +59,7 @@
    boards:[
     {title:"REKORDE",rows:[
      {label:"Rekordtorschütze",value:r.scorer?`${r.scorer.name} · ${fmt(r.scorer.goals)}`:dash},
-     {label:"Rekordspieler",value:r.apps?`${r.apps.name} · ${fmt(r.apps.matches)} Spiele`:dash},
+     {label:"Rekordspieler",value:r.apps?`${r.apps.name} · ${fmt(r.apps.matches)} ${Number(r.apps.matches)===1?"Spiel":"Spiele"}`:dash},
      {label:"Höchster Sieg",value:b.best?`${num(b.best.gf)}:${num(b.best.ga)} gegen ${b.best.opponent||"Gegner"}`:dash},
      {label:"Spieler des Spiels",value:r.motm?`${r.motm.name} · ${fmt(r.motm.motm)}×`:dash}]},
     {title:"BILANZ",rows:[
