@@ -1448,6 +1448,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 #match .match-tactic-check span{display:block;margin-top:4px;color:#cbd6c5;font-size:11px;line-height:1.45}
 #match .match-tactic-check span.tip{color:#edffb1}
 .match-report-moves{margin:12px 0;padding:12px;border:1px solid #ffffff17;border-radius:14px;background:#0b1712}
+.match-brain-row{display:grid;grid-template-columns:34px 20px minmax(0,1fr);gap:6px;align-items:start;margin:6px 0;font-size:12px;line-height:1.35;color:#e8f2ec}
+.match-brain-row time{color:#ffd463;font-weight:800;font-variant-numeric:tabular-nums}
+.match-brain-row i{font-style:normal;text-align:center}
 .match-moves-head{display:flex;justify-content:space-between;font-size:11px;color:#9fb0a8;margin-bottom:6px;gap:8px}
 .match-moves-head span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45%}
 .match-move-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:5px 0}
