@@ -16,7 +16,7 @@ test('V21.341: 36 new, selectable, distinct football scenes, never aliases',asyn
  // V21.445/V21.449: 62 Traumtore and new scenes follow the 36 cinematic scenes.
  assert.equal(P.PLAYBOOK.length,247);
  assert.equal(H.PLAYBOOK_SCENES.length,247);
- assert.equal(M.PLAY_SEQUENCES.length,330);
+ assert.equal(M.PLAY_SEQUENCES.length,406); // V21.479: +70 fouls, +6 free kicks
  const old=new Set(P.PLAYBOOK.slice(0,-98).map(key));
  const fresh=new Set();
  const locations=new Set();

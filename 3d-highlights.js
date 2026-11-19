@@ -34,7 +34,7 @@
     ...(GOAL_STYLES.includes(event.shotPlacement.style)?{style:event.shotPlacement.style}:{})
    }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
-   defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
+   defenderAction:String(event.defenderAction||'jockey'),foulCard:['yellow','red'].includes(event.foulCard)?event.foulCard:'',keeperAction:String(event.keeperAction||'classic'),
    signature:cleanSignature(event.signature),signatures:Object.freeze((Array.isArray(event.signatures)?event.signatures:event.signature?[event.signature]:[]).map(cleanSignature).filter(Boolean).slice(0,10)),
    creatorActor:Number.isInteger(event.creatorActor)&&event.creatorActor>=1&&event.creatorActor<=7?event.creatorActor:creatorActor(event.sequence),defensePhase:String(event.defensePhase||''),tightLateGame:event.tightLateGame===true,weather:cleanWeather(event.weather),
    buildKeeperStyles:Object.freeze((Array.isArray(event.buildKeeperStyles)?event.buildKeeperStyles:[]).map(s=>Object.freeze({id:String(s.id||''),plus:!!s.plus}))),
@@ -87,7 +87,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21478').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21479').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -586,13 +586,15 @@
  // V21.453 Standards: each restart has several authored variants (near/far post,
  // short corner, edge volley; free kicks from the side, from distance and at the
  // box corner; penalty run-ups). Presentation only, never a different result.
- const RESTART_VARIANTS=Object.freeze({corner:['','near','far','short','edge'],free_kick:['','side','far','edge'],penalty:['','stutter','angled'],throw_in:[''],keeper_buildout:['']});
- const MIRRORED_RESTARTS=Object.freeze({corner:['','near','far','short','edge'],free_kick:['side','far','edge'],penalty:['angled'],throw_in:['']});
+ // V21.479: arc (edge of the box), cross (from the touchline) and trick come after a foul.
+ const RESTART_VARIANTS=Object.freeze({corner:['','near','far','short','edge'],free_kick:['','side','far','edge','arc','cross','trick'],penalty:['','stutter','angled'],throw_in:[''],keeper_buildout:['']});
+ const MIRRORED_RESTARTS=Object.freeze({corner:['','near','far','short','edge'],free_kick:['side','far','edge','arc','cross','trick'],penalty:['angled'],throw_in:['']});
  // FNV alone leaves the low bits of near-identical keys correlated; finish with an avalanche.
  const mixHash=input=>{let h=visualHash(input);h^=h>>>16;h=Math.imul(h,0x45d9f3b);h^=h>>>16;return h>>>0};
  function restartSequence(event,history=[]){
   const kind=event.sceneKind,finish=event.finish||'normal';
-  const usable=(RESTART_VARIANTS[kind]||['']).filter(v=>kind!=='corner'||(v==='edge'?finish==='volley':v==='near'?!['volley','bicycle'].includes(finish):true));
+  // The crossed free kick is always a header; a header never comes from a direct free kick.
+  const usable=(RESTART_VARIANTS[kind]||['']).filter(v=>kind==='free_kick'?(v==='cross')===(finish==='header'):kind!=='corner'||(v==='edge'?finish==='volley':v==='near'?!['volley','bicycle'].includes(finish):true));
   const key=[event.id||'',event.minute||0,event.team||'',event.playerId||'',kind].join('|');
   const recent=(Array.isArray(history)?history:[]).slice(-4).map(h=>String(h?.sequence||'')).filter(s=>s.startsWith('extended_'+kind));
   const wanted=typeof event.restartVariant==='string'?event.restartVariant.replace(/^base$/,''):null;

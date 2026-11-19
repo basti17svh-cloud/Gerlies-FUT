@@ -3,6 +3,7 @@ import {SCENARIO_CATALOG,SCENARIO_STORIES,CINEMATIC_SCENE_IDS} from './3d-cinema
 export {CINEMATIC_SCENE_IDS};
 import {sampleFlowRun} from './3d-attack-flow.mjs?v=2160';
 import {DREAM_CATALOG,DREAM_STORIES,DREAM_GOAL_IDS} from './3d-dream-goals.mjs?v=21455';
+import {FOUL_SCENES,isFoulScene,foulPosition,foulBall,isSlideFoul} from './3d-fouls.mjs?v=21479';
 export {DREAM_GOAL_IDS};
 /* Footera V21.86 — football playbook. Pure, deterministic visual choreography.
    All turnovers are AUTHORED by the match simulator, never by this module. */
@@ -1608,8 +1609,13 @@ export const DEFENSIVE_SCENES=Object.freeze([
  // from behind, and a read pass lane; every one also mirrored ('_wide').
  'defense_standing_tackle_duel','defense_standing_tackle_duel_wide','defense_slide_tackle_duel','defense_slide_tackle_duel_wide',
  'defense_standing_tackle_chase','defense_standing_tackle_chase_wide','defense_slide_tackle_chase','defense_slide_tackle_chase_wide',
- 'defense_interception_lane','defense_interception_lane_wide'
+ 'defense_interception_lane','defense_interception_lane_wide',
+ // V21.479 Fouls (3d-fouls.mjs): the attacker is brought down, a free kick or penalty follows.
+ ...FOUL_SCENES
 ]);
+export {isFoulScene};
+// A tackle on the ground: the winner slides (also the two sliding fouls).
+export const isDefenseSlide=seq=>String(seq).startsWith('defense_slide_tackle')||isSlideFoul(seq);
 // Match Engine 2.0: deterministic, result-neutral multi-phase highlight plans.
 // These plans describe possession and camera beats; they never award a goal.
 export const EXTENDED_HIGHLIGHT_TYPES=Object.freeze(['keeper_buildout','turnover_counter','corner','free_kick','penalty','throw_in']);
@@ -1834,6 +1840,7 @@ function interceptedPass(sequence='defense_interception'){
 }
 export function defensePosition(index,time,sequence){
  if(!DEFENSIVE_SCENES.includes(sequence))return null;
+ if(isFoulScene(sequence))return foulPosition(index,time,sequence);
  const t=clamp(time,0,10.4),slide=sequence.startsWith('defense_slide_tackle');
  const mirrored=sequence==='defense_press_recovery'||sequence.endsWith('_wide'),shape=defenseShape(sequence);
  const orient=point=>mirrored?[-point[0],point[1]]:point;
@@ -1870,6 +1877,7 @@ export function defensePosition(index,time,sequence){
 }
 export function defenseBall(time,sequence){
  if(!DEFENSIVE_SCENES.includes(sequence))return null;
+ if(isFoulScene(sequence))return foulBall(time,sequence);
  const t=clamp(time,0,10.4),side=sequence==='defense_press_recovery'||sequence.endsWith('_wide')?-1:1;
  const a=defensePosition(0,Math.min(t,4.15),sequence),d=defensePosition(8,4.4,sequence);
  // Possession -> opening pass -> advancing attacker -> visible ball win.
