@@ -6,7 +6,7 @@
 // user changes something in the editor). The rendered portrait is kept on this device only.
 (function(root){
  "use strict";
- const MODULE="./3d-manager.mjs?v=21471",PORTRAIT_KEY="footera-manager-portrait-v2";
+ const MODULE="./3d-manager.mjs?v=21486",PORTRAIT_KEY="footera-manager-portrait-v2";
  const HEX=/^#[0-9a-f]{6}$/i;
  const escText=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
