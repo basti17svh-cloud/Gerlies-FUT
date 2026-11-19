@@ -8,7 +8,7 @@
 // easy to tell apart. Drag turns it. Rebuilt whenever build or colours change.
 import * as THREE from './vendor/three/three.module.min.js';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21459';
-import {createArena} from './3d-arena.mjs?v=21459';
+import {createArena} from './3d-arena.mjs?v=21471';
 
 export const STADIUM_PREVIEW_VERSION='21.459-stadium-preview';
 const hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};

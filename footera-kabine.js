@@ -968,7 +968,7 @@
  /* ---------- V21.443 Siegerfoto ---------- */
  // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
  // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
- const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21470";
+ const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21471";
  const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}

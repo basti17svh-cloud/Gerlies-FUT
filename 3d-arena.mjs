@@ -108,21 +108,25 @@ const TURF_FRAGMENT=`{
 	vec2 w=vArenaWorld.xz;
 	float inside=step(abs(w.x),34.0)*step(abs(w.y),52.5);
 	// Blade detail: two scales so neither close-ups nor the TV view tile.
-	float blades=texture2D(uArenaBlades,w*0.55).g*0.62+texture2D(uArenaBlades,w*0.071+vec2(0.37,0.11)).g*0.38;
-	diffuseColor.rgb*=(0.48+1.04*blades)*mix(vec3(0.94,1.0,0.90),vec3(1.10,1.02,0.86),blades);
+	// V21.471: a third, mid-distance scale keeps visible turf grain in the TV view.
+	float blades=texture2D(uArenaBlades,w*0.55).g*0.46+texture2D(uArenaBlades,w*0.19+vec2(0.61,0.29)).g*0.27+texture2D(uArenaBlades,w*0.071+vec2(0.37,0.11)).g*0.27;
+	diffuseColor.rgb*=(0.40+1.20*blades)*mix(vec3(0.92,1.0,0.86),vec3(1.12,1.03,0.82),blades);
 	// Mowing: 5.83 m bands mown across the pitch and a cross cut along it.
 	// Grass leans with the mower, so a band is light seen one way and dark
 	// the other: the pattern follows the camera like on real turf.
 	float band=step(0.5,fract((w.y+52.5)/11.6667));
 	float cross=step(0.5,fract((w.x+34.0)/11.3333));
 	vec2 view=normalize(cameraPosition.xz-w+vec2(0.0001));
-	float mow=((band*2.0-1.0)*(0.03+0.10*view.x)+(cross*2.0-1.0)*0.06*view.y)*inside*uArenaMow;
+	// V21.467 Zielbild: clear TV stripes from every angle, the cross cut only faint.
+	float lean=0.10*clamp(view.x*2.5,-1.0,1.0)+0.07*view.x;
+	float mow=((band*2.0-1.0)*lean+(cross*2.0-1.0)*0.025*view.y)*inside*uArenaMow;
 	diffuseColor.rgb*=1.0+mow;
 	// Floodlight pooling: brightest in the middle third, falling off to the
 	// corners and the track behind the lines.
 	vec2 e=abs(w)/vec2(39.0,59.5);
 	float pool=1.0-0.20*smoothstep(0.35,1.05,length(e*e));
-	diffuseColor.rgb*=pool*vec3(0.86,0.80,1.04);
+	// V21.471 Zielbild: warm stadium turf (olive-yellow), not blue-green.
+	diffuseColor.rgb*=pool*vec3(0.92,0.84,0.56);
 }`;
 
 // ---- V21.460 six new builds -------------------------------------------------

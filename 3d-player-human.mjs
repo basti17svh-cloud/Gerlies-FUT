@@ -293,8 +293,20 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
 // The crest editor renders a self-contained SVG; CSS variables are resolved
 // so it also works as a plain image on the shirt.
 export function footeraCrestSVG(html=''){
- const svg=String(html).match(/<svg class="club-crest-art"[\s\S]*?<\/svg><\/span>/)?.[0]?.replace(/<\/span>$/,'');
- if(!svg)return null;
+ let svg=String(html).match(/<svg class="club-crest-art"[\s\S]*?<\/svg><\/span>/)?.[0]?.replace(/<\/span>$/,'');
+ if(!svg){
+  // V21.471: opponents without their own club identity (computer teams)
+  // show their initials badge on the shirt instead of an empty shield.
+  const initials=String(html).match(/class="fh3d-opponent-crest"[^>]*>([^<]{1,4})</)?.[1];
+  if(!initials)return null;
+  svg='<svg class="club-crest-art" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">'+
+   '<path d="M22 18H178V103C178 151 149 186 100 206C51 186 22 151 22 103Z" fill="#f4f2ec" stroke="#1b2128" stroke-width="10"/>'+
+   '<path d="M40 34H160V100C160 138 138 166 100 183C62 166 40 138 40 100Z" fill="none" stroke="#1b2128" stroke-width="3" opacity=".55"/>'+
+   '<text x="100" y="'+(initials.length>2?128:134)+'" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="'+(initials.length>2?52:68)+'" text-anchor="middle" fill="#1b2128">'+initials+'</text></svg>';
+ }
+ // V21.471: explicit pixel size, so every browser (Safari draws an SVG
+ // without width/height as nothing) rasterises the crest sharp and upright.
+ svg=svg.replace(/^<svg class="club-crest-art" /,'<svg class="club-crest-art" width="400" height="440" ');
  const vars={};for(const [,k,v] of String(html).matchAll(/--crest-([a-z]+):(#[0-9a-f]{6})/gi))vars[k]=v;
  return svg.replace(/var\(--crest-([a-z]+)\)/g,(m,k)=>vars[k]||'#ffffff');
 }
@@ -404,6 +416,7 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
  const skinKey=asset?.skins?.[look.skinKey]?look.skinKey:String(look.skinKey).replace('Female','');
  const skinMap=asset?.skins?.[skinKey];
  const tint=footeraSkinTint(look.skin,info?.skinMean?.[skinKey]||[.75,.55,.45]);
+ let trimTopology=null,trimGeometry=null;
  for(const mesh of meshes){
   const geometry=mesh.geometry.clone(),morphs=geometry.morphAttributes.position,names=mesh.morphTargetDictionary||{};
   if(morphs?.length){
@@ -418,6 +431,10 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
   }
   if(info?.metahuman&&names.build==null&&['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks'].includes(mesh.name)){
    fitFootballBuild(geometry,look.morphs?.build);
+  }
+  if(['FooteraShirt','FooteraShorts','FooteraSocks'].includes(mesh.name)){
+   const topology=footeraKitTopology(mesh.geometry);footeraTidyKit(geometry,topology);
+   if(mesh.name==='FooteraShirt'){trimTopology=topology;trimGeometry=geometry}
   }
   mesh.geometry=geometry;mesh.morphTargetInfluences=undefined;mesh.morphTargetDictionary=undefined;
   mesh.frustumCulled=false;mesh.castShadow=true;mesh.receiveShadow=true;
@@ -464,7 +481,168 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
  }
  // HD preview: richer surfaces on the close-up heroes only.
  if(opts.detail&&footeraHDWanted())owned.push(...upgradeFooteraHero(THREE,meshes,look,kitMap,footeraKitLayout(info),hash(look.hair+look.skin)%97+1));
+ // After the HD pass, which swaps the shirt material for a physical one.
+ const shirtMesh=meshes.find(m=>m.name==='FooteraShirt');
+ if(shirtMesh&&trimGeometry&&footeraKitTrimWanted())addFooteraKitTrim(THREE,shirtMesh,footeraKitTrimDistances(trimGeometry,trimTopology),kit,!!opts.detail);
  return{owned,kitMap,canvas};
+}
+export function footeraKitTrimWanted(){
+ try{return globalThis.localStorage?.getItem('footera-3d-kit-trim')!=='0'}catch(_){return true}
+}
+
+// V21.471 (Basti: "gescheite Trikots"): real kits have a ribbed collar and
+// sleeve cuffs in the trim colour and a stitched hem. The kit canvas is a
+// planar projection, so a painted collar never follows the real neckline.
+// Instead each shirt vertex stores its distance (metres, bind pose) to the
+// neck, sleeve and hem openings of the mesh itself; the fragment shader cuts
+// sharp bands from that interpolated distance, so the trim sits exactly on
+// the garment edge at any texture size. A fine piqué knit fades in only up
+// close, where it cannot shimmer.
+const kitTopologyCache=new WeakMap();
+// Bind-pose topology of one garment, cached per source mesh: which vertices
+// are copies of one point (UV seams) and the openings (rings of edges used by
+// a single triangle), each ring ordered and classed 0 neck, 1 sleeve, 2 hem.
+export function footeraKitTopology(geometry){
+ if(kitTopologyCache.has(geometry))return kitTopologyCache.get(geometry);
+ const p=geometry.getAttribute('position'),index=geometry.index?.array;let out=null;
+ if(p&&index){
+  const n=p.count,key=i=>Math.round(p.getX(i)*1e4)+','+Math.round(p.getY(i)*1e4)+','+Math.round(p.getZ(i)*1e4);
+  const first=new Map(),canon=new Int32Array(n);
+  for(let i=0;i<n;i++){const k=key(i);if(!first.has(k))first.set(k,i);canon[i]=first.get(k)}
+  const copies=new Map();for(let i=0;i<n;i++)if(canon[i]!==i)(copies.get(canon[i])||copies.set(canon[i],[canon[i]]).get(canon[i])).push(i);
+  const count=new Map();
+  for(let t=0;t<index.length;t+=3)for(let e=0;e<3;e++){
+   const a=canon[index[t+e]],b=canon[index[t+(e+1)%3]],k=a<b?a*n+b:b*n+a;count.set(k,(count.get(k)||0)+1);
+  }
+  const next=new Map();
+  for(const [k,c] of count)if(c===1){const a=Math.floor(k/n),b=k%n;(next.get(a)||next.set(a,[]).get(a)).push(b);(next.get(b)||next.set(b,[]).get(b)).push(a)}
+  const seen=new Set(),rings=[];
+  for(const start of next.keys()){
+   if(seen.has(start))continue;const ring=[start];seen.add(start);let prev=-1,at=start;
+   for(;;){const step=(next.get(at)||[]).find(v=>v!==prev&&!seen.has(v));if(step==null)break;ring.push(step);seen.add(step);prev=at;at=step}
+   const closed=(next.get(at)||[]).includes(start)&&ring.length>2;
+   let x=0,y=0;for(const v of ring){x+=p.getX(v);y+=p.getY(v)}
+   rings.push({ring,closed,x:x/ring.length,y:y/ring.length});
+  }
+  if(rings.length>=2){
+   geometry.computeBoundingBox?.();const box=geometry.boundingBox,half=box?Math.max(.05,(box.max.x-box.min.x)/2):.3;
+   const top=Math.max(...rings.map(R=>R.y)),bottom=Math.min(...rings.map(R=>R.y));
+   for(const R of rings)R.kind=Math.abs(R.x)>half*.55?1:R.y===top&&R.y>bottom?0:2;
+  }
+  out={canon,copies:[...copies.values()],rings};
+ }
+ kitTopologyCache.set(geometry,out);return out;
+}
+// Tidies one dressed garment (its own clone): copies of a point get one
+// skin binding and one normal, so UV seams no longer open into dark cracks
+// or show as a shading edge when the body bends, and the openings are
+// smoothed into clean curves (Taubin, no shrinking) instead of saw teeth.
+export function footeraTidyKit(geometry,topology,smooth=true){
+ if(!topology)return;
+ const p=geometry.getAttribute('position'),nrm=geometry.getAttribute('normal'),tan=geometry.getAttribute('tangent');
+ const si=geometry.getAttribute('skinIndex'),sw=geometry.getAttribute('skinWeight');
+ for(const group of topology.copies){
+  const [lead]=group;let x=0,y=0,z=0,tx=0,ty=0,tz=0;
+  for(const v of group){if(nrm){x+=nrm.getX(v);y+=nrm.getY(v);z+=nrm.getZ(v)}if(tan){tx+=tan.getX(v);ty+=tan.getY(v);tz+=tan.getZ(v)}}
+  const l=Math.hypot(x,y,z)||1,lt=Math.hypot(tx,ty,tz)||1;
+  for(const v of group){
+   if(nrm)nrm.setXYZ(v,x/l,y/l,z/l);
+   if(tan&&tx*tan.getX(v)+ty*tan.getY(v)+tz*tan.getZ(v)>0)tan.setXYZ(v,tx/lt,ty/lt,tz/lt);
+   if(si&&sw&&v!==lead){si.setXYZW(v,si.getX(lead),si.getY(lead),si.getZ(lead),si.getW(lead));sw.setXYZW(v,sw.getX(lead),sw.getY(lead),sw.getZ(lead),sw.getW(lead))}
+  }
+ }
+ if(smooth&&p){
+  const groups=new Map();for(const g of topology.copies)groups.set(g[0],g);
+  for(const R of topology.rings){
+   if(!R.closed||R.ring.length<6)continue;const m=R.ring.length;
+   let pts=R.ring.map(v=>[p.getX(v),p.getY(v),p.getZ(v)]);
+   for(let it=0;it<4;it++)for(const f of [.5,-.53]){
+    pts=pts.map((q,i)=>{const a=pts[(i+m-1)%m],b=pts[(i+1)%m];return q.map((c,k)=>c+f*((a[k]+b[k])/2-c))});
+   }
+   R.ring.forEach((v,i)=>{for(const c of groups.get(v)||[v])p.setXYZ(c,...pts[i])});
+  }
+  p.needsUpdate=true;
+ }
+ if(nrm)nrm.needsUpdate=true;if(tan)tan.needsUpdate=true;if(si)si.needsUpdate=true;if(sw)sw.needsUpdate=true;
+}
+// Per vertex: distance in metres to the neck, sleeve and hem openings.
+// Computed once per source garment (bind pose) and shared by every player:
+// the per-player build fit moves the cloth by millimetres, far below the
+// 1-2 cm trim bands, and this loop is too slow to repeat for 23 players.
+const kitTrimCache=new WeakMap();
+export function footeraKitTrimDistances(geometry,topology){
+ if(topology&&kitTrimCache.has(topology))return kitTrimCache.get(topology);
+ const out=kitTrimDistancesNow(geometry,topology);if(topology)kitTrimCache.set(topology,out);return out;
+}
+function kitTrimDistancesNow(geometry,topology){
+ const p=geometry.getAttribute('position');
+ if(!p||!topology||topology.rings.length<2)return null;
+ const out=new Float32Array(p.count*3).fill(1),segs=[[],[],[]],xyz=new Float32Array(p.count*3);
+ for(let i=0;i<p.count;i++){xyz[i*3]=p.getX(i);xyz[i*3+1]=p.getY(i);xyz[i*3+2]=p.getZ(i)}
+ for(const R of topology.rings){const m=R.ring.length;for(let i=0;i<(R.closed?m:m-1);i++){
+  const a=R.ring[i],b=R.ring[(i+1)%m],ax=p.getX(a),ay=p.getY(a),az=p.getZ(a);
+  segs[R.kind].push([ax,ay,az,p.getX(b)-ax,p.getY(b)-ay,p.getZ(b)-az]);
+ }}
+ for(let i=0;i<p.count;i++){
+  const px=xyz[i*3],py=xyz[i*3+1],pz=xyz[i*3+2];
+  for(let k=0;k<3;k++){let d=1;for(const [ax,ay,az,dx,dy,dz] of segs[k]){
+   const l=dx*dx+dy*dy+dz*dz,t=l>0?Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy+(pz-az)*dz)/l)):0;
+   d=Math.min(d,Math.hypot(px-ax-dx*t,py-ay-dy*t,pz-az-dz*t));
+  }out[i*3+k]=d}
+ }
+ return out;
+}
+export function footeraKitTrimColor(shirt='#1b4c52',second=shirt){
+ const [r,g,b]=hexRGB(shirt),[r2,g2,b2]=hexRGB(second);
+ if(Math.abs(r-r2)+Math.abs(g-g2)+Math.abs(b-b2)>.35)return second;
+ // Same colour twice: a darker rib on light shirts, a lighter one on dark shirts.
+ const f=luminance(shirt)>.45?.72:1.6,c=v=>Math.round(Math.max(0,Math.min(1,v*f+(f>1?.06:0)))*255).toString(16).padStart(2,'0');
+ return'#'+c(r)+c(g)+c(b);
+}
+const TRIM_VERTEX='attribute vec3 footeraTrim;\nvarying vec3 vFooteraTrim;\n';
+const TRIM_FRAGMENT=`uniform vec3 footeraTrimColor;uniform vec3 footeraTrimWidth;uniform float footeraKnit;
+varying vec3 vFooteraTrim;
+float footeraBand(float d,float w){float f=max(fwidth(d),1e-4);return 1.0-smoothstep(w-f,w+f,d);}
+float footeraLine(float d,float at,float w){float f=max(fwidth(d),1e-4)+w;return 1.0-smoothstep(0.0,f,abs(d-at));}
+`;
+const TRIM_CHUNK=`#include <map_fragment>
+{
+ float collar=footeraBand(vFooteraTrim.x,footeraTrimWidth.x),cuff=footeraBand(vFooteraTrim.y,footeraTrimWidth.y);
+ float rib=max(collar,cuff);
+ // Rib knit: fine lines along the opening, darker lip on the very edge.
+ float ribLines=0.5+0.5*sin(min(vFooteraTrim.x,vFooteraTrim.y)*2600.0);
+ float ribFade=1.0-smoothstep(0.4,1.2,fwidth(min(vFooteraTrim.x,vFooteraTrim.y))*2600.0);
+ vec3 trim=footeraTrimColor*(1.0-0.07*ribLines*ribFade);
+ diffuseColor.rgb=mix(diffuseColor.rgb,trim,rib);
+ float lip=footeraBand(min(vFooteraTrim.x,vFooteraTrim.y),0.0025);
+ float seam=max(footeraLine(vFooteraTrim.x,footeraTrimWidth.x+0.004,0.0006),footeraLine(vFooteraTrim.y,footeraTrimWidth.y+0.004,0.0006));
+ float hem=max(footeraLine(vFooteraTrim.z,footeraTrimWidth.z,0.0006),footeraBand(vFooteraTrim.z,0.002));
+ diffuseColor.rgb*=1.0-0.22*lip-0.13*seam*(1.0-rib)-0.12*hem;
+ #ifdef USE_MAP
+ vec2 knitUv=vMapUv*vec2(560.0,1120.0);
+ float knitFade=(1.0-smoothstep(0.35,0.9,max(fwidth(knitUv.x),fwidth(knitUv.y))))*footeraKnit*(1.0-rib);
+ vec2 cell=abs(fract(knitUv+vec2(0.5*step(0.5,fract(knitUv.y*0.5)),0.0))-0.5);
+ diffuseColor.rgb*=1.0-0.055*knitFade*smoothstep(0.18,0.42,max(cell.x,cell.y*0.8));
+ #endif
+}`;
+function addFooteraKitTrim(THREE,mesh,distances,kit,detail){
+ const material=mesh.material;if(!material||!distances||distances.length!==mesh.geometry.getAttribute('position')?.count*3)return;
+ mesh.geometry.setAttribute('footeraTrim',new THREE.BufferAttribute(distances,3));
+ const uniforms={footeraTrimColor:{value:new THREE.Color(footeraKitTrimColor(kit?.shirt||'#1b4c52',kit?.shirtSecondary||kit?.shirt||'#1b4c52'))},
+  footeraTrimWidth:{value:new THREE.Vector3(.021,.017,.009)},footeraKnit:{value:detail?1:.7}};
+ const patch=target=>{
+  const previous=target.onBeforeCompile,key=target.customProgramCacheKey,base=key?key.call(target):'';
+  target.onBeforeCompile=(shader,renderer)=>{
+   previous?.call(target,shader,renderer);Object.assign(shader.uniforms,uniforms);
+   shader.vertexShader=TRIM_VERTEX+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvFooteraTrim=footeraTrim;');
+   shader.fragmentShader=TRIM_FRAGMENT+shader.fragmentShader.replace('#include <map_fragment>',TRIM_CHUNK);
+  };
+  target.customProgramCacheKey=()=>base+'|footera-kit-trim';target.needsUpdate=true;
+  // Own property (Material.copy skips it): a material built from this one
+  // later (broadcast look) takes the trim over with this call.
+  target.footeraKitTrim=patch;
+ };
+ patch(material);
 }
 
 // V21.428 Kapitänsbinde: the captain from the squad's "Aufgaben" wears a band
