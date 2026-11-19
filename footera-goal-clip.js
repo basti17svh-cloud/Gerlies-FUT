@@ -77,18 +77,22 @@
  }
  function drawFrame(ctx,src,blurCtx,info,W,H,look){
   const k=W/720;
+  // The scene itself: centre crop to 4:3, full width.
+  const vw=W,vh=Math.round(W*3/4),vy=Math.round(H*.25);
   // Background: the same scene, tiny and stretched (a cheap blur), darkened.
+  // V21.483: taken from the previous video frame's scene crop (2D to 2D), not
+  // from the 3D canvas again: every copy out of WebGL stalls the phone's GPU,
+  // so one copy per video frame instead of two (the blur cannot show the lag).
   if(src.width&&src.height){
-   blurCtx.drawImage(src,0,0,blurCtx.canvas.width,blurCtx.canvas.height);
+   if(look.drawn)blurCtx.drawImage(ctx.canvas,0,vy,vw,vh,0,0,blurCtx.canvas.width,blurCtx.canvas.height);
+   else blurCtx.drawImage(src,0,0,blurCtx.canvas.width,blurCtx.canvas.height);
    ctx.imageSmoothingEnabled=true;ctx.drawImage(blurCtx.canvas,0,0,W,H);
   }else{ctx.fillStyle='#071012';ctx.fillRect(0,0,W,H)}
   ctx.fillStyle='rgba(4,10,12,.68)';ctx.fillRect(0,0,W,H);
-  // The scene itself: centre crop to 4:3, full width.
-  const vw=W,vh=Math.round(W*3/4),vy=Math.round(H*.25);
   if(src.width&&src.height){
    const want=4/3,sa=src.width/src.height;let sw=src.width,sh=src.height,sx=0,sy=0;
    if(sa>want){sw=src.height*want;sx=(src.width-sw)/2}else{sh=src.width/want;sy=(src.height-sh)/2}
-   ctx.drawImage(src,sx,sy,sw,sh,0,vy,vw,vh);
+   ctx.drawImage(src,sx,sy,sw,sh,0,vy,vw,vh);look.drawn=true;
   }
   ctx.fillStyle='#63ff78';ctx.fillRect(0,vy-4*k,W,4*k);ctx.fillRect(0,vy+vh,W,4*k);
   // Top: brand.
