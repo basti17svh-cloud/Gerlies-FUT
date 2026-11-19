@@ -227,7 +227,7 @@ test('Crowd Paket L reacts by supporter block without touching simulation RNG',a
  assert.ok(homeGoal.mood>.6&&awayGoal.mood<-.25);
  assert.ok(homeSaved.mood<-.25&&awaySaved.mood>.45);
  const source=fs.readFileSync(path.join(__dirname,'../3d-highlights-scene.mjs'),'utf8');
- assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/animatedShare=weak\?\.22:mobileStandard\?\.44:high\?\.76:\.62/);assert.match(source,/mobileStandard=mobile&&!weak/);assert.match(source,/mobileStandard\?2:high\?2\.25/);assert.match(source,/athleticGeometry/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/flagSegments=3/);assert.match(source,/crowd-flag-cloth-segment/);assert.match(source,/supporterBanner/);assert.match(source,/banner\.position\.set\(0,\.62,z\)/);assert.match(source,/updateCrowd\(time\)/);
+ assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/animatedShare=weak\?\.22:mobileStandard\?\.44:high\?\.76:\.62/);assert.match(source,/mobileStandard=mobile&&!weak/);assert.match(source,/mobileStandard\?\{cap:3,low:2,budget:1\.6\}:high\?\{cap:2\.5,low:2\.25/);assert.match(source,/athleticGeometry/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/flagSegments=3/);assert.match(source,/crowd-flag-cloth-segment/);assert.match(source,/supporterBanner/);assert.match(source,/banner\.position\.set\(0,\.62,z\)/);assert.match(source,/updateCrowd\(time\)/);
  assert.doesNotMatch(source,/crowd(?:Static|Dynamic)\.body/);assert.match(source,/crowdDynamic\.legs/);assert.equal(/Math\.random\s*\(/.test(source),false);
 });
 
@@ -752,7 +752,7 @@ test('V21.76: actual CC0 motion status and existing-actor expansion are truthful
  assert.match(source,/const capturedParticipantIndices=importedPlayer&&clipEnabled&&!baselineRig/);
  assert.match(source,/weak\?\[defenderIndex\]/);
  assert.match(source,/capturedMotionEnabled:!!\(importedPlayer&&clipEnabled\)/);
- assert.match(source,/modelStatus\.dataset\.motionCaption=off\?'CC0 AUS'/);
+ assert.match(source,/modelStatus\.dataset\.motionCaption=\(?off\?'CC0 AUS'/);
  assert.match(source,/state\.capturedContext\?\.activeCount/);
  assert.match(css,/data-motion-caption/);
  assert.doesNotMatch(source,/mountFooteraPlayerModel\(players\[1\]/);
@@ -1026,4 +1026,18 @@ test('V21.320 replay stinger shows the Footera emblem instead of a plain red F p
  // The dark panel fully covers the frame at the halfway point, where the replay camera cuts in.
  assert.match(css,/@keyframes fh3dWipePanel\{[^\n]*48%,52%\{transform:translateX\(0\) skewX\(-16deg\)\}/);
  assert.match(css,/\.fh3d-wipe-in \.fh3d-wipe-logo,\.fh3d-wipe-out \.fh3d-wipe-logo\{animation:fh3dWipeLogo \.64s/);
+});
+
+test('V21.488: close-ups draw at the phone screen sharpness, within budget, slow phones step back',async()=>{
+ const src=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ const fn=new Function('return '+src.slice(src.indexOf('export function footeraSharpness(')+7,src.indexOf('export function footeraHumanPlayersWanted(')))();
+ const phone=fn({dpr:2.625,mobileStandard:true});
+ assert.equal(phone.ratio(394,362),2.625,'standard phone: full screen sharpness');
+ assert.equal(fn({dpr:3.5,mobileStandard:true}).ratio(394,362),3,'capped at 3x');
+ assert.ok(phone.ratio(1400,1000)>=2&&phone.ratio(1400,1000)<2.625,'pixel budget on big canvases, never below the old 2x');
+ assert.equal(phone.reduce(),true);assert.equal(phone.ratio(394,362),2,'slow frames: back to 2x');assert.equal(phone.reduce(),false);
+ const weak=fn({dpr:2.625,weak:true});assert.equal(weak.ratio(394,362),1.75);weak.reduce();assert.equal(weak.ratio(394,362),1.3);
+ assert.equal(fn({dpr:1}).ratio(1200,700),1,'1x screens never upscale');
+ assert.match(src,/if\(frames===40&&slowFrames>14\)\{quality='adaptive';world\.reduceQuality\(\);if\(sharp\.reduce\(\)\)resize\(\)\}/);
+ assert.match(src,/renderer\.setPixelRatio\(sharp\.ratio\(w,h\)\);world\.resize\(w,h\)/);
 });
