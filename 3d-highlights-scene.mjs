@@ -3240,7 +3240,7 @@ export function play(event,signal){
       else if(ceremony){headline.textContent='ABPFIFF';name.textContent=`${event.homeName||'Heim'} ${event.homeScore??0} : ${event.awayScore??0} ${event.awayName||'Gast'}`;detail.textContent=event.result==='draw'?'Unentschieden':`Sieg für ${event.team==='away'?event.awayName||'Gast':event.homeName||'Heim'}`}
       else if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({classic:' · Gefangen',fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
-      else if(event.type==='ball_won'&&foul){
+      else if(event.type==='ball_won'&&parseFoul(event.sequence)){const foul=parseFoul(event.sequence);
        // V21.479 Fouls: who fouled, how, and what follows.
        const penalty=FOUL_ZONES[foul.zone]?.restart==='penalty',victim=event.playerName||'den Angreifer';
        headline.textContent=event.foulCard==='red'?'ROTE KARTE':event.foulCard==='yellow'?'GELBE KARTE':penalty?'ELFMETER':'FOUL';
