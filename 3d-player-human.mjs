@@ -44,8 +44,21 @@ export async function prepareFooteraHumanModel(){
  if(!pending)pending=(async()=>{
   const [{GLTFLoader},{clone}]=await Promise.all([
    import('./vendor/three/GLTFLoader.mjs'),import('./vendor/three/SkeletonUtils.mjs')]);
+  // V21.480: the three player bodies ship losslessly meshopt-compressed
+  // (assets/footera/models/compressed/, tools/compress-footera-models.mjs,
+  // about a third fewer bytes). Same data bit for bit once decoded; without
+  // WebAssembly or on any decode error the original GLB is loaded instead.
+  const decoder=typeof WebAssembly==='object'?import('./vendor/three/meshopt_decoder.mjs').then(m=>m.MeshoptDecoder.ready.then(()=>m.MeshoptDecoder)).catch(()=>null):Promise.resolve(null);
+  const fetchGltf=async url=>{
+   const meshopt=await decoder;
+   if(meshopt&&url.includes('/models/footera-')){
+    try{return await new GLTFLoader().setMeshoptDecoder(meshopt).loadAsync(url.replace('/models/footera-','/models/compressed/footera-'))}
+    catch(error){console.warn('Footera: compressed model failed, loading original',error)}
+   }
+   return new GLTFLoader().loadAsync(url);
+  };
   const load=async url=>{
-   const gltf=await new GLTFLoader().loadAsync(url);
+   const gltf=await fetchGltf(url);
    const info=gltf.parser.json.extras?.footera,bones=new Set();let vertices=0,body=null;
    gltf.scene.traverse(node=>{
     if(node.isBone)bones.add(node.name);

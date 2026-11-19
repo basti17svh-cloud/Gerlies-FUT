@@ -4,3 +4,6 @@ Files: build/three.module.min.js and LICENSE.
 Loaded only by the highlight scene module. No runtime CDN dependency.
 
 Upstream SHA-256 before this patch: 3e690ac7d180b0aadf0891bea39eec643e29e2d3e75c99b18689518665f69ba6
+
+meshopt_decoder.mjs: meshoptimizer 1.3.0 (MIT, https://github.com/zeux/meshoptimizer), unmodified. Decodes the
+EXT_meshopt_compression player models in assets/footera/models/compressed/ (tools/compress-footera-models.mjs, V21.480).
