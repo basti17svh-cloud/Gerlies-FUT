@@ -1028,7 +1028,7 @@ test('V21.320 replay stinger shows the Footera emblem instead of a plain red F p
  assert.match(css,/\.fh3d-wipe-in \.fh3d-wipe-logo,\.fh3d-wipe-out \.fh3d-wipe-logo\{animation:fh3dWipeLogo \.64s/);
 });
 
-test('V21.487: close-ups draw at the phone screen sharpness, within budget, slow phones step back',async()=>{
+test('V21.488: close-ups draw at the phone screen sharpness, within budget, slow phones step back',async()=>{
  const src=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  const fn=new Function('return '+src.slice(src.indexOf('export function footeraSharpness(')+7,src.indexOf('export function footeraHumanPlayersWanted(')))();
  const phone=fn({dpr:2.625,mobileStandard:true});

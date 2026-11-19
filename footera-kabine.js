@@ -968,10 +968,10 @@
  /* ---------- V21.443 Siegerfoto ---------- */
  // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
  // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
- // V21.487 (Basti: Siegerfoto "scharf in HD, nicht so Taschenrechner"): photos
+ // V21.488 (Basti: Siegerfoto "scharf in HD, nicht so Taschenrechner"): photos
  // render at 1600 px and live in IndexedDB (too big for localStorage next to the
  // save). The old 720 px cache (v1) is dropped, so a tap develops them again in HD.
- const PHOTO_KEY="footera-kabine-photos-v2",PHOTO_LEGACY_KEY="footera-kabine-photos-v1",PHOTO_DB="footera-kabine-photos",PHOTO_KEEP=8,PHOTO_HD=1600,PHOTO_SAFE=960,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21487";
+ const PHOTO_KEY="footera-kabine-photos-v2",PHOTO_LEGACY_KEY="footera-kabine-photos-v1",PHOTO_DB="footera-kabine-photos",PHOTO_KEEP=8,PHOTO_HD=1600,PHOTO_SAFE=960,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21488";
  let photoDbOpen=null;const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}

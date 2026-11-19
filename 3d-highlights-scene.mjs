@@ -57,10 +57,10 @@ export function sceneWeatherFor(event){
  if(forced&&forced!==event?.weather?.kind)return {kind:forced,intensity:.8,temperature:forced==='snow'?-2:forced==='rain'?6:10};
  return event?.weather||null;
 }
-// V21.487: backing-buffer sharpness per device tier. ratio(w,h) gives the
+// V21.488: backing-buffer sharpness per device tier. ratio(w,h) gives the
 // pixel ratio for a canvas of w x h CSS pixels: the screen's own ratio up to the
 // tier cap, kept inside a pixel budget (megapixels). reduce() falls back to the
-// pre-V21.487 caps once (slow frames) and says whether anything changed.
+// pre-V21.488 caps once (slow frames) and says whether anything changed.
 export function footeraSharpness({dpr=1,weak=false,mobileStandard=false,high=false}={}){
  const tiers=weak?{cap:1.75,low:1.3,budget:.9}:mobileStandard?{cap:3,low:2,budget:1.6}:high?{cap:2.5,low:2.25,budget:4.2}:{cap:1.7,low:1.7,budget:2.4};
  let cap=tiers.cap;
@@ -3287,7 +3287,7 @@ export function play(event,signal){
     weak=memory<4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
    // Edge smoothing on every tier: without it pitch lines and stands looked pixelated.
    renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
-   // V21.487 (Basti: Nahaufnahmen "sehr verpixelt"): phones draw at their real
+   // V21.488 (Basti: Nahaufnahmen "sehr verpixelt"): phones draw at their real
    // screen sharpness (up to 3x) instead of 2x, LOW phones at 1.75x instead of
    // 1.3x, within a pixel budget per tier. Slow frames step back to the old values.
    const sharp=footeraSharpness({dpr,weak,mobileStandard,high});

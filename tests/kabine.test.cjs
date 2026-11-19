@@ -302,7 +302,7 @@ test('3D photos never render automatically when the chat opens',()=>{
  assert.match(css,/\.kb-history-more/,'previous messages remain accessible');
 });
 
-test('V21.487: Siegerfoto renders in HD, is kept in IndexedDB and falls back to the old size',()=>{
+test('V21.488: Siegerfoto renders in HD, is kept in IndexedDB and falls back to the old size',()=>{
  assert.match(src,/PHOTO_HD=1600/,'HD width');
  assert.match(src,/render\(m\.photo\.signing\?1280:PHOTO_HD\)/,'HD first, signing portrait 1280 x 1600');
  assert.match(src,/r=await render\(mobile\?720:PHOTO_SAFE\)/,'smaller retry when the phone cannot do HD');
