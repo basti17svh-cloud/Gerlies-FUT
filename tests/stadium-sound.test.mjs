@@ -123,10 +123,10 @@ test('FooteraSound loads without Web Audio and every call is a safe no-op',()=>{
 
 test('release wiring: script order, scene import, cache, settings and pack hooks',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),scene=read('3d-highlights-scene.mjs'),app=read('footera-app.js'),css=read('3d-highlights.css');
- assert.ok(html.indexOf('footera-sound.js?v=21424')>0&&html.indexOf('footera-sound.js?v=21424')<html.indexOf('3d-highlights.js?v='));
+ assert.ok(html.indexOf('footera-sound.js?v=21475')>0&&html.indexOf('footera-sound.js?v=21475')<html.indexOf('3d-highlights.js?v='));
  assert.match(html,/<select data-sound-mode[^>]*><option value="on">An<\/option><option value="off">Aus<\/option>/);
- assert.match(scene,/from '\.\/3d-stadium-sound\.mjs\?v=21444'/);
- for(const f of ['./3d-stadium-sound.mjs?v=21444','./footera-sound.js?v=21424'])assert.ok(sw.includes(`"${f}"`),f);
+ assert.match(scene,/from '\.\/3d-stadium-sound\.mjs\?v=21475'/);
+ for(const f of ['./3d-stadium-sound.mjs?v=21475','./footera-sound.js?v=21475'])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(scene,/stadiumSound\.update\(displayTime,world\.soundProbe\?\.\(\)\)/);
  assert.match(scene,/stadiumSound\.replay\(true\)/);
  assert.match(scene,/done=true;try\{stadiumSound\.dispose\(\)\}/);
@@ -244,9 +244,10 @@ test('recorded crowd loader deduplicates requests, retries failures; no delayed 
  const {c,bus,sources,oscillators}=sampleAudio();
  assert.equal(S.roar(1,0,bus),null,'unloaded reaction stays silent');
  await Promise.all([S.preloadStadium(c),S.preloadStadium(c)]);
- assert.equal(requests.length,4,'one request per recording even with parallel preload');
+ assert.equal(requests.length,7,'one request per recording even with parallel preload (4 crowd + post + 2 whistles)');
  assert.equal(sources.length,0,'loading must not play a delayed goal');
- fail=false;assert.equal(await S.preloadStadium(c),true);assert.equal(requests.length,5,'retry only the failed file');
+ fail=false;assert.equal(await S.preloadStadium(c),true);assert.equal(requests.length,8,'retry only the failed file');
+ assert.ok(requests.some(u=>u.endsWith('match/whistle-long.mp3?v=21475')),'match files carry their own version');
  const home=S.roar(1,0,bus),away=S.roar(.42,0,bus);assert.ok(home&&away);
  assert.equal(sources[0].buffer.name,'goal','match uses Millerntor goal instead of pack arena cheer');
  assert.ok(sources[0].stopArgs[0]<=5.82,'goal reaction capped at 5.8 seconds');
@@ -254,6 +255,10 @@ test('recorded crowd loader deduplicates requests, retries failures; no delayed 
  assert.equal(sources[0].playbackRate.value,1);assert.equal(sources[1].playbackRate.value,1);
  home.stop(.1);assert.ok(sources[0].stopArgs[0]<.2);
  assert.ok(S.groan(.8,0,bus));assert.ok(sources.at(-1).stopArgs[0]<=2.72,'miss reaction capped at 2.7 seconds');assert.ok(S.applause(3,.5,0,bus));
+ // V21.475: the post and the referee's whistle play their recordings.
+ S.post(0,bus);assert.equal(sources.at(-1).buffer.name,'post');
+ const n=sources.length;assert.ok(S.whistle('final',0,bus)>1);
+ assert.deepEqual(sources.slice(n).map(x=>x.buffer.name),['whistle-short','whistle-short','whistle-long']);
  assert.equal(oscillators.length,0);
 });
 
@@ -269,4 +274,23 @@ test('skip before download prevents a late bed; a loaded bed loops and stops exa
  assert.ok(params.length-before<=1,'stable level does not queue automation every frame');
  bed.muffle(true);bed.stop(.1);const stop=sources[0].stopArgs;bed.stop(.1);
  assert.equal(sources[0].stopArgs,stop,'idempotent stop');
+});
+
+test('V21.475: post and referee whistle are real recordings, the final whistle opens the full-time scene',()=>{
+ const src=read('footera-sound.js');
+ const body=src.slice(src.indexOf(' function sample('),src.indexOf(' // Real crowd recordings only.'));
+ assert.doesNotMatch(body,/createOscillator\(|noise\(/,'no synthesized whistle or post tone');
+ const credits=read('assets/sounds/match/CREDITS.md'),sw=read('service-worker.js');
+ for(const n of ['post','whistle-short','whistle-long']){
+  const size=fs.statSync(new URL('../assets/sounds/match/'+n+'.mp3',import.meta.url)).size;
+  assert.ok(size>3000&&size<40000,n+' '+size);assert.ok(credits.includes('`'+n+'.mp3`'),n);
+  assert.ok(src.includes("'match/"+n+"'"),n+' loaded with the stadium set');
+  assert.ok(sw.includes('./assets/sounds/match/'+n+'.mp3?v=21475'),n+' cached offline');
+ }
+ const cues=outcomeCues({type:'ceremony',ceremony:'fulltime'},{ceremonyCut:5});
+ assert.deepEqual(cues.map(c=>c.cue),['whistle','applause']);
+ assert.equal(cues[0].pattern,'final');assert.ok(cues[0].time<cues[1].time,'cues stay in time order');
+ const {api,calls}=fakeSound(),s=createSceneSound({type:'ceremony',ceremony:'fulltime'},{sound:api,ceremonyCut:5});
+ for(let t=0;t<=6;t+=1/30)s.update(t,null);
+ assert.deepEqual(calls.filter(c=>c[0]==='whistle'),[['whistle','final']]);
 });

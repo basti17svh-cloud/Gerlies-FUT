@@ -1,5 +1,6 @@
-/* Footera Stadion-Sound (V21.412).
- * Ball sounds use Web Audio; fans use real CC0 recordings (V21.412). The
+/* Footera Stadion-Sound (V21.475).
+ * Ball touches and the net use Web Audio; fans, the post and the referee's
+ * whistle use real CC0 recordings (V21.412, V21.475). The
  * pack walkout plays short real recordings (CC0, assets/sounds/walkout/). Presentation only: nothing here reads or
  * writes the match, the save or any online data.
  *
@@ -124,39 +125,46 @@
   const n=noise(c,{at,dur:.3,offset:.4}),lp=filter(c,'lowpass',650,.9),g=c.createGain();env(g,at,.008,.22,.02,.2);chain(n,lp,g,d);
   hold(.6);
  }
+ // V21.475 (earshot: the synthesized post read as "a kalimba note", the
+ // whistle as "crickets"): post and whistle are real CC0 recordings now
+ // (assets/sounds/match/CREDITS.md). Not decoded yet: the post falls back to
+ // a plain ball touch, the whistle stays silent. Never a synthesized tone.
+ function sample(name,{gain=1,at,dest,until=0,fade=.06}={}){
+  const x=ready(at,dest);if(!x)return null;const{c,dest:d}=x;at=x.at;
+  const buf=stadiumSets.get(c)?.buffers.get(name);if(!buf){preloadStadium(c);return null}
+  const s=c.createBufferSource(),g=c.createGain();s.buffer=buf;chain(s,g,d);
+  const dur=until>0?Math.min(until,buf.duration):buf.duration;
+  g.gain.setValueAtTime(gain,at);
+  if(dur<buf.duration){g.gain.setValueAtTime(gain,at+Math.max(0,dur-fade));g.gain.linearRampToValueAtTime(.0001,at+dur)}
+  s.start(at);s.stop(at+dur+.02);hold(dur);return{at,dur};
+ }
  function post(at,dest){
-  const x=ready(at,dest);if(!x)return;const{c,dest:d}=x;at=x.at;
-  // Aluminium post: inharmonic partials ringing out.
-  for(const[f,a,t]of[[512,.16,.9],[1381,.09,.7],[2593,.04,.45]]){const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;env(g,at,.002,a,0,t);o.connect(g);g.connect(d);o.start(at);o.stop(at+t+.05)}
-  kick(.8,at,dest);hold(1);
+  if(sample('post',{gain:.5,at,dest}))return;
+  kick(.8,at,dest);
  }
  const WHISTLES={short:[[0,.28]],long:[[0,.95]],double:[[0,.24],[.36,.24]],final:[[0,.34],[.52,.34],[1.04,1.15]],kickoff:[[0,.7]]};
  function whistle(pattern='short',at,dest){
-  const x=ready(at,dest);if(!x)return 0;const{c,dest:d}=x;at=x.at;
+  const x=ready(at,dest);if(!x)return 0;at=x.at;dest=dest||x.dest;
   const parts=WHISTLES[pattern]||WHISTLES.short;let end=at;
   for(const[offset,len]of parts){
-   const t=at+offset,o=c.createOscillator(),g=c.createGain(),trill=c.createOscillator(),tg=c.createGain(),am=c.createGain();
-   // Pea whistle: a clean tone with the pea's warble on pitch and volume.
-   o.type='sine';o.frequency.setValueAtTime(2850,t);o.frequency.linearRampToValueAtTime(3050,t+.05);o.frequency.setValueAtTime(3050,t+len-.05);o.frequency.linearRampToValueAtTime(2900,t+len);
-   trill.frequency.value=34;tg.gain.value=70;trill.connect(tg);tg.connect(o.frequency);
-   const trillAm=c.createGain();trillAm.gain.value=.22;trill.connect(trillAm);am.gain.value=.78;trillAm.connect(am.gain);
-   env(g,t,.012,.12,Math.max(0,len-.06),.05);chain(o,am,g,d);
-   o.start(t);trill.start(t);o.stop(t+len+.1);trill.stop(t+len+.1);end=t+len;
+   // Short blows use the short take, long ones the long take with the pea's trill.
+   const r=sample(len>.45?'whistleLong':'whistleShort',{gain:.23,at:at+offset,dest,until:len>.45?len:0});
+   if(!r)return 0;end=Math.max(end,r.at+r.dur);
   }
-  hold(end-at+.2);return end-at;
+  return end-at;
  }
  // Real crowd recordings only. Never fall back to synthetic vowel voices.
  // One-shots are dropped when not decoded yet, so a late download cannot
  // cheer an old goal. The bed can fade in late, unless its scene was disposed.
- const STADIUM_V='21412';
- const STADIUM_FILES={bed:'stadium/bed',groan:'stadium/groan',applause:'stadium/applause',cheer:'stadium/goal'};
+ const STADIUM_V='21412',MATCH_V='21475';
+ const STADIUM_FILES={bed:'stadium/bed',groan:'stadium/groan',applause:'stadium/applause',cheer:'stadium/goal',post:'match/post',whistleShort:'match/whistle-short',whistleLong:'match/whistle-long'};
  const stadiumSets=new WeakMap();
  function preloadStadium(target){
   const c=target||context();if(!c||typeof root.fetch!=='function')return Promise.resolve(false);
   let set=stadiumSets.get(c);if(!set){set={buffers:new Map(),pending:new Map()};stadiumSets.set(c,set)}
   const tasks=Object.entries(STADIUM_FILES).map(([name,path])=>{
    if(set.buffers.has(name))return Promise.resolve();
-   if(!set.pending.has(name))set.pending.set(name,root.fetch('assets/sounds/'+path+'.mp3?v='+STADIUM_V)
+   if(!set.pending.has(name))set.pending.set(name,root.fetch('assets/sounds/'+path+'.mp3?v='+(path.startsWith('match/')?MATCH_V:STADIUM_V))
     .then(r=>r.ok?r.arrayBuffer():Promise.reject(new Error(String(r.status))))
     .then(data=>decode(c,data)).then(buf=>{set.buffers.set(name,buf)})
     .catch(()=>{}).finally(()=>set.pending.delete(name)));
