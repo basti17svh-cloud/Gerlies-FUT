@@ -225,3 +225,17 @@ test('Basti gets the full Elite 35 reward for the week ending 12 November at 09:
  const other=setup({now:'2026-11-12T08:00:00Z',initial:{profile:{saveId:'GF-OTHER'},rivals:{division:4,weeklyPoints:15,week},weeklyRewards:[]}});
  const [o]=other.api.competitionPending('rivals').filter(r=>r.week===week);assert.equal(o.division,4);assert.equal(o.milestone,15);
 });
+test('Basti gets the full Elite 35 reward for the week ending 19 November at 09:00, owner-only',()=>{
+ const owner='GF-9AE6CDDEFE8A458D',week='1794470400000',next='1795075200000';
+ assert.equal(new Date(Number(week)).toISOString(),'2026-11-12T08:00:00.000Z');
+ const before=setup({now:'2026-11-19T07:59:59Z',initial:{profile:{saveId:owner},rivals:{division:0,weeklyPoints:3,week}}});
+ assert.equal(before.api.competitionPending('rivals').filter(r=>r.week===week).length,0);
+ const {state,api}=setup({now:'2026-11-19T08:00:00Z',initial:{profile:{saveId:owner},rivals:{division:0,weeklyPoints:3,week}}});
+ const [row]=api.competitionPending('rivals').filter(r=>r.week===week);
+ assert.equal(row.division,0);assert.equal(row.milestone,35);assert.equal(row.reward.coins,65000);
+ assert.equal(row.reward.packs.length,5);assert.equal(row.reward.playerPicks[0].minRating,84);
+ assert.equal(state.rivals.week,next);
+ assert.equal(api.claimCompetitionReward('rivals',week),true);assert.equal(api.claimCompetitionReward('rivals',week),false);
+ const other=setup({now:'2026-11-19T08:00:00Z',initial:{profile:{saveId:'GF-OTHER'},rivals:{division:4,weeklyPoints:3,week},weeklyRewards:[]}});
+ assert.equal(other.api.competitionPending('rivals').filter(r=>r.week===week).length,0);
+});
