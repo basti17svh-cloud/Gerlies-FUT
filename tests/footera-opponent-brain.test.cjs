@@ -60,3 +60,18 @@ test('friends and online opponents are never coached by the CPU',()=>{
  const a=setup({kind:'friend'});a.ctx.match.home=2;a.run(88);
  assert.equal(a.ctx.match.aiBrain,undefined);assert.equal(a.ctx.match.opponentProfile,a.original);assert.equal(a.ticker.length,0);
 });
+test('Gegner-Scouting names the danger man, the weaker full-back and the coach plan before kick-off',()=>{
+ const a=setup({style:'counter'});
+ a.ctx.FORMATIONS={'4-3-3':SLOTS.map(p=>({p}))};
+ const opp={...a.original,formation:'4-3-3',squad:a.original.squad.map(p=>({...p}))};
+ opp.squad[1]={...opp.squad[1],name:'Schwach',def:55,pac:60};opp.squad[4]={...opp.squad[4],name:'Stark',def:84,pac:82};
+ opp.squad[9]={...opp.squad[9],name:'Knipser',sho:93,pac:91,dri:88};
+ const r=a.api.scoutReport(opp);
+ assert.equal(r.danger.name,'Knipser');assert.match(r.danger.stats,/SHO 93/);
+ assert.equal(r.weak.name,'Schwach');assert.equal(r.weak.userFlank,'right','their left-back faces the user right side');
+ assert.match(r.plan,/62\. Minute/);assert.ok(r.tip.length>10);
+ const html=a.api.scoutHTML(opp,s=>String(s).replace(/</g,'&lt;'));
+ assert.match(html,/SCOUTING/);assert.match(html,/eure rechte Seite/);
+ assert.equal(a.api.scoutReport({kind:'friend',styleProfile:{id:'counter'}}),null,'no scouting of friends');
+ opp.squad[4]={...opp.squad[4],def:55,pac:60};assert.equal(a.api.scoutReport(opp).weak,null,'equal full-backs: no fake weakness');
+});

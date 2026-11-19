@@ -1448,6 +1448,15 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 #match .match-tactic-check span{display:block;margin-top:4px;color:#cbd6c5;font-size:11px;line-height:1.45}
 #match .match-tactic-check span.tip{color:#edffb1}
 .match-report-moves{margin:12px 0;padding:12px;border:1px solid #ffffff17;border-radius:14px;background:#0b1712}
+.match-scout{margin:10px 0 12px;padding:12px;border:1px solid #79c7ac55;border-radius:14px;background:linear-gradient(160deg,#10261f,#0b1712)}
+.match-scout-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:8px}
+.match-scout-head span{font-size:10px;font-weight:900;letter-spacing:1.4px;color:#79c7ac}
+.match-scout-head strong{font-size:15px;color:#fff}
+.match-scout-head small{font-size:11px;color:#9fb0a8}
+.scout-row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;margin:7px 0}
+.scout-row i{font-style:normal;text-align:center;line-height:1.3}
+.scout-row b{display:block;font-size:11px;color:#ffd463;letter-spacing:.2px}
+.scout-row span{display:block;font-size:12px;line-height:1.38;color:#e8f2ec;overflow-wrap:anywhere}
 .match-brain-row{display:grid;grid-template-columns:34px 20px minmax(0,1fr);gap:6px;align-items:start;margin:6px 0;font-size:12px;line-height:1.35;color:#e8f2ec}
 .match-brain-row time{color:#ffd463;font-weight:800;font-variant-numeric:tabular-nums}
 .match-brain-row i{font-style:normal;text-align:center}

@@ -1,5 +1,6 @@
 /* Footera V21.108 – seeded CPU opponent identities, using the existing tactics engine.
-   V21.472 – the CPU coach reacts during the match (score, flanks, fatigue). */
+   V21.472 – the CPU coach reacts during the match (score, flanks, fatigue).
+   V21.473 – Gegner-Scouting before kick-off (danger man, weak flank, plan). */
 (function(root){
  "use strict";
  const profiles=Object.freeze([
@@ -194,7 +195,8 @@
  }
  function think(match){
   if(!brainActive(match)||match.finished)return;
-  const id=activeId(match.opponentProfile);ensureBrain(match);
+  const id=activeId(match.opponentProfile),fresh=!match.aiBrain;ensureBrain(match);
+  if(fresh){const line=scoutTicker(match.opponentProfile),ticker=fn("matchCommentaryTicker");if(line&&ticker)ticker("🔎 "+line,"analysis")}
   thinkTactics(match,id);thinkFlank(match);thinkSubs(match);
  }
  // Bounded flank effect: the secured side defends wide attacks better, the
@@ -207,6 +209,49 @@
   return wide?{build:-.012,duel:-.045,xg:0}:NEUTRAL;
  }
  function decisions(match){return match?.aiBrain?.decisions||[]}
+
+ // V21.473 Gegner-Scouting: what the CPU coach will do and where he is
+ // strong or weak, read from the real squad before kick-off. Pure function.
+ const SCOUT_TIPS=Object.freeze({
+  possession:"Früh anlaufen: hohes Pressing stört seinen geduldigen Aufbau.",
+  counter:"Keine leichten Ballverluste im Aufbau – eine tiefere Linie nimmt ihm die Räume hinter der Abwehr.",
+  wing:"Starke Außenverteidiger aufstellen, er sucht fast immer die Flanke.",
+  press:"Schnell und direkt spielen. Ab der 70. Minute wird sein Pressing müde.",
+  block:"Geduld: Breite, Flanken und Distanzschüsse knacken den tiefen Block."
+ });
+ const SLOT_LABEL={LB:"Linksverteidiger",RB:"Rechtsverteidiger",LWB:"linker Schienenspieler",RWB:"rechter Schienenspieler",LM:"linker Mittelfeldspieler",RM:"rechter Mittelfeldspieler"};
+ function scoutReport(opponent){
+  const id=activeId(opponent);if(!id)return null;
+  const forms=typeof FORMATIONS!=="undefined"?FORMATIONS:root.FORMATIONS,form=forms?.[opponent.formation]||forms?.["4-3-3"]||[];
+  const resolve=typeof root.resolvedPlayer==="function"?root.resolvedPlayer:(x=>x);
+  const rows=(opponent.squad||[]).slice(0,11).map((e,i)=>{const b=e&&typeof e==="object"?resolve(e.base||e):null;return b?{b,slot:form[i]?.p||b.position||"",i}:null}).filter(Boolean);
+  const n=(b,k)=>Number(b?.[k]??b?.ovr??60)||60;
+  const weight=slot=>/^(ST|CF|LW|RW|CAM)$/.test(slot)?1:/^(LM|RM|CM)$/.test(slot)?.8:.4;
+  const danger=rows.filter(r=>r.slot!=="GK").map(r=>({...r,score:(n(r.b,"sho")*.5+n(r.b,"pac")*.3+n(r.b,"dri")*.2)*weight(r.slot)})).sort((a,b)=>b.score-a.score)[0]||null;
+  const stats=b=>[["PAC",n(b,"pac")],["SHO",n(b,"sho")],["DRI",n(b,"dri")],["PAS",n(b,"pas")]].sort((x,y)=>y[1]-x[1]).slice(0,2).map(([k,v])=>k+" "+v).join(" · ");
+  const side=prefix=>rows.find(r=>r.slot===prefix+"B")||rows.find(r=>r.slot===prefix+"WB")||rows.find(r=>r.slot===prefix+"M")||null;
+  const def=r=>r?n(r.b,"def")*.6+n(r.b,"pac")*.4:99;
+  const L=side("L"),R=side("R");let weak=null;
+  if(L&&R&&Math.abs(def(L)-def(R))>=3){const w=def(L)<def(R)?L:R;weak={name:w.b.name||"",slot:w.slot,role:SLOT_LABEL[w.slot]||w.slot,def:n(w.b,"def"),pac:n(w.b,"pac"),userFlank:/^L/.test(w.slot)?"right":"left"}}
+  const pers=PERSONALITY[id]||PERSONALITY.possession,profile=profiles.find(p=>p.id===id);
+  return{style:id,label:profile?.label||"",hint:profile?.hint||"",
+   danger:danger?{name:danger.b.name||"",slot:danger.slot,stats:stats(danger.b)}:null,weak,
+   plan:`Liegt er hinten, geht er ab etwa der ${pers.chase}. Minute mehr Risiko. Führt er, zieht er sich ab etwa der ${pers.protect}. Minute zurück. Müde Spieler wechselt er ab der 60. Minute.`,
+   tip:SCOUT_TIPS[id]||""};
+ }
+ function scoutHTML(opponent,esc){
+  const r=scoutReport(opponent);if(!r)return"";
+  const e=typeof esc==="function"?esc:(x=>String(x));
+  const row=(icon,title,text)=>`<div class="scout-row"><i aria-hidden="true">${icon}</i><div><b>${e(title)}</b><span>${e(text)}</span></div></div>`;
+  return `<section class="match-scout" aria-label="Gegner-Scouting"><div class="match-scout-head"><span>SCOUTING</span><strong>${e(r.label)}</strong><small>${e(r.hint)}</small></div>`+
+   (r.danger?row("⚡","Gefährlichster Spieler",`${r.danger.name} (${r.danger.slot}) · ${r.danger.stats}`):"")+
+   (r.weak?row("🎯","Seine Schwachstelle",`${r.weak.role} ${r.weak.name} (DEF ${r.weak.def}, PAC ${r.weak.pac}). Angriffe über eure ${r.weak.userFlank==="left"?"linke":"rechte"} Seite tun ihm weh.`):row("🎯","Seine Abwehr","Beide Außenverteidiger sind ähnlich stark – Lücken eher durch die Mitte."))+
+   row("🧠","So reagiert sein Trainer",r.plan)+(r.tip?row("💡","Tipp",r.tip):"")+`</section>`;
+ }
+ function scoutTicker(opponent){
+  const r=scoutReport(opponent);if(!r)return"";
+  return `Scouting: ${r.label}${r.danger?` · Achtung auf ${r.danger.name}`:""}${r.weak?` · Schwachstelle über eure ${r.weak.userFlank==="left"?"linke":"rechte"} Seite (${r.weak.name})`:""}.`;
+ }
  function install(){
   if(typeof getSquadBattleOpponents==="function"){
    const raw=getSquadBattleOpponents;
@@ -244,6 +289,8 @@
     if(style){
      const title=root.document.querySelector("#squadBattleModalBody .friend-team-title p");
      if(title)title.textContent+=" · Spielstil: "+style.label;
+     const body=root.document.querySelector("#squadBattleModalBody"),head=body?.querySelector(".friend-team-title");
+     if(head&&!body.querySelector(".match-scout")){const html=scoutHTML(pendingMatchContext.opponent,typeof esc==="function"?esc:null);if(html)head.insertAdjacentHTML("afterend",html)}
     }
     return result;
    };
@@ -261,6 +308,6 @@
    };
   }
  }
- root.FooteraOpponentStyles={profiles,hash,styleFor,activeId,matchTuning,possessionBias,think,flankTuning,attackFlank,decisions,desiredMode};
+ root.FooteraOpponentStyles={profiles,hash,styleFor,activeId,matchTuning,possessionBias,think,flankTuning,attackFlank,decisions,desiredMode,scoutReport,scoutHTML,scoutTicker};
  install();
 })(globalThis);
