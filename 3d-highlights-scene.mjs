@@ -14,7 +14,7 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21471';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21465';
 import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21444';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,SUB_COACH_SPOT,SUB_BENCH_SEATS,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21484';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,ceremonyEnd,CEREMONY_CUT,CEREMONY_ARENA_SHOT,TROPHY_TIMES,replayCamera,replayWindow,REPLAY_RATE,COACH_SHOT,COACH_SPOT,DUGOUT_SPOT,coachCamera,SUB_TIMES,SUB_HIGH_FIVE,SUB_COACH_SPOT,SUB_BENCH_SEATS,SUB_BENCH_SEATS_MULTI,SUB_IN_ACTORS,SUB_OUT_ACTORS,subHighFivePoint,subBoardRaise,subHighFive} from './3d-ceremony.mjs?v=21487';
 // V21.470: the user's manager at the bench after the walk-out (same module URL as the Siegerfoto).
 import {mountManager,poseManager,measureManagerHead,mountDugout,mountSubstitute,poseSeated,disposeOwned as disposeManagerParts} from './3d-manager.mjs?v=21486';
 import {createTrophyStage} from './3d-trophy-stage.mjs?v=21444';
@@ -1274,6 +1274,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const lateDrama=lateGoalDrama(event);
  // V21.226: walk-out and final whistle reuse this stadium and squad.
  const ceremony=ceremonyKind(event),ceremonyDraw=event.result==='draw';
+ // V21.487 Mehrfachwechsel: up to four pairs change in one scene.
+ const subPairs=ceremony==='substitution'&&Array.isArray(event.subPairs)?event.subPairs.slice(0,4):[],subN=Math.max(1,subPairs.length);
+ const ceremonyOpts={draw:ceremonyDraw,subs:subN};
  const crowdType=ceremony?(ceremony==='fulltime'&&ceremonyDraw?'ceremony_draw':'ceremony_'+ceremony):event.type;
  const celebrationActive=event.type==='goal'&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
  const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
@@ -1288,7 +1291,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const celebrationPlan=celebrationActive?celebrationRoute(celebrationKind,celebrationKey,stagedPlayerPosition(0,CELEBRATION_START),direction,globalThis.__FOOTERA_QA_CELEBRATION_SPOT||null):null;
  // V21.470: the walk-out ends at the bench with the user's manager and his Trainerkarte.
  const coachShot=ceremony==='kickoff'&&!!event.coach?.manager;
- const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=ceremony==='trophy'||ceremony==='substitution'?ceremonyEnd(ceremony):coachShot?ceremonyEnd('kickoff',{coach:true}):DURATION+CELEBRATION_APPROACH;
+ const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=ceremony==='trophy'||ceremony==='substitution'?ceremonyEnd(ceremony,ceremonyOpts):coachShot?ceremonyEnd('kickoff',{coach:true}):DURATION+CELEBRATION_APPROACH;
  const celebrationRun=celebrationPlan?celebrationPlan.run:(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
   if(!celebrationActive||time<=CELEBRATION_START)return 0;
@@ -1357,7 +1360,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   return varCheck==='offside'&&index>=8&&index<RUNS.length&&seq===sequence?[p[0],p[1]+varStep(time)]:p;
  }
  function stagedPlayerPositionRaw(index,time,type=event.type,seq=sequence){
-  if(ceremony){const a=ceremonyActor(ceremony,index,time,{draw:ceremonyDraw});return[a.x,a.z]}
+  if(ceremony){const a=ceremonyActor(ceremony,index,time,ceremonyOpts);return[a.x,a.z]}
   if(index===0&&varCheck&&seq===sequence){const p=playerPosition(0,time,type,seq,placement,finish);return[p[0],p[1]-varNudge(time)]}
   const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq,placement,finish);
   if(lineClearer&&index===lineClearer.index){
@@ -1762,7 +1765,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(coachBench)try{coachBench.seats=mountDugout(field,{x:DUGOUT_SPOT[0],z:DUGOUT_SPOT[1],seat:'#1d2228',track}).userData.seats||[]}catch(_){}
   // V21.470 (Basti: "Ersatzspieler mit einbinden"): substitutes in club warm-up tracksuits on the bench, one mounted per try.
   const awayBench=subScene&&event.team==='away';
-  const SUB_SEATS=subScene?(weak?[0,6]:SUB_BENCH_SEATS):weak?[1,3,6]:[0,1,3,4,6,7],subKit=awayBench?{top:event.awayColor,trousers:event.awayShorts,accent:event.awaySecondary}:{top:event.homeColor,trousers:event.homeShorts,accent:event.homeSecondary};
+  const SUB_SEATS=subScene?(weak?[0,6]:subN>1?SUB_BENCH_SEATS_MULTI:SUB_BENCH_SEATS):weak?[1,3,6]:[0,1,3,4,6,7],subKit=awayBench?{top:event.awayColor,trousers:event.awayShorts,accent:event.awaySecondary}:{top:event.homeColor,trousers:event.homeShorts,accent:event.homeSecondary};
   // The body may still be loading when the walk-out starts (first scene of the match):
   // try now and again while the camera is elsewhere, until shortly before the cut.
   function mountCoach(time){
@@ -2299,11 +2302,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // the GLB squad as in play; authored poses for line-up, joy and despair.
   let ceremonyFog=null;
   const ceremonyStates=ceremony?[...players,keeper].map(()=>({arms:0,rootY:0})):[];
-  const keeperCeremonyStride=ceremony?(()=>{const table=new Float32Array(105);let prev=ceremonyActor(ceremony,16,0,{draw:ceremonyDraw});
-   for(let j=1;j<=104;j++){const next=ceremonyActor(ceremony,16,j*DURATION/104,{draw:ceremonyDraw}),d=Math.hypot(next.x-prev.x,next.z-prev.z);table[j]=table[j-1]+d*Math.PI*2/runningStrideLength(clamp(d/(DURATION/104)/6.5));prev=next}
+  const keeperCeremonyStride=ceremony?(()=>{const table=new Float32Array(105);let prev=ceremonyActor(ceremony,16,0,ceremonyOpts);
+   for(let j=1;j<=104;j++){const next=ceremonyActor(ceremony,16,j*DURATION/104,ceremonyOpts),d=Math.hypot(next.x-prev.x,next.z-prev.z);table[j]=table[j-1]+d*Math.PI*2/runningStrideLength(clamp(d/(DURATION/104)/6.5));prev=next}
    return t=>{const x=clamp(t/DURATION)*104,i=Math.min(103,Math.floor(x));return mix(table[i],table[i+1],x-i)}})():null;
   function poseCeremonyActor(p,index,time,frame){
-   const a=ceremonyActor(ceremony,index,time,{draw:ceremonyDraw}),b=ceremonyActor(ceremony,index,Math.max(0,time-.05),{draw:ceremonyDraw}),c=ceremonyActor(ceremony,index,time+.05,{draw:ceremonyDraw});
+   const a=ceremonyActor(ceremony,index,time,ceremonyOpts),b=ceremonyActor(ceremony,index,Math.max(0,time-.05),ceremonyOpts),c=ceremonyActor(ceremony,index,time+.05,ceremonyOpts);
    const speed=clamp(Math.hypot(c.x-b.x,c.z-b.z)/(time<.05?.05:.1)/6.5),keeperActor=index===16;
    const stride=keeperActor?keeperCeremonyStride(time):gaitPhase(index,time);
    pose(p,a.x,a.z,time,speed,a.heading,0,stride,0,0,99);
@@ -2330,7 +2333,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);crowdLife?.update(time);pyro?.update(time);fireworks?.update(time);tifo?.update(time);
-   const cam=coachShot&&time>=COACH_SHOT.start?coachCamera(time):ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
+   const cam=coachShot&&time>=COACH_SHOT.start?coachCamera(time):ceremonyCamera(ceremony,time,ceremonyOpts);currentCameraPhase=cam.phase;
    camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
    // V21.406 stadium shot: fog and far plane move out with the high camera.
    if(scene.fog){ceremonyFog??={near:scene.fog.near,far:scene.fog.far,camera:camera.far};const d=Math.max(0,camera.position.length()-60);scene.fog.near=ceremonyFog.near+d;scene.fog.far=ceremonyFog.far+d;camera.far=ceremonyFog.camera+d}
@@ -2354,15 +2357,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const foulRoot=new THREE.Vector3(),foulPoint=new THREE.Vector3(),foulHandA=new THREE.Vector3(),foulHandB=new THREE.Vector3();
   // V21.484 the fourth official's LED board: red number off, green number on.
   const subBoardMesh=substitution?(()=>{
-   const c=document.createElement('canvas');c.width=256;c.height=192;const g=c.getContext('2d');
-   g.fillStyle='#07090b';g.fillRect(0,0,256,192);g.strokeStyle='#3a3f46';g.lineWidth=10;g.strokeRect(5,5,246,182);
-   const digits=(n,y,color)=>{g.font='900 82px "Arial Black",Arial,sans-serif';g.textAlign='center';g.textBaseline='middle';g.shadowColor=color;g.shadowBlur=18;g.fillStyle=color;g.fillText(String(n),128,y);g.shadowBlur=0};
+   // V21.487 several changes at once: all numbers side by side, red row off, green row on.
    const valid=v=>Number.isInteger(Number(v))&&Number(v)>=1&&Number(v)<=99?Number(v):'';
-   digits(valid(event.outNumber),56,'#ff2f3a');digits(valid(event.inNumber),138,'#3dff6e');
+   const pairs=subPairs.length?subPairs:[{inNumber:event.inNumber,outNumber:event.outNumber}],cols=pairs.length;
+   const W=cols===1?256:cols===2?400:cols===3?512:640;
+   const c=document.createElement('canvas');c.width=W;c.height=192;const g=c.getContext('2d');
+   g.fillStyle='#07090b';g.fillRect(0,0,W,192);g.strokeStyle='#3a3f46';g.lineWidth=10;g.strokeRect(5,5,W-10,182);
+   const size=cols===1?82:72;
+   const digits=(n,x,y,color)=>{g.font=`900 ${size}px "Arial Black",Arial,sans-serif`;g.textAlign='center';g.textBaseline='middle';g.shadowColor=color;g.shadowBlur=18;g.fillStyle=color;g.fillText(String(n),x,y);g.shadowBlur=0};
+   pairs.forEach((p,i)=>{const x=W*(i+.5)/cols;digits(valid(p.outNumber),x,56,'#ff2f3a');digits(valid(p.inNumber),x,138,'#3dff6e')});
    // Fine LED raster over the digits.
-   g.fillStyle='rgba(0,0,0,.33)';for(let y=0;y<192;y+=4)g.fillRect(0,y,256,1.4);for(let x=0;x<256;x+=4)g.fillRect(x,0,1.4,192);
+   g.fillStyle='rgba(0,0,0,.33)';for(let y=0;y<192;y+=4)g.fillRect(0,y,W,1.4);for(let x=0;x<W;x+=4)g.fillRect(x,0,1.4,192);
    const tex=track(new THREE.CanvasTexture(c));tex.colorSpace=THREE.SRGBColorSpace;
-   const m=new THREE.Mesh(track(new THREE.PlaneGeometry(.62,.465)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false})));
+   const m=new THREE.Mesh(track(new THREE.PlaneGeometry(.62*W/256,.465)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false})));
    m.name='FooteraSubstitutionBoard';m.visible=false;m.renderOrder=3;scene.add(m);return m})():null;
   const subBoardPoint=new THREE.Vector3();
   // V21.484 VAR: two calibrated lines across the pitch at the frozen moment of the
@@ -2377,15 +2384,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function subArms(time){
    // Both hands up on the board; the two players slap hands at the line.
-   const official=squadMotionFrames[refereeIndex],up=subBoardRaise(time);
+   const official=squadMotionFrames[refereeIndex],up=subBoardRaise(time,subN);
    if(official){players[refereeIndex].root.getWorldPosition(foulRoot);
     official.embrace=up>.001?{target:foulRoot.clone().add(new THREE.Vector3(0,2.18,0)),weight:up}:null}
-   const five=subHighFive(time);foulPoint.set(SUB_HIGH_FIVE[0],1.92,SUB_HIGH_FIVE[1]);field.localToWorld(foulPoint);
-   for(const frame of [importedMotionFrame,squadMotionFrames[1]])if(frame)frame.embrace=five>.001?{target:foulPoint.clone(),weight:five}:null;
+   for(let k=0;k<subN;k++){
+    const five=subHighFive(time,k,subN),at=subN>1?subHighFivePoint(k,subN):SUB_HIGH_FIVE;foulPoint.set(at[0],1.92,at[1]);field.localToWorld(foulPoint);
+    for(const frame of [SUB_IN_ACTORS[k]===0?importedMotionFrame:squadMotionFrames[SUB_IN_ACTORS[k]],squadMotionFrames[SUB_OUT_ACTORS[k]]])if(frame)frame.embrace=five>.001?{target:foulPoint.clone(),weight:five}:null;
+   }
   }
   function subBoard(time){
    if(!subBoardMesh)return;
-   const up=subBoardRaise(time);subBoardMesh.visible=up>.55;if(!subBoardMesh.visible)return;
+   const up=subBoardRaise(time,subN);subBoardMesh.visible=up>.55;if(!subBoardMesh.visible)return;
    const glb=importedPlayers[refereeIndex];
    if(glb?.handWorld&&glb.handWorld(0,foulHandA)&&glb.handWorld(1,foulHandB))subBoardPoint.copy(foulHandA).add(foulHandB).multiplyScalar(.5);
    else players[refereeIndex].root.getWorldPosition(subBoardPoint).setY(2.18);
@@ -3194,7 +3203,7 @@ export function play(event,signal){
   const layer=document.createElement('div');layer.className='fh3d';layer.setAttribute('data-defense-action',event.defenderAction||'jockey');layer.setAttribute('data-keeper-action',event.keeperAction||'classic');layer.setAttribute('role','region');layer.setAttribute('aria-label','Footera 3D-Highlight');
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','3D-Fußballszene');layer.append(canvas);
   const top=document.createElement('div');top.className='fh3d-top';
-  const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const ceremony=ceremonyKind(event);
+  const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const ceremony=ceremonyKind(event);const subPairs=ceremony==='substitution'&&Array.isArray(event.subPairs)?event.subPairs.slice(0,4):[];
   const sub=document.createElement('small');sub.textContent=ceremony==='kickoff'?'LIVE · ANPFIFF':ceremony==='fulltime'?'LIVE · ABPFIFF':ceremony==='trophy'?'LIVE · SIEGEREHRUNG':`LIVE · ${event.minute}'`;brand.append(sub);
   const weatherNow=sceneWeatherFor(event);
   if(weatherNow&&weatherNow.kind!=='clear'){const chip=document.createElement('span');chip.className='fh3d-weather';chip.textContent=globalThis.FooteraWeather?.chipText?.(weatherNow)||(weatherNow.kind==='snow'?'❄ Schneefall':'☂ Regen');brand.append(chip)}
@@ -3393,9 +3402,17 @@ export function play(event,signal){
      layer.dataset.playbackTime=displayTime.toFixed(3);
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      // The result card never comes before the ball is actually in the net.
-     const revealAt=ceremony==='kickoff'?CEREMONY_CUT.kickoff+.5:ceremony==='trophy'?TROPHY_TIMES.lift+.7:ceremony?.8:event.type==='goal'||varCheck==='offside'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
+     const revealAt=ceremony==='kickoff'?CEREMONY_CUT.kickoff+.5:ceremony==='substitution'&&subPairs.length>1?SUB_TIMES.clap+.3*(subPairs.length-1)+.6:ceremony==='trophy'?TROPHY_TIMES.lift+.7:ceremony?.8:event.type==='goal'||varCheck==='offside'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
       if(ceremony==='kickoff'){headline.textContent=event.competition||'ANPFIFF';name.textContent=`${event.homeName||'Heim'} – ${event.awayName||'Gast'}`;detail.textContent='Die Teams laufen ein'}
+      else if(ceremony==='substitution'&&subPairs.length>1){
+       // V21.487: every change on the card, in green on, red off.
+       headline.textContent=(['','','DOPPELWECHSEL','DREIFACHWECHSEL','VIERFACHWECHSEL'])[subPairs.length]||'WECHSEL';name.textContent='';
+       const list=document.createElement('span');list.className='fh3d-sub-list';
+       for(const p of subPairs){const row=document.createElement('span');row.className='fh3d-sub-row';
+        const on=document.createElement('b');on.className='fh3d-sub-in';on.textContent='▲ '+(p.inName||'Einwechselspieler');
+        const off=document.createElement('i');off.className='fh3d-sub-out';off.textContent='▼ '+(p.outName||'');row.append(on,off);list.append(row)}
+       name.append(list);detail.textContent=`${Math.round(Number(event.minute)||0)}. Minute`;}
       else if(ceremony==='substitution'){headline.textContent='WECHSEL';name.textContent=event.playerName||'Einwechselspieler';detail.textContent=event.outName?`Kommt für ${event.outName} · ${Math.round(Number(event.minute)||0)}. Minute`:'Einwechslung'}
       else if(ceremony==='trophy'){headline.textContent='POKALSIEGER';name.textContent=event.homeName||'Heim';detail.textContent=`${event.trophyName||event.competition||'Cup'} gewonnen · Finale ${event.homeScore??0} : ${event.awayScore??0}`}
       else if(ceremony){headline.textContent='ABPFIFF';name.textContent=`${event.homeName||'Heim'} ${event.homeScore??0} : ${event.awayScore??0} ${event.awayName||'Gast'}`;detail.textContent=event.result==='draw'?'Unentschieden':`Sieg für ${event.team==='away'?event.awayName||'Gast':event.homeName||'Heim'}`}

@@ -252,3 +252,9 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 .fh3d-stadium-title small{padding:3px 8px;border-radius:4px;background:#d8ff3e;color:#0d1a12;font:900 10px/1.1 system-ui;letter-spacing:1.8px}
 .fh3d-stadium-title strong{max-width:100%;padding:6px 10px;border-radius:6px;background:#08131ae6;color:#fff;font:italic 900 clamp(19px,6vw,28px)/1.05 system-ui;letter-spacing:.4px;text-transform:uppercase;overflow-wrap:anywhere;box-shadow:0 6px 18px #0007}
 .fh3d-stadium-title span{padding:3px 8px;border-radius:4px;background:#08131acc;color:#dfe8ec;font:700 12px/1.2 system-ui}
+/* V21.487 Mehrfachwechsel: every change on the card, one line per pair, green on, red off. */
+.fh3d-sub-list{display:grid;gap:2px;margin-top:3px;text-transform:none}
+.fh3d-sub-row{display:flex;align-items:baseline;gap:10px;min-width:0;font-size:clamp(10.5px,3.1vw,14px);line-height:1.15;letter-spacing:.2px;white-space:nowrap}
+.fh3d-sub-row>*{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.fh3d-sub-in{color:#5dff8a;font-weight:950}
+.fh3d-sub-out{color:#ff6b74;font-style:normal;font-weight:800;opacity:.92}

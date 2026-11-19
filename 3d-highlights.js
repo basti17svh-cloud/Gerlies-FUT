@@ -62,6 +62,9 @@
    outName:String(event.outName||'').replace(/[<>]/g,'').slice(0,40),
    inNumber:Number.isInteger(Number(event.inNumber))&&Number(event.inNumber)>=1&&Number(event.inNumber)<=99?Number(event.inNumber):0,
    outNumber:Number.isInteger(Number(event.outNumber))&&Number(event.outNumber)>=1&&Number(event.outNumber)<=99?Number(event.outNumber):0,
+   // V21.487 Mehrfachwechsel: up to four pairs (names and shirt numbers only), only with two or more.
+   subPairs:Object.freeze(event.ceremony==='substitution'&&Array.isArray(event.subPairs)&&event.subPairs.length>1?event.subPairs.slice(0,4).map(p=>{const num=v=>Number.isInteger(Number(v))&&Number(v)>=1&&Number(v)<=99?Number(v):0,txt=v=>String(v||'').replace(/[<>]/g,'').slice(0,40);
+    return Object.freeze({inName:txt(p?.inName),outName:txt(p?.outName),inNumber:num(p?.inNumber),outNumber:num(p?.outNumber)})}):[]),
    // V21.444 Pokalübergabe: the cup's name and metal (bronze/silver/gold).
    trophyName:String(event.trophyName||'').replace(/[<>]/g,'').slice(0,28),trophyTone:['bronze','silver','gold'].includes(event.trophyTone)?event.trophyTone:'gold',result:['win','draw'].includes(event.result)?event.result:'',
    homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
