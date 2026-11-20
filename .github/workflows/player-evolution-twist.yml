@@ -32,13 +32,14 @@ jobs:
         run: |
           node --check 3d-player-evolution-twist.mjs
           node --test tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
-      - name: Use preinstalled Chrome and FFmpeg for genuine WebGL QA
+      - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
         run: |
-          npm install --prefix /tmp/footera-twist-qa playwright@1.51.1
+          npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0
           command -v google-chrome
-          command -v ffmpeg
           google-chrome --version
-          ffmpeg -version | head -n 1
+          FFMPEG_BIN=$(node -p "require('/tmp/footera-twist-qa/node_modules/@ffmpeg-installer/ffmpeg').path")
+          test -x "$FFMPEG_BIN"
+          echo "FOOTERA_FFMPEG=$FFMPEG_BIN" >> "$GITHUB_ENV"
       - name: Render 0 45 90 and minus 90 axial poses plus run kick comparison and MP4
         env:
           NODE_PATH: /tmp/footera-twist-qa/node_modules
