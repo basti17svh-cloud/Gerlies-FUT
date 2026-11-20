@@ -1,0 +1,27 @@
+name: Footera Player Evolution Rig
+on:
+  pull_request:
+    paths:
+      - '3d-player-evolution-rig.mjs'
+      - 'tests/player-evolution-rig.test.mjs'
+      - 'docs/FOOTERA_PLAYER_EVOLUTION_STEP1.md'
+      - '.github/workflows/player-evolution-rig.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rig-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check 3d-player-evolution-rig.mjs
+          node --check tests/player-evolution-rig.test.mjs
+      - name: Evolution rig, source GLB and current retarget regressions
+        run: |
+          node --test tests/player-evolution-rig.test.mjs tests/3d-player-retarget.test.cjs tests/metahuman-players.test.mjs tests/human-players.test.mjs
