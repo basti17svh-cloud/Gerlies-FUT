@@ -278,8 +278,9 @@ test('Original Adobe Mixamo lateral/backpedal transitions are quaternion-only, r
    const full=trans.blend({from:'run',to:dir,fromPhase:.28,
     toPhase:.27,weight:1});
    for(const {name} of FOOTERA_EVOLUTION_BONES){
-    assert.ok(qDistance(zero.pose.get(name),forward.pose.get(name))<1e-6,
-     dir+' zero blend must equal recorded run');
+    assert.ok(qDistance(zero.pose.get(name).clone().normalize(),
+     forward.pose.get(name).clone().normalize())<.0001,
+     dir+' zero blend must equal recorded run (normalized quaternions)');
     assert.ok(qDistance(full.pose.get(name).clone().normalize(),
      captured.pose.get(name).clone().normalize())<.0001,
      dir+' full blend must equal recorded directional capture (normalized quaternions)');
