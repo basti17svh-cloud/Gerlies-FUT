@@ -32,14 +32,17 @@ jobs:
         run: |
           node --check 3d-player-evolution-twist.mjs
           node --test tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
-      - name: Install real Chromium renderer and video encoder
+      - name: Use preinstalled Chrome and FFmpeg for genuine WebGL QA
         run: |
           npm install --prefix /tmp/footera-twist-qa playwright@1.51.1
-          /tmp/footera-twist-qa/node_modules/.bin/playwright install --with-deps chromium
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          command -v google-chrome
+          command -v ffmpeg
+          google-chrome --version
+          ffmpeg -version | head -n 1
       - name: Render 0 45 90 and minus 90 axial poses plus run kick comparison and MP4
-        env: {NODE_PATH: /tmp/footera-twist-qa/node_modules}
+        env:
+          NODE_PATH: /tmp/footera-twist-qa/node_modules
+          FOOTERA_CHROME_PATH: /usr/bin/google-chrome
         run: |
           node tests/player-evolution-twist.browser.cjs
           cp twist-build-report.json test-artifacts/player-evolution-twist/skin-report.json
