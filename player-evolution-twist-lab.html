@@ -44,6 +44,8 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
 <button id="knee-axis" aria-pressed="true">Knieachse: stabil</button>
 <button id="kneeview">Knie nah</button>
+<button id="shoulders" aria-pressed="true">Schultern: anatomisch</button>
+<button id="chestview">Oberkörper nah</button>
 <button id="root-travel" aria-pressed="true">Echte Schrittlänge: an</button>
 <button id="side">Seitenansicht</button>
 <button id="front">Vorne</button>
@@ -64,6 +66,7 @@ import {FOOTERA_TWIST_SEGMENTS,inspectFooteraTwistRig,createFooteraTwistSolver}
 import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
 import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
 import {createFooteraFootPlant} from './3d-player-evolution-foot-ik.mjs';
+import {createFooteraShoulderAlignment} from './3d-player-evolution-shoulders.mjs';
 
 const el=id=>document.getElementById(id),canvas=el('view'),status=el('status');
 const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
@@ -88,7 +91,7 @@ const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -119,13 +122,14 @@ function readyModel(gltf){
  const gait=createFooteraGaitMotion(root);
  const capture=createFooteraCapturedGait(root);
  const ik=createFooteraFootPlant(root,capture);
+ const shoulders=createFooteraShoulderAlignment(root);
  const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
  const twistReport=twist?inspectFooteraTwistRig(root):null;
  if(twistReport&&!twistReport.ok)
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,lastMocap:null};
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,lastMocap:null};
 }
 function jointPose(model,t){
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
@@ -162,6 +166,11 @@ function captureWalkPose(model,t){
  model.poses.submit('locomotion',sample.pose);
  model.poses.commit();
  model.capture.applyTranslation(sample.translation);
+ const upper=model.shoulders.sample({enabled:states.shoulderAlign,strength:1});
+ if(upper.pose.size){
+  model.poses.submit('contact',upper.pose);
+  model.poses.commit();
+ }
  const anchorWorlds={};
  if(states.rootTravel)for(const side of ['l','r'])
   anchorWorlds[side]=model.capture.worldFootAnchor(states.mocapClip,cycles,side,
@@ -180,7 +189,8 @@ function captureWalkPose(model,t){
   source:sample.source,hipTranslation:sample.translation,
   rootTravel:rootTravel.toArray(),
   worldFootAnchors:states.rootTravel?anchorWorlds:null,
-  feet:planted?.feet||null,knees:planted?.knees||null};
+  feet:planted?.feet||null,knees:planted?.knees||null,
+  shoulders:upper.arms,shoulderSource:upper.source};
  model.twist?.update();
 }
 function naturalWalkPose(model,t){
@@ -271,8 +281,8 @@ function renderAt(t=0){
   else if(states.mode==='walk'||states.pose)(states.hipNatural?naturalWalkPose:jointPose)(x,t);
   else resetPose(x);
  }
- const focus=states.zoom==='face'?1.57:states.zoom==='hips'?1.03:states.zoom==='knees'?.56:.95;
- const distance=states.zoom==='face'?1.12:states.zoom==='hips'?2.55:states.zoom==='knees'?2.05:3.8;
+ const focus=states.zoom==='face'?1.57:states.zoom==='chest'?1.41:states.zoom==='hips'?1.03:states.zoom==='knees'?.56:.95;
+ const distance=states.zoom==='face'?1.12:states.zoom==='chest'?2.05:states.zoom==='hips'?2.55:states.zoom==='knees'?2.05:3.8;
  const center=m.root.position;
  key.position.set(center.x+3.5,center.y+6,center.z+5);
  key.target.position.copy(center);
@@ -282,9 +292,9 @@ function renderAt(t=0){
  camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -342,6 +352,11 @@ control('knee-axis',()=>{states.kneeAlign=!states.kneeAlign;
  el('knee-axis').textContent=states.kneeAlign?'Knieachse: stabil':'Knieachse: original';
 });
 control('kneeview',()=>{states.zoom='knees';states.rotate=false;states.angle=0;});
+control('shoulders',()=>{states.shoulderAlign=!states.shoulderAlign;
+ el('shoulders').setAttribute('aria-pressed',String(states.shoulderAlign));
+ el('shoulders').textContent=states.shoulderAlign?'Schultern: anatomisch':'Schultern: Mixamo Original';
+});
+control('chestview',()=>{states.zoom='chest';states.rotate=false;states.angle=0;});
 control('side',()=>{states.rotate=false;states.angle=Math.PI/2;states.zoom='full';
  el('rotate').setAttribute('aria-pressed','false');});
 control('front',()=>{states.rotate=false;states.angle=0;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
@@ -357,7 +372,7 @@ fit();requestAnimationFrame(loop);
   const master=await loader.loadAsync('./assets/footera/models/footera-evolution-twist-prototype.glb');
   versions.master=readyModel(master);
   setVersions();renderAt(0);
-  status.textContent='Bereit – echte Mixamo-Gehen/Joggen/Laufen/Sprinten auf dem 52- und 60-Bone-Rig; Fuß-IK nur im Teststudio.';
+  status.textContent='Bereit – originale Mixamo-Captures, optionales Knie- und Schulter-Retargeting auf dem 60-Bone-Testmodell. Nur im Entwicklungsstudio.';
   document.documentElement.dataset.ready='true';
  }catch(err){
   console.error(err);status.textContent='Lade-/Rigfehler: '+err.message;
