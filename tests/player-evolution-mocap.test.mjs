@@ -8,6 +8,7 @@ import {FOOTERA_MOCAP_GAITS,createFooteraCapturedGait}
  from '../3d-player-evolution-mocap.mjs';
 import {createFooteraFootPlant,footeraStanceWeight}
  from '../3d-player-evolution-foot-ik.mjs';
+import {createFooteraShoulderAlignment} from '../3d-player-evolution-shoulders.mjs';
 
 function rig({twist=false}={}){
  const root=new THREE.Group(),bones=new Map();
@@ -195,4 +196,64 @@ test('Anatomical knee pole is continuous, pose-preserving and heading-relative f
  }
  assert.throws(()=>ik.computePose({kneeAlignment:-.1}),RangeError);
  assert.throws(()=>ik.computePose({kneeAlignment:1.1}),RangeError);
+});
+
+test('Captured shoulder abduction alignment keeps real Mixamo swing, source bones and foot targets',()=>{
+ const {root,bones}=rig({twist:true});
+ const capture=createFooteraCapturedGait(root),director=createFooteraPoseDirector(root),
+  shoulder=createFooteraShoulderAlignment(root);
+ const corrected=[],phases=[.10,.24,.38,.61,.78,.93];
+ let total=0;
+ for(const yaw of [0,.45,-.45]){
+  root.rotation.y=Math.PI+yaw;
+  for(const clip of FOOTERA_MOCAP_GAITS){
+   const timeline=[];
+   for(const phase of phases){
+    const captured=capture.sample(clip,phase);
+    director.beginFrame();director.submit('locomotion',captured.pose);director.commit();
+    capture.applyTranslation(captured.translation);
+    const beforeNames=['pelvis','spine_01','spine_03','clavicle_l','clavicle_r',
+      'upperarm_l','upperarm_r','lowerarm_l','lowerarm_r','thigh_l','calf_l','foot_l'];
+    const before=new Map(beforeNames.map(n=>[n,bones.get(n).quaternion.clone()]));
+    const no=shoulder.sample({enabled:false});
+    assert.equal(no.pose.size,0);
+    const res=shoulder.sample({strength:1});
+    const feetBefore=['l','r'].map(side=>bones.get('foot_'+side)
+     .getWorldPosition(new THREE.Vector3()));
+    for(const side of ['l','r']){
+     const d=res.arms[side];
+     assert.ok(Number.isFinite(d.beforeDeg)&&Number.isFinite(d.afterDeg),
+      clip+' '+side+' finite angles');
+     assert.ok(d.afterDeg<=d.beforeDeg+.01,clip+' shoulder must not widen');
+     assert.ok(d.changeDeg>=-.01&&d.changeDeg<=45.1,clip+' bounded correction');
+     if(d.active){
+      total++;
+      assert.ok(d.changeDeg>.001,'active shoulder has measurable motion');
+      corrected.push(d.changeDeg);
+     }
+    }
+    // The adapter always restores ALL input quaternions after measurement,
+    // even when the next phase or a new heading is requested.
+    for(const n of beforeNames)
+     assert.ok(qDistance(bones.get(n).quaternion,before.get(n))<1e-6,
+      'Shoulder alignment illegally changed original capture joint '+n);
+    const onPose=res.pose;
+    assert.ok([...onPose.keys()].every(n=>n==='upperarm_l'||n==='upperarm_r'));
+    director.submit('contact',onPose);director.commit();
+    for(const [i,side] of ['l','r'].entries()){
+     assert.ok(feetBefore[i].distanceTo(
+      bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()))<1e-5,
+      'Upper-arm correction must leave foot trajectories untouched');
+    }
+    timeline.push(bones.get('upperarm_l').quaternion.clone());
+    capture.reset();
+   }
+   assert.ok(timeline.some((q,i)=>i>0&&qDistance(q,timeline[0])>.008),
+    clip+' captured arm movement must not be frozen');
+  }
+ }
+ assert.ok(total>0,'At least one excessive shoulder abduction is corrected');
+ assert.ok(corrected.every(Number.isFinite));
+ assert.throws(()=>shoulder.sample({strength:NaN}),RangeError);
+ assert.throws(()=>createFooteraShoulderAlignment(root,{maxAbductionDeg:90}),RangeError);
 });
