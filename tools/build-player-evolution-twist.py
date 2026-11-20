@@ -237,6 +237,19 @@ def build():
         pos,_=array_at(j,blob,at['POSITION'])
         joints,ja=array_at(j,blob,at['JOINTS_0'])
         weights,wa=array_at(j,blob,at['WEIGHTS_0'])
+        # Read-only provenance diagnostics: diagnose source bone/mesh misalignment.
+        basew=weights.astype(np.float64)/(255 if weights.dtype==np.uint8 else 1)
+        for d in descriptors:
+            weights_for_bone=np.where(joints==d['parent_skin_index'],basew,0).max(1)
+            mask=weights_for_bone>.07
+            if mask.any():
+                a,b=d['segment'];vec=b-a;length=float(np.linalg.norm(vec))
+                proj=((pos[mask]-a)@vec)/(length*length)
+                vals=np.percentile(proj,[0,25,50,75,100])
+                center=pos[mask].mean(0).round(3).tolist()
+                print('SKIN_SOURCE',name,d['name'],'joint',a.round(3).tolist(),'end',b.round(3).tolist(),
+                      'vertexCount',int(mask.sum()),'meanPosition',center,
+                      'progressPercentiles',np.round(vals,3).tolist(),file=sys.stderr)
         joint_new,weight_new,affected,changed=modify_weights(pos,joints,weights,descriptors)
         at['JOINTS_0']=append_array(j,blob,joint_new,ja['componentType'],'VEC4',target=34962)
         at['WEIGHTS_0']=append_array(j,blob,weight_new,wa['componentType'],'VEC4',
