@@ -116,3 +116,11 @@ Die sichtbar animierte Hüfte ist **ein technischer Verbesserungsschritt, kein f
 
 ### Abnahmegrenzen
 Der Erfolg ist nur dann belegt, wenn die Node- und WebGL-Regressionssuite besteht und die Bilder sowie MP4 manuell überprüft wurden. Ein Pixelunterschied allein ist kein Qualitätsbeweis. Spielwelt-Integration, echter Cut-Mocap, Smartphone-Hardware-FPS und Match-Root sind weiterhin ausgenommen. Keine Übernahme auf main oder in das Livespiel; PR #240 bleibt Entwurf.
+
+### Verifizierter Abschluss dieses CI-Schritts
+- GitHub Actions [Lauf 44815764515](https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44815764515) erfolgreich (einschließlich Unit-, Skinning-, Capture-, Browser-WebGL- und FFmpeg-Prüfung).
+- Reales Testmaterial als [CI-Artefakt 14669776968](https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44815764515/artifacts/14669776968): PNG-Front-/Seitenansichten vor/nach Knee Alignment, Kontaktblatt, vier Sekunden synchronisierte A/B-MP4 aus 48 echten Three.js-Renderframes und JSON-Bericht.
+- Vier originale Mixamo-Gangarten, vier Phasen und beide Knie ergeben 32 Messungen. Maximale seitliche Abweichung vor/nach dem Pass: 21,25 Grad / 14,00 Grad. Sechs Messpunkte mit über 14 Grad vorher wurden begrenzt; die übrigen bleiben in ihrer Original-Beugeebene. Die gemessenen Knie-Flexionswinkel blieben beim Vergleich identischer Fußziele gleich.
+- World-Foot-Regression im flachen isolierten Studio: ursprüngliches In-place-Fußgleiten in der gemessenen Phase ~0,646 m, mit Capture-Root-Travel <0,00001 m. Gilt nicht als Nachweis für ein echtes Match.
+- Manuelle Sichtprüfung der echten PNGs und Videoframes: keine erkennbar abgelösten Körperteile; Knieachse in einigen Phasen subtil besser, aber nicht in allen Frames auffällig. Arme, Gesamtbewegung und Fußkontakt wirken teils weiterhin künstlich. Keine visuelle Premium-Abnahme und keine Livespiel-Freigabe.
+- PR #240 weiterhin Draft. Hauptbranch und laufendes Spiel unverändert; kein Merge ohne Nutzerfreigabe.
