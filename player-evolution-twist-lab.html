@@ -73,7 +73,7 @@ import {FOOTERA_TWIST_SEGMENTS,inspectFooteraTwistRig,createFooteraTwistSolver}
  from './3d-player-evolution-twist.mjs';
 import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
 import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
-import {createFooteraFootPlant} from './3d-player-evolution-foot-ik.mjs';
+import {createFooteraFootPlant,footeraGroundRootOffset} from './3d-player-evolution-foot-ik.mjs';
 import {createFooteraShoulderAlignment} from './3d-player-evolution-shoulders.mjs';
 import {createFooteraDirectionalTransitions} from './3d-player-evolution-transitions.mjs';
 import {createFooteraDirectionalContact} from './3d-player-evolution-direction-contact.mjs';
@@ -164,6 +164,20 @@ function jointPose(model,t){
  model.poses.beginFrame();model.poses.submit('action',rot);model.poses.commit();
  model.twist?.update();
 }
+function applyPreviewRootGround(model,feet){
+ const vertical=footeraGroundRootOffset(feet,{groundY:0,maxOffset:.10});
+ if(Math.abs(vertical)<1e-9)return 0;
+ // The entire rig moves: leg lengths and original captured knee bend survive.
+ model.root.position.y+=vertical;
+ model.root.updateMatrixWorld(true);
+ for(const f of Object.values(feet)){
+  if(f.heelHeight===null||f.heelHeight===undefined)continue;
+  f.heelHeight+=vertical;
+  f.toeHeight+=vertical;
+  f.floorPenetration=Math.max(0,-Math.min(f.heelHeight,f.toeHeight));
+ }
+ return vertical;
+}
 function captureWalkPose(model,t){
  model.gait.reset();
  const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[states.mocapClip];
@@ -198,12 +212,15 @@ function captureWalkPose(model,t){
    model.poses.commit();
   }
  }
+ const groundRootY=states.groundIK&&planted?.feet
+  ?applyPreviewRootGround(model,planted.feet):0;
  model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
   source:sample.source,hipTranslation:sample.translation,
   rootTravel:rootTravel.toArray(),
   worldFootAnchors:states.rootTravel?anchorWorlds:null,
   feet:planted?.feet||null,knees:planted?.knees||null,
   groundContact:states.groundIK&&states.footPlant,soles:model.ik.soles,
+  rootGroundOffsetY:groundRootY,
   shoulders:upper.arms,shoulderSource:upper.source};
  model.twist?.update();
 }
@@ -256,6 +273,7 @@ function capturedDirectionalPose(model,t){
    model.poses.submit('ik',ground.pose);model.poses.commit();
   }
  }
+ const groundRootY=ground?.feet?applyPreviewRootGround(model,ground.feet):0;
  model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
   direction:{from:sequence.from,to:sequence.to,weight:sequence.weight,
    easedWeight:sequence.easedWeight,fromFrame:sequence.fromFrame,
@@ -271,6 +289,7 @@ function capturedDirectionalPose(model,t){
    inferredAcceleration:contact.inferredAcceleration.toArray(),
    inertiaShift:states.groundIK?contact.inertiaShift.toArray():[0,0,0],
    groundIKEnabled:!!ground,groundFeet:ground?.feet??null,
+   rootGroundOffsetY:groundRootY,
    groundKnees:ground?.knees??null,
    rootContactEnabled:states.directionContact,
    contactStats:contact.limits},shoulders:shoulders.arms};
