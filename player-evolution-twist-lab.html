@@ -140,6 +140,29 @@ function axialPose(model,bone,deg){
  model.twist?.update();
  model.root.updateMatrixWorld(true);
 }
+function cutPose(model,t){
+ // Technical side-step/cut stress pose: hip yaw, counter-rotating torso,
+ // alternate planted and lifted knees. No gameplay speed/physics claim.
+ const a=Math.sin(t*3.6),push=Math.max(0,a),plant=Math.max(0,-a);
+ const pose=new Map();
+ const rot=(name,x=0,y=0,z=0)=>{
+  pose.set(name,model.originals.get(name).clone().multiply(
+   new THREE.Quaternion().setFromEuler(new THREE.Euler(x,y,z,'XYZ'))));
+ };
+ rot('pelvis',.06*a,.42*a,-.10*a);
+ rot('spine_01',-.08*a,-.25*a,.06*a);
+ rot('spine_03',-.03*a,-.07*a,.07*a);
+ rot('thigh_l',.46*push,0,-.19*push);
+ rot('calf_l',-.59*push);
+ rot('foot_l',.22*push);
+ rot('thigh_r',.46*plant,0,.19*plant);
+ rot('calf_r',-.59*plant);
+ rot('foot_r',.22*plant);
+ rot('upperarm_l',-.16*a);
+ rot('upperarm_r',.16*a);
+ model.poses.beginFrame();model.poses.submit('action',pose);model.poses.commit();
+ model.twist?.update();
+}
 function kickPose(model,t){
  const progress=(Math.sin(t*4)+1)*.5;
  const pose=new Map();
@@ -170,6 +193,7 @@ function renderAt(t=0){
  for(const x of Object.values(versions)){
   if(states.mode==='axial')axialPose(x,states.bone,states.deg);
   else if(states.mode==='kick')kickPose(x,t);
+  else if(states.mode==='cut')cutPose(x,t);
   else if(states.mode==='walk'||states.pose)jointPose(x,t);
   else resetPose(x);
   x.root.rotation.y=Math.PI+(states.rotate?states.angle:states.angle);
