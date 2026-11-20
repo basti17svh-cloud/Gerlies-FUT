@@ -1,0 +1,51 @@
+name: Footera Player Evolution – 8 echte Drehknochen
+on:
+  push:
+    branches: ['feature/player-evolution-twist-bones']
+    paths:
+      - '3d-player-evolution-twist.mjs'
+      - 'tools/build-player-evolution-twist.py'
+      - 'tests/player-evolution-twist.test.mjs'
+      - '.github/workflows/player-evolution-twist.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  twist:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install model tool dependencies
+        run: python -m pip install --disable-pip-version-check numpy
+      - name: Generate 60-joint twist prototype from verified 52-joint master
+        run: |
+          python tools/build-player-evolution-twist.py > twist-build-report.json
+          cat twist-build-report.json
+      - name: Contract and quaternion validation
+        run: |
+          node --check 3d-player-evolution-twist.mjs
+          node --test tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-eight-twist-bones-prototype
+          path: |
+            assets/footera/models/footera-evolution-twist-prototype.glb
+            twist-build-report.json
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Save verified experimental GLB to twist branch only
+        if: success() && github.event_name == 'push'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/footera/models/footera-evolution-twist-prototype.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "build(player-evolution): publish experimental 60-bone twist GLB [skip ci]"
+            git push origin HEAD:refs/heads/feature/player-evolution-twist-bones
+          fi
