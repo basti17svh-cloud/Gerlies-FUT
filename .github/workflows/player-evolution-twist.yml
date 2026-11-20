@@ -1,4 +1,7 @@
 name: Footera Player Evolution – 8 echte Drehknochen
+concurrency:
+  group: player-evolution-twist-${{ github.ref }}
+  cancel-in-progress: true
 on:
   push:
     branches: ['feature/player-evolution-twist-bones']
@@ -99,6 +102,16 @@ jobs:
               ImageDraw.Draw(feet).text((660*i+12,8),
                   'Mixamo Run / Foot IK OFF' if i==0 else 'Mixamo Run / Foot IK ON',fill='white')
           feet.save(p/'mixamo-foot-ik-comparison.jpg',quality=91)
+          walking=Image.new('RGB',(1320,1050),'#06131d')
+          modes=['treadmill','root-motion']
+          for row,mode in enumerate(modes):
+              for col,when in enumerate(['early','late']):
+                  source=Image.open(p/f'mixamo-run-{mode}-{when}.png').convert('RGB')
+                  source.thumbnail((625,490))
+                  walking.paste(source,(col*660+(660-source.width)//2,row*525+25))
+                  ImageDraw.Draw(walking).text((col*660+12,row*525+6),
+                      ('Treadmill (slide)' if row==0 else 'Captured root travel (plant)')+' / '+when,fill='white')
+          walking.save(p/'mixamo-root-travel-foot-contact.jpg',quality=91)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
