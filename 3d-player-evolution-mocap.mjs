@@ -80,6 +80,46 @@ export function createFooteraCapturedGait(root){
    pelvis.position.copy(before);root.updateMatrixWorld(true);
   }
  }
+ // Root distance comes from the captured shoe path during its stance.
+ // Without movement of the WHOLE player, an in-place animated shoe can slide
+ // over half a metre; stretching the knee to correct that is unphysical.
+ // This track is only for a free-moving preview root, not the live match path.
+ const travelInfo=new Map();
+ function getTravelInfo(clip){
+  if(!rigs.has(clip))throw new RangeError('Unsupported Mixamo gait: '+clip);
+  if(!travelInfo.has(clip)){
+   const p0=sample(clip,0).feet,p5=sample(clip,.5).feet;
+   const leftStart=new THREE.Vector3(...p0.l),rightStart=new THREE.Vector3(...p5.r);
+   const dL=leftStart.clone().sub(new THREE.Vector3(...p5.l));
+   const dR=rightStart.clone().sub(new THREE.Vector3(...p0.r));
+   dL.y=0;dR.y=0;
+   // Reject implausible strides caused by broken retargeting rather than
+   // injecting giant synthetic root motions into the preview.
+   if(dL.length()>1.4||dR.length()>1.4)
+    throw new Error('Unphysical captured stride: '+clip);
+   travelInfo.set(clip,{leftStart,rightStart,dL,dR,
+    stride:dL.clone().add(dR)});
+  }
+  return travelInfo.get(clip);
+ }
+ function rootTravel(clip,absoluteCycles,feet=null){
+  if(!Number.isFinite(absoluteCycles))throw new RangeError('Invalid root motion phase');
+  const c=Math.floor(absoluteCycles),p=absoluteCycles-c;
+  const info=getTravelInfo(clip),liveFeet=feet||sample(clip,p).feet;
+  const local=p<.5?
+   info.leftStart.clone().sub(new THREE.Vector3(...liveFeet.l)):
+   info.dL.clone().add(info.rightStart).sub(new THREE.Vector3(...liveFeet.r));
+  local.y=0;
+  return local.addScaledVector(info.stride,c);
+ }
+ function worldFootAnchor(clip,absoluteCycles,side,basePosition,rootQuaternion){
+  if(!['l','r'].includes(side)||!Number.isFinite(absoluteCycles))
+   throw new RangeError('Invalid world footprint');
+  const touchdown=Math.floor(absoluteCycles)+(side==='r'?.5:0);
+  const displacement=rootTravel(clip,touchdown);
+  return anchor(clip,side).add(displacement)
+   .applyQuaternion(rootQuaternion).add(basePosition);
+ }
  const anchors=new Map();
  function anchor(clip,side){
   if(!['l','r'].includes(side))throw new RangeError('Unknown foot: '+side);
@@ -99,6 +139,6 @@ export function createFooteraCapturedGait(root){
   root.updateMatrixWorld(true);
  }
  function reset(){pelvis.position.copy(pelvisRest);root.updateMatrixWorld(true)}
- return{sample,anchor,applyTranslation,reset,sourceClips:FOOTERA_MOCAP_GAITS,
+ return{sample,anchor,rootTravel,worldFootAnchor,applyTranslation,reset,sourceClips:FOOTERA_MOCAP_GAITS,
   boneCount:all.length,hipRest:pelvisRest.clone()};
 }
