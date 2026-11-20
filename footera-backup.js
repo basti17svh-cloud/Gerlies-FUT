@@ -2,6 +2,9 @@
 (function(root){
 "use strict";
 const KEY="gerliesFutV9",ROLLBACK="footera-before-restore",FORMAT="footera-local-backup",MAX=20*1024*1024,MAX_GAME_VERSION=128;
+// V21.495: the save may be stored compressed (FooteraSaveStore); always read/write through it.
+function readSaveRaw(){const st=root.FooteraSaveStore;if(st)return st.read();return root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7")}
+function writeSaveRaw(raw){const st=root.FooteraSaveStore;if(st){st.write(raw);return}root.localStorage.setItem(KEY,raw)}
 function fail(t){throw Error(t)}
 function obj(v){return !!v&&typeof v==="object"&&!Array.isArray(v)}
 function validateState(s){
@@ -124,7 +127,7 @@ function currentSaveRaw(){
  // A quota failure may leave localStorage behind the actual running game.
  // Export and rollback must preserve that live snapshot, just like cloud sync.
  if(typeof state!=="undefined"&&state&&typeof state==="object")return JSON.stringify(validateState(state));
- return root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
+ return readSaveRaw()||root.localStorage.getItem("uc27v7");
 }
 async function exportBackup(){
  const why=blocked();if(why)return status("Nicht möglich "+why+".",true);
@@ -149,18 +152,18 @@ async function importBackup(file){
   if(!ok)return status("Abgebrochen.");
   if(restoreBlocked())fail("Spielaktion während der Prüfung gestartet.");
   const current=currentSaveRaw();
-  const before=root.localStorage.getItem(KEY);
+  const before=readSaveRaw();
   if(current!=null)await preserveRollback(current);
   // IndexedDB yields to gameplay and cloud callbacks. Do not replace a newer
   // game or a concurrent account restore with the file inspected earlier.
   if(root.FooteraAccountReplacingSave)fail("Der Spielstand wird bereits ersetzt. Bitte nach dem Neuladen erneut versuchen.");
   if(restoreBlocked())fail("Spielaktion während der Sicherung gestartet. Kein Spielstand wurde ersetzt.");
-  if(currentSaveRaw()!==current||root.localStorage.getItem(KEY)!==before)fail("Der Spielstand hat sich während der Sicherung geändert. Kein Spielstand wurde ersetzt. Bitte erneut versuchen.");
+  if(currentSaveRaw()!==current||readSaveRaw()!==before)fail("Der Spielstand hat sich während der Sicherung geändert. Kein Spielstand wurde ersetzt. Bitte erneut versuchen.");
   // The real pagehide/delayed-save handlers must not overwrite the restored
   // file with the previous in-memory state while the browser reloads.
   const previousGuard=root.FooteraAccountReplacingSave;
   root.FooteraAccountReplacingSave=true;
-  try{root.localStorage.setItem(KEY,backup.data)}catch(e){root.FooteraAccountReplacingSave=previousGuard;throw e}
+  try{writeSaveRaw(backup.data)}catch(e){root.FooteraAccountReplacingSave=previousGuard;throw e}
   status("Spielstand wiederhergestellt. Footera lädt neu.");
   root.location.reload();
  }catch(e){status(String(e.message||e),true)}
