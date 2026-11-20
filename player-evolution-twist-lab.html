@@ -37,11 +37,18 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="pose" aria-pressed="false">Gelenk-Test</button>
 <button id="hips" aria-pressed="true">Hüfte: natürlich</button>
 <button id="hipview">Hüfte nah</button>
+<button id="walk-mocap">Mixamo: Gehen</button>
+<button id="jog-mocap">Mixamo: Joggen</button>
+<button id="run-mocap">Mixamo: Laufen</button>
+<button id="sprint-mocap">Mixamo: Sprinten</button>
+<button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
+<button id="side">Seitenansicht</button>
 <button id="front">Vorne</button>
 <button id="back">Hinten</button>
 <button id="face">Gesicht</button>
 </div>
 <p id="status" role="status">Modelle werden geladen…</p>
+<div class="note"><b>Mixamo-Captures:</b> Die vier Testmodi spielen die echten bereits vorhandenen 30-FPS-Mixamo-Bewegungsdaten auf dem 52-/60-Knochen-Modell ab. Der Fuß-IK-Schalter testet einen auf dem lokalen Standort fixierten Aufsetzpunkt. Das ist noch kein Nachweis für Fußkontakt auf bewegter Spielwelt-Route.</div>
 <div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
 </main>
 <script type="module">
@@ -52,6 +59,8 @@ import {paintFooteraHumanKit} from './3d-player-human.mjs';
 import {FOOTERA_TWIST_SEGMENTS,inspectFooteraTwistRig,createFooteraTwistSolver}
  from './3d-player-evolution-twist.mjs';
 import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
+import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
+import {createFooteraFootPlant} from './3d-player-evolution-foot-ik.mjs';
 
 const el=id=>document.getElementById(id),canvas=el('view'),status=el('status');
 const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
@@ -75,7 +84,7 @@ const grid=new THREE.GridHelper(5,20,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -103,16 +112,18 @@ function readyModel(gltf){
  if(!report.ok)throw new Error('Rig validation: '+report.errors.slice(0,5).join(', '));
  const poses=createFooteraPoseDirector(root);
  const gait=createFooteraGaitMotion(root);
+ const capture=createFooteraCapturedGait(root);
+ const ik=createFooteraFootPlant(root,capture);
  const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
  const twistReport=twist?inspectFooteraTwistRig(root):null;
  if(twistReport&&!twistReport.ok)
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,info,poses,originals,bones,report,twist,twistReport,gait};
+ return{root,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,lastMocap:null};
 }
 function jointPose(model,t){
- model.gait.reset();
+ model.gait.reset();model.capture.reset();
  const rot=new Map(),walk=Math.sin(t*3),effort=.36;
  const add=(name,x=0,y=0,z=0)=>{
   const base=model.originals.get(name);if(!base)return;
@@ -132,6 +143,27 @@ function jointPose(model,t){
  model.poses.beginFrame();model.poses.submit('action',rot);model.poses.commit();
  model.twist?.update();
 }
+function captureWalkPose(model,t){
+ model.gait.reset();
+ const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[states.mocapClip];
+ const sample=model.capture.sample(states.mocapClip,(t*rate)%1);
+ model.poses.beginFrame();
+ model.poses.submit('locomotion',sample.pose);
+ model.poses.commit();
+ model.capture.applyTranslation(sample.translation);
+ let planted=null;
+ if(states.footPlant){
+  planted=model.ik.computePose({clip:states.mocapClip,phase:sample.phase,strength:1});
+  if(planted.pose.size){
+   model.poses.submit('ik',planted.pose);
+   model.poses.commit();
+  }
+ }
+ model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
+  source:sample.source,hipTranslation:sample.translation,
+  feet:planted?.feet||null};
+ model.twist?.update();
+}
 function naturalWalkPose(model,t){
  const gait=model.gait.sample(t,{cadence:1.45,strength:1});
  model.poses.beginFrame();model.poses.submit('locomotion',gait.pose);model.poses.commit();
@@ -140,7 +172,7 @@ function naturalWalkPose(model,t){
 }
 function resetPose(model){
  model.poses.beginFrame();model.poses.commit();
- model.gait.reset();model.twist?.reset();
+ model.gait.reset();model.capture.reset();model.lastMocap=null;model.twist?.reset();
 }
 function axialPose(model,bone,deg){
  resetPose(model);
@@ -210,6 +242,7 @@ function renderAt(t=0){
  for(const x of Object.values(versions)){
   if(states.mode==='axial')axialPose(x,states.bone,states.deg);
   else if(states.mode==='kick')kickPose(x,t);
+  else if(states.mode==='mocap')captureWalkPose(x,t);
   else if(states.mode==='cut')cutPose(x,t);
   else if(states.mode==='walk'||states.pose)(states.hipNatural?naturalWalkPose:jointPose)(x,t);
   else resetPose(x);
@@ -220,9 +253,9 @@ function renderAt(t=0){
  camera.position.set(0,focus+.14,distance);camera.lookAt(0,focus,0);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -231,6 +264,8 @@ window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',
   hipNatural:states.hipNatural,pelvisOffset:m.gait.getOffset().toArray(),
   pelvisRotation:m.bones.get('pelvis').quaternion.toArray(),
   spineRotation:m.bones.get('spine_01').quaternion.toArray(),
+  mocap:m.lastMocap,actualFeet:Object.fromEntries(['l','r'].map(side=>[side,
+   m.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()).toArray()])),
   sampleNames:[...m.bones.keys()].slice(0,5)};
 };
 const timer={last:0};
@@ -256,6 +291,21 @@ control('hips',()=>{
  el('pose').setAttribute('aria-pressed','true');
 });
 control('hipview',()=>{states.zoom='hips';states.rotate=false;states.angle=0;});
+for(const [id,clip] of [['walk-mocap','walk'],['jog-mocap','jog'],
+ ['run-mocap','run'],['sprint-mocap','sprint']]){
+ control(id,()=>{states.mocapClip=clip;states.mode='mocap';states.pose=true;states.time=0;
+  el('pose').setAttribute('aria-pressed','true');
+  for(const [cid,c] of [['walk-mocap','walk'],['jog-mocap','jog'],
+   ['run-mocap','run'],['sprint-mocap','sprint']])
+   el(cid).setAttribute('aria-pressed',String(c===clip));
+ });
+}
+control('foot-ik',()=>{states.footPlant=!states.footPlant;
+ el('foot-ik').setAttribute('aria-pressed',String(states.footPlant));
+ el('foot-ik').textContent=states.footPlant?'Fuß-IK: an':'Fuß-IK: aus';
+});
+control('side',()=>{states.rotate=false;states.angle=Math.PI/2;states.zoom='full';
+ el('rotate').setAttribute('aria-pressed','false');});
 control('front',()=>{states.rotate=false;states.angle=0;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
 control('back',()=>{states.rotate=false;states.angle=Math.PI;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
 control('face',()=>{states.rotate=false;states.angle=0;states.zoom='face';el('rotate').setAttribute('aria-pressed','false')});
@@ -269,7 +319,7 @@ fit();requestAnimationFrame(loop);
   const master=await loader.loadAsync('./assets/footera/models/footera-evolution-twist-prototype.glb');
   versions.master=readyModel(master);
   setVersions();renderAt(0);
-  status.textContent='Bereit – 52- und 60-Bone-GLB geladen; das 60-Bone-Rig ist nur ein Entwicklungstest.';
+  status.textContent='Bereit – echte Mixamo-Gehen/Joggen/Laufen/Sprinten auf dem 52- und 60-Bone-Rig; Fuß-IK nur im Teststudio.';
   document.documentElement.dataset.ready='true';
  }catch(err){
   console.error(err);status.textContent='Lade-/Rigfehler: '+err.message;
