@@ -70,6 +70,24 @@ Der A/B-Test auf **derselben 60-Bone-Geometrie** misst eine Änderung der Becken
 ### Qualitätsfazit
 Die sichtbar animierte Hüfte ist **ein technischer Verbesserungsschritt, kein finaler fotorealistischer Laufstil**. In echten Bildern stehen die Arme weiterhin deutlich zu weit ab; Fußkontakt und natürliche Gewichtsübernahme benötigen die bereits vorhandenen **Footera-Mixamo-Gait-Clips**, Retarget auf 60 Bones und anschließende Fuß-IK. Das bestehende Live-Gameplay bleibt unverändert. Ein rein mathematischer Hüftschwung soll die authentischen Mocap-Daten ausdrücklich nicht dauerhaft ersetzen.
 
+## Folgeschritt: echte Mixamo-Locomotion auf 60 Bones mit Root Motion
+
+**Ausgangslage:** Der bisherige vereinfachte Stand-/Laufzyklus des Teststudios wurde durch die bereits von Footera ausgelieferten, gebackenen Mixamo-Mocap-Daten ersetzt:
+- `walk` (32 Frames @ 30 fps), `jog_fwd` (26 Frames @ 30 fps), `run` (20 Frames @ 30 fps), `sprint` (17 Frames @ 30 fps).
+- `3d-player-evolution-mocap.mjs` verwendet den vorhandenen `createCaptureRetarget` und übergibt **52 lokale Ziel-Quaternionen** an den expliziten `locomotion`-Layer des PoseDirectors. Das 60-Bone-Rig benutzt dieselben Original-52-Bones plus die acht verformungskorrigierenden Twist-Bones. Gemessene `hipY`-Bewegung wird moderat als Becken-Hub übernommen.
+- Kein neues synthetisches Animationsmaterial und keine Änderungen am produktiven Spiel.
+
+**Warum bloße Fuß-IK nicht reichte:** Der reale WebGL-Vortest https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44810721015 zeigte in einer ausgewählten Standphase des `run`-Clips mit fixiertem Root **0,636 m** Versatz des Schuhs vom Aufsetzpunkt. Der begrenzte 2-Bone-IK-Solver konnte das auf **0,457 m** reduzieren; das ist zu viel. Stärkeres Strecken oder Verdrehen der Knie wäre anatomisch falsch.
+
+**Korrekturprinzip:**
+- Die für die Standphase erforderliche Vorwärtsbewegung des **gesamten Spielers** wird direkt aus den relativen Schuhpositionen desselben originalen Mixamo-Clips rekonstruiert. Linker Aufsetzpunkt (Phase 0), rechter Aufsetzpunkt (Phase .5); pro Phase eine Root-Translation zur Aufrechterhaltung der Weltkoordinate des jeweiligen Stützfußes. Kontinuierliche Fortführung über beliebige ganze Gangzyklen.
+- `3d-player-evolution-foot-ik.mjs` dient danach nur als **begrenzter** Fuß-Feinkorrekturpass. Knie- und Oberschenkel-Quat werden als `ik`-Layer angemeldet; kein zweiter Writer und keine unkontrollierte direkte Mutation der Skelettstruktur.
+- Im 3D-Teststudio folgen Kamera und Licht dem tatsächlich nach vorn laufenden Modell. Schalter: 52/60 Bones, Gehen/Joggen/Laufen/Sprinten, Schrittlänge an/aus, Fuß-IK an/aus sowie Seiten-/Frontansicht. Die QA misst den Stützfuß an zwei verschiedenen Zeitpunkten in absoluten Weltkoordinaten und rendert Gegenüberstellungen.
+
+**Geprüfte Teilergebnisse:** Erste echte WebGL-Renderings sämtlicher vier originaler Gangarten auf 52/60 Knochen und eine 6-Sekunden-MP4 (72 reale Renderframes) bereits erfolgreich erzeugt (https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44810721015). Der neue Root-Motion-Unit-Test bestand im ersten Durchlauf; die vollständige finale Regression mit Weltkoordinaten-Messung ist unter https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44812435876 dokumentiert (Status im GitHub-Workflow kontrollieren, nicht vorbehaltlos als bestanden deklarieren).
+
+**Qualitätsgrenzen:** Das ist ein isolierter freier 3D-Lauf auf einer flachen Testfläche. Die Rückkopplung mit der **autoritativen Ingame-Spielerroute**, Ballkontakten, Tor-/Zweikampf-/Cut-Transitions, unebenem Gelände, Boot-Sohlentest, Support-Timing sowie reale Hardware-FPS ist nicht nachgewiesen. Keine Änderung am Live-Renderer oder am Match-Root-Controller, kein PR-Merge.
+
 ## Offene Abnahmepunkte
 
 1. **Optische Sichtprüfung echter Deformationen**: Schulter, Ellbogen, Hüfte, Knie, Trikot-/Hosen-/Stutzen-Säume bei Belastung. Der automatisierte Pixelvergleich erkennt Unterschiede, nicht deren ästhetische Qualität.
