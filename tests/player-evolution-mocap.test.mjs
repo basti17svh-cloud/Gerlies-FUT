@@ -11,6 +11,8 @@ import {createFooteraFootPlant,footeraStanceWeight}
 import {createFooteraShoulderAlignment} from '../3d-player-evolution-shoulders.mjs';
 import {createFooteraDirectionalTransitions,FOOTERA_DIRECTION_MOVES}
  from '../3d-player-evolution-transitions.mjs';
+import {createFooteraDirectionalContact}
+ from '../3d-player-evolution-direction-contact.mjs';
 
 function rig({twist=false}={}){
  const root=new THREE.Group(),bones=new Map();
@@ -319,4 +321,60 @@ test('Original Adobe Mixamo lateral/backpedal transitions are quaternion-only, r
  assert.throws(()=>trans.sampleSequence({time:-1}),RangeError);
  assert.throws(()=>trans.blend({to:'strafeLeft',weight:NaN}),RangeError);
  assert.throws(()=>trans.blend({to:'strafeLeft',weight:1.1}),RangeError);
+});
+
+test('Actual Mixamo contact-derived directional root is bounded, continuous, deterministic and keeps the source poses',()=>{
+ const {root,bones}=rig({twist:true}),cap=createFooteraCapturedGait(root),
+  transitions=createFooteraDirectionalTransitions(root,cap),
+  contact=createFooteraDirectionalContact(transitions);
+ for(const direction of FOOTERA_DIRECTION_MOVES){
+  const before=FOOTERA_EVOLUTION_BONES.map(({name})=>bones.get(name).quaternion.clone());
+  const start=contact.sample({time:0,direction});
+  assert.ok(start.rootTravel.length()<1e-6,direction+' starts without a root teleport');
+  const off=contact.sample({time:1.12,direction,enabled:false});
+  assert.equal(off.rootTravel.length(),0,'A/B mode must reproduce the original treadmill');
+  assert.equal(off.footprintSlip,null);
+  let maxObserved=0,contactFrames=0,poorFrames=0,maxRootDisplacement=0;
+  let prior=null,priorSupport=null;
+  for(let i=0;i<=270;i++){
+   const time=i/90;
+   const x=contact.sample({direction,time});
+   const y=contact.sample({direction,time});
+   assert.equal(x.supportSide,y.supportSide,'Deterministic support selection');
+   assert.ok(x.rootTravel.distanceTo(y.rootTravel)<1e-8);
+   assert.ok(x.rootTravel.toArray().every(Number.isFinite));
+   assert.ok(x.supportSide==='l'||x.supportSide==='r');
+   assert.equal(x.actualCollisionIK,false);
+   assert.equal(x.liveMatchRoot,false);
+   assert.equal(x.contactInferred,true);
+   if(prior){
+    const shift=x.rootTravel.distanceTo(prior.rootTravel);
+    maxRootDisplacement=Math.max(maxRootDisplacement,shift);
+    assert.ok(shift<.086,direction+' root cannot teleport '+time+' '+shift);
+    if(x.supportSide===priorSupport&&!x.speedLimited&&!prior.speedLimited){
+     maxObserved=Math.max(maxObserved,x.footprintSlip);
+     contactFrames++;
+     if(x.footprintSlip>.045)poorFrames++;
+    }
+   }
+   prior=x;priorSupport=x.supportSide;
+  }
+  const report=contact.getReport(direction);
+  assert.equal(report.rateHz,90);
+  assert.ok(report.maxRootSpeed<=7.51);
+  assert.ok(report.maxStepMetres<=7.5/90+.0001);
+  assert.ok(report.switches>=1,'Must detect support change in original '+direction);
+  assert.ok(report.maxStepMetres>.0001,'Contact-derived track should move the player');
+  assert.ok(contactFrames>60,'Expected sustained captured-foot contact');
+  assert.ok(poorFrames<contactFrames*.25,'Excessive sliding in grounded samples: '+direction);
+  assert.ok(maxObserved<.28,direction+' contact residual too high '+maxObserved);
+  assert.ok(maxRootDisplacement<.086);
+  FOOTERA_EVOLUTION_BONES.forEach(({name},i)=>
+   assert.ok(qDistance(before[i],bones.get(name).quaternion)<1e-6,
+    'Contact track must not modify original Mixamo joint '+name));
+ }
+ assert.throws(()=>contact.sample({direction:'unknown'}),RangeError);
+ assert.throws(()=>contact.sample({time:-.1}),RangeError);
+ assert.throws(()=>contact.sample({time:3.2}),RangeError);
+ assert.throws(()=>createFooteraDirectionalContact(transitions,{hz:20}),RangeError);
 });
