@@ -143,6 +143,8 @@ function reconcileFounderState(s){
 // loadState() validates saved teams immediately; initialize its formation list first.
 const SQUAD_FORMATION_NAMES=["4-3-3","4-3-3 (2)","4-3-3 (3)","4-3-3 (4)","4-4-2","4-4-1-1","4-2-3-1","4-1-2-1-2 (2)","4-2-2-2","4-2-4","3-5-2"];
 let PLAYERS=[],P_BY_ID=new Map(),state=reconcileFounderState(loadState()),pickerIndex=-1,pickerMode='player',pickerSourceUid=null,pendingPack=state.pendingPack,marketListings=[],sellEditorUid=null,sbcSelections={},match=null;
+// V21.495: a club that only survived in the IndexedDB copy is written back once and the page reloads.
+if(!state.onboarded&&globalThis.FooteraSaveStore)globalThis.FooteraSaveStore.recoverFromMirror().then(done=>{if(done)location.reload()}).catch(()=>{});
 
 const FORMATIONS={
 "4-3-3":[
@@ -4070,7 +4072,7 @@ function baseState(){return{
 }}
 function loadState(){
  try{
-  const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
+  const x=JSON.parse((globalThis.FooteraSaveStore?globalThis.FooteraSaveStore.read():localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7"))||"null"),b=baseState();
   return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:128,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},paidPackClaims:{...(x.paidPackClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
  }catch(e){return migrateLegacyEventState(initializeSquadPresets(baseState()))}
 }
@@ -4109,12 +4111,13 @@ function flushSave(){
  clearTimeout(saveTimer);saveTimer=0;saveQueued=false;
  persistActiveSquadPreset(state);
  let raw="";
- try{raw=JSON.stringify(state);localStorage.setItem("gerliesFutV9",raw)}
+ try{raw=JSON.stringify(state);if(globalThis.FooteraSaveStore)globalThis.FooteraSaveStore.write(raw);else localStorage.setItem("gerliesFutV9",raw)}
  catch(e){
   // The portrait URL caches are only a speed-up. When Safari's 5 MB limit is reached,
   // give their space to the save before reporting the device storage as full.
+  // (FooteraSaveStore already packs the save and frees the caches itself.)
   let retried=false;
-  if(raw){try{localStorage.removeItem("gfutImageSourceCacheV9");localStorage.removeItem("gfutImageFailureCacheV9");localStorage.setItem("gerliesFutV9",raw);retried=true}catch(_){}}
+  if(raw&&!globalThis.FooteraSaveStore){try{localStorage.removeItem("gfutImageSourceCacheV9");localStorage.removeItem("gfutImageFailureCacheV9");localStorage.setItem("gerliesFutV9",raw);retried=true}catch(_){}}
   if(retried){saveDirty=false;saveFailed=false;window.dispatchEvent?.(new Event("footera:save"));return true}
   // Keep the current game dirty so focus/pagehide or the next action retries it.
   // Also let cloud synchronization preserve the running game when disk quota is full.
@@ -4133,7 +4136,8 @@ function save(){
  saveDirty=true;
  if(saveQueued)return;
  saveQueued=true;
- saveTimer=setTimeout(flushSave,140)
+ // A packed (very big) save costs more to write, so it is bundled over a slightly longer pause.
+ saveTimer=setTimeout(flushSave,globalThis.FooteraSaveStore?.lastMode?.()==="compressed"?1200:140)
 }
 window.addEventListener("pagehide",flushSave);
 window.addEventListener("focus",()=>{if(saveFailed)flushSave()});
@@ -11134,7 +11138,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.494";
+const GFUT_BUILD="V21.495";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11192,7 +11196,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21494",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21495",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

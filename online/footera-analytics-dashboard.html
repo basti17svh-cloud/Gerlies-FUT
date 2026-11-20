@@ -72,6 +72,12 @@ footer{margin-top:20px}
    <div style="overflow-x:auto"><table><thead><tr><th>Geräte</th><th>Anzahl</th><th>Fehler</th><th>Wo</th><th>Version</th><th>Bildschirm · Gerät</th><th>Zuletzt</th></tr></thead><tbody id="errors"></tbody></table></div>
    <p class="note">Automatische JavaScript-Fehlerberichte, nur von Browsern mit Statistik-Einwilligung. „Geräte“ = verschiedene Browser, die den Fehler hatten. Ohne Namen, Verein oder E-Mail; Daten werden nach 30 Tagen gelöscht.</p>
  </div>
+ <div class="box">
+   <h2>Speicherprobleme · letzte 7 Tage</h2>
+   <p id="savesHead" class="note"></p>
+   <div style="overflow-x:auto"><table><thead><tr><th>Verein</th><th>Problem</th><th>Grund</th><th>Größe</th><th>Karten</th><th>Meldungen</th><th>Version · Gerät</th><th>Zuletzt</th><th>Cloud gesichert</th></tr></thead><tbody id="saves"></tbody></table></div>
+   <p class="note">Angemeldete Geräte melden, wenn der Spielstand nicht gespeichert werden konnte, komprimiert werden musste, die Online-Sicherung gesperrt ist oder ein Verein aus der Gerätekopie wiederhergestellt wurde. Ohne Inhalte des Spielstands; nach 60 Tagen gelöscht.</p>
+ </div>
  <footer class="note">Anmeldungen und Vereinsprofile stammen aus der Supabase-Datenbank; freiwillige Besucherzahlen sind ein separates Messsystem. Alte Website-Besuche lassen sich nicht rückwirkend rekonstruieren.</footer>
 </div>
 </main>
@@ -158,6 +164,16 @@ footer{margin-top:20px}
      for(const val of [e.browsers,e.hits,e.message,e.source,e.build,[e.screen,e.device].filter(Boolean).join(" · "),last]){
        const td=document.createElement("td");td.textContent=typeof val==="number"?fmt(val):String(val||"");tr.append(td);
      }etb.append(tr);
+   }
+   const KIND={"save-failed":"❌ Speichern fehlgeschlagen","save-compressed":"🗜️ Komprimiert (Speicher voll)","backup-blocked":"⛔ Sicherung gesperrt","mirror-failed":"⚠️ Gerätekopie fehlgeschlagen","restored-from-mirror":"♻️ Aus Gerätekopie wiederhergestellt"};
+   const sp=r.save_problems_7d,stb=$("saves");stb.replaceChildren();
+   const when=v=>v?new Date(v).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+   $("savesHead").textContent=!sp?"Speichermeldungen gerade nicht verfügbar.":sp.length?fmt(sp.length)+" Vereine mit Speicherproblemen.":"Keine Speicherprobleme gemeldet. 🎉";
+   for(const p of sp||[]){
+     const tr=document.createElement("tr");
+     for(const val of [p.club+(p.save_id?" ("+p.save_id+")":""),KIND[p.kind]||p.kind,p.reason,p.chars?fmt(p.chars)+" Zeichen":"",p.cards,p.reports,[p.build,p.device].filter(Boolean).join(" · "),when(p.last_at),when(p.cloud_saved_at)]){
+       const td=document.createElement("td");td.textContent=typeof val==="number"?fmt(val):String(val||"");tr.append(td);
+     }stb.append(tr);
    }
    $("app").style.display="block";
    $("status").textContent="Aktualisiert: "+new Date(r.as_of).toLocaleString("de-DE")+".";

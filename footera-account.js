@@ -5,7 +5,50 @@
  "use strict";
  if(!root.FooteraOnline?.available||!root.document)return;
  const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1",TRANSFER="footera-local-account-transfer-v1",GUEST_OFFER_SEEN="footera-guest-offer-seen-v1";
+ // V21.495: the save may be stored compressed (FooteraSaveStore); always read/write through it.
+ function readSaveRaw(){const st=root.FooteraSaveStore;if(st)return st.read();return root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7")}
+ function writeSaveRaw(raw){const st=root.FooteraSaveStore;if(st){st.write(raw);return}root.localStorage.setItem(KEY,raw)}
  const maxLength=12*1024*1024;
+ // V21.495: every device that cannot save (or had to compress / restore) tells us, so Basti sees it
+ // before a player has to report it. Only kind, size, build and device type are sent, never the save.
+ const SAVE_PROBLEM_QUEUE=[],SAVE_SIZE_DAY="footera-save-size-reported-v1";
+ let saveProblemSending=false;
+ function saveDevice(){
+  const ua=String(root.navigator?.userAgent||"");
+  const os=/iPhone|iPad|iPod/.test(ua)?"iOS":/Android/.test(ua)?"Android":/Windows/.test(ua)?"Windows":/Mac OS/.test(ua)?"Mac":"Andere";
+  const br=/CriOS|Chrome\//.test(ua)&&!/Edg\//.test(ua)?"Chrome":/Edg\//.test(ua)?"Edge":/Firefox|FxiOS/.test(ua)?"Firefox":/Safari\//.test(ua)?"Safari":"Andere";
+  const pwa=root.matchMedia?.("(display-mode: standalone)")?.matches||root.navigator?.standalone?" · App":"";
+  return (os+" · "+br+pwa).slice(0,40);
+ }
+ function saveBuild(){return String((typeof GFUT_BUILD!=="undefined"&&GFUT_BUILD)||"").slice(0,16)}
+ function queueSaveProblem(kind,detail){
+  if(SAVE_PROBLEM_QUEUE.length>=12)return;
+  SAVE_PROBLEM_QUEUE.push({p_kind:kind,p_reason:String(detail?.reason||"").slice(0,60),
+   p_chars:Number.isFinite(detail?.chars)?Math.round(detail.chars):null,p_build:saveBuild(),p_device:saveDevice()});
+  if(kind!=="save-size")try{root.FooteraErrorReport?.report?.("Speicherproblem: "+kind+" "+String(detail?.reason||""),"footera-save-store")}catch(_){}
+  root.setTimeout?.(()=>{sendSaveProblems().catch(()=>{})},kind==="save-failed"?500:3000);
+ }
+ async function sendSaveProblems(){
+  if(saveProblemSending||!SAVE_PROBLEM_QUEUE.length)return;
+  saveProblemSending=true;
+  try{
+   const c=await getClient(),u=await user();
+   if(!u||u.is_anonymous)return; // guests are kept until they sign in
+   while(SAVE_PROBLEM_QUEUE.length){
+    const {error}=await c.rpc("footera_report_save_problem",SAVE_PROBLEM_QUEUE[0]);
+    if(error)return;
+    SAVE_PROBLEM_QUEUE.shift();
+   }
+  }finally{saveProblemSending=false}
+ }
+ // Once a day a big save reports its size, so a club near the limit shows up before it fails.
+ function reportSaveSize(raw){
+  const chars=String(raw||"").length;if(chars<800000)return;
+  const day=new Date().toISOString().slice(0,10);
+  try{if(root.localStorage.getItem(SAVE_SIZE_DAY)===day)return;root.localStorage.setItem(SAVE_SIZE_DAY,day)}catch(_){return}
+  queueSaveProblem("save-size",{reason:root.FooteraSaveStore?.isCompressed?.()?"compressed":"plain",chars});
+ }
+ root.FooteraSaveStore?.onProblem?.(queueSaveProblem);
  let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoBusyDone=null,autoStatus="",autoTimer=null,saveSyncTimer=null,profileAutoSyncing=false,conflictPromptShown=false,deleteBusy=false,guestCloudOff=false,guestOffer=null,guestOfferChecked="";
  const $=id=>document.getElementById(id);
  const safeMessage=e=>{
@@ -238,7 +281,7 @@
    return JSON.stringify(norm(a))===JSON.stringify(norm(b));
  }
  function hasLocalGame(){
-   const raw=root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
+   const raw=readSaveRaw()||root.localStorage.getItem("uc27v7");
    if(!raw)return false;
    try{
      const s=JSON.parse(raw);
@@ -310,7 +353,7 @@
    // A full localStorage must not turn an online upload into an older save.
    // Prefer the actual running game; isolated account pages use the persisted snapshot.
    const live=typeof state!=="undefined"&&state?.onboarded&&state?.profile?state:null;
-   const raw=live?JSON.stringify(live):root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
+   const raw=live?JSON.stringify(live):readSaveRaw()||root.localStorage.getItem("uc27v7");
    if(!raw)throw Error("Es wurde noch kein lokaler Spielstand gefunden.");
    if(new TextEncoder().encode(raw).length>maxLength)throw Error("Spielstand ist für die Cloud zu groß (max. 12 MB).");
    if(!root.FooteraBackup?.validateState)throw Error("Die Spielstand-Prüfung ist nicht geladen.");
@@ -407,7 +450,7 @@
   if(!structurallyEqual(localData(),local))
    throw Error("Der Gerätestand wurde verändert. Online-Belohnungen werden beim nächsten Abgleich übernommen.");
   const live=typeof state!=="undefined"&&state?.onboarded&&state?.profile?state:null;
-  if(!live){root.localStorage.setItem(KEY,JSON.stringify(imported));return}
+  if(!live){writeSaveRaw(JSON.stringify(imported));return}
   if(live.profile.saveId!==local.profile?.saveId)throw Error("Der Verein wurde gewechselt.");
   for(const field of ["playerPickClaims","challengeClaims","club","sbcStorage","coins","packs","rewardPackQueue"])
    if(Object.prototype.hasOwnProperty.call(imported,field))live[field]=JSON.parse(JSON.stringify(imported[field]));
@@ -477,6 +520,7 @@
     let ok=imported!==upload;
     if(ok)try{checkProtectedCloudRewards(imported,remote.save_data)}catch(_){ok=false}
     if(!ok){
+     queueSaveProblem("backup-blocked",{reason:String(e?.message||"protected").slice(0,60)});
      autoStatus="Der Gerätestand bleibt aktiv. Eine bestätigte Online-Belohnung ist zusätzlich geschützt.";
      return false;
     }
@@ -514,6 +558,8 @@
   applyMergedIconPicks(local,upload);
   savePoint(u,upload,data);
   autoStatus="";
+  try{reportSaveSize(JSON.stringify(upload))}catch(_){}
+  sendSaveProblems().catch(()=>{});
   return true;
  }
  async function saveCloud(){
@@ -807,7 +853,7 @@
      const s=root.FooteraBackup.validateState(existing.save_data);
      const name=String(s.profile?.clubName||"Footera");
      if(typeof flushSave==="function")flushSave();
-     const before=root.localStorage.getItem(KEY);
+     const before=readSaveRaw();
      const oldOwner=root.localStorage.getItem(OWNER);
      let local=null;
      try{local=oldOwner===u.id?localData():before?root.FooteraBackup.validateState(JSON.parse(before)):null}catch(_){}
@@ -826,23 +872,23 @@
      if(!latest?.save_data||latest.revision!==existing.revision||!structurallyEqual(latest.save_data,s))
        throw Error("Die Cloud wurde auf einem anderen Gerät aktualisiert. Bitte noch einmal laden, damit der neueste Stand übernommen wird.");
      if(typeof flushSave==="function")flushSave();
-     if(root.localStorage.getItem(KEY)!==before||root.localStorage.getItem(OWNER)!==oldOwner||(local&&oldOwner===u.id&&!structurallyEqual(localData(),local)))
+     if(readSaveRaw()!==before||root.localStorage.getItem(OWNER)!==oldOwner||(local&&oldOwner===u.id&&!structurallyEqual(localData(),local)))
        throw Error("Der Gerätestand wurde während des Ladens verändert. Bitte erneut vergleichen.");
      changeLocked();
      const payload=JSON.stringify(s);
      if(local)await root.FooteraBackup.preserveRollback(JSON.stringify(local));else if(before!==null)await root.FooteraBackup.preserveRollback(before);
      prepareSaveReplacement();
      try{
-       root.localStorage.setItem(KEY,payload);
+       writeSaveRaw(payload);
        root.localStorage.setItem(OWNER,u.id);
        savePoint(u,s,latest.revision);
-       if(root.localStorage.getItem(KEY)!==payload||
+       if(readSaveRaw()!==payload||
           root.localStorage.getItem(OWNER)!==u.id||
           syncPoint(u)?.revision!==latest.revision)
          throw Error("Die Übernahme wurde nicht vollständig gespeichert.");
      }catch(e){
        root.FooteraAccountReplacingSave=false;
-       if(before!==null)root.localStorage.setItem(KEY,before);else root.localStorage.removeItem(KEY);
+       if(before!==null)writeSaveRaw(before);else root.localStorage.removeItem(KEY);
        if(oldOwner===null)root.localStorage.removeItem(OWNER);else root.localStorage.setItem(OWNER,oldOwner);
        throw e;
      }
@@ -893,7 +939,7 @@
    const row=Array.isArray(data)?data[0]:data;
    if(!row?.guest_id||row.guest_id===u.id)return null;
    let local=null;
-   try{local=JSON.parse(root.localStorage.getItem(KEY)||"null")}catch(_){}
+   try{local=JSON.parse(readSaveRaw()||"null")}catch(_){}
    if(local?.profile?.saveId&&local.profile.saveId===row.save_id)return null;
    guestOffer=row;
    const seen=row.guest_id+":"+u.id;
@@ -929,10 +975,10 @@
    const saved=root.FooteraBackup?.validateState(row?.save_data);
    if(!saved||!Number.isFinite(row?.revision))throw Error("Die Übernahme konnte nicht bestätigt werden. Bitte erneut versuchen.");
    if(typeof flushSave==="function")flushSave();
-   const before=root.localStorage.getItem(KEY);
+   const before=readSaveRaw();
    if(before!==null)await root.FooteraBackup.preserveRollback(before);
    prepareSaveReplacement();
-   root.localStorage.setItem(KEY,JSON.stringify(saved));
+   writeSaveRaw(JSON.stringify(saved));
    root.localStorage.setItem(OWNER,u.id);
    savePoint(u,saved,row.revision);
    guestOffer=null;
@@ -978,7 +1024,7 @@
          if(hasLocalGame())return; // Club setup may have completed during the request.
          prepareSaveReplacement();
          try{
-           root.localStorage.setItem(KEY,JSON.stringify(saved));
+           writeSaveRaw(JSON.stringify(saved));
            root.localStorage.setItem(OWNER,u.id);
            savePoint(u,saved,cloud.revision);
          }catch(e){root.FooteraAccountReplacingSave=false;throw e}
@@ -1269,7 +1315,7 @@
    labelValue("footeraProfileStatus","Dauerhaftes Footera-Konto");
    const transfer=pendingLocalTransfer();
    let local=null;
-   try{const v=JSON.parse(root.localStorage.getItem(KEY)||"null");if(v?.profile?.clubName&&Array.isArray(v.club))local=v}catch(_){}
+   try{const v=JSON.parse(readSaveRaw()||"null");if(v?.profile?.clubName&&Array.isArray(v.club))local=v}catch(_){}
    const foreign=!!local&&root.localStorage.getItem(OWNER)!==u.id;
    const box=$("footeraProfileTransferSection");
    if(box){
@@ -1370,6 +1416,7 @@
    if(ownsLocal){
      prepareSaveReplacement();
      for(const k of [KEY,"uc27v7",ROLLBACK,OWNER,WELCOME])root.localStorage.removeItem(k);
+     root.FooteraSaveStore?.clearMirror?.();
    }
    if(syncPoint(u))root.localStorage.removeItem(SYNC_POINT);
    if(registrationOwner()===u.id)root.localStorage.removeItem(REGISTERED_HERE);
@@ -1719,7 +1766,7 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={claimTournamentReward,claimChallengeReward,pendingChallengeReward,claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={_saveProblems:()=>SAVE_PROBLEM_QUEUE.slice(),sendSaveProblems,claimTournamentReward,claimChallengeReward,pendingChallengeReward,claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
 

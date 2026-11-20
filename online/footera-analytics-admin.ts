@@ -37,5 +37,8 @@ Deno.serve(async req=>{
  // V21.408: top JavaScript errors of the last 7 days (only from browsers with statistics consent).
  const errs=await admin.rpc("footera_error_summary",{p_days:7});
  if(errs.error)console.error("Footera error summary failed",errs.error.code);
- return reply({report:{...data,errors_7d:errs.error?null:errs.data}});
+ // V21.495: devices that could not save, had to compress, or are blocked from backing up.
+ const saves=await admin.rpc("footera_save_problem_summary",{p_days:7});
+ if(saves.error)console.error("Footera save problems failed",saves.error.code);
+ return reply({report:{...data,errors_7d:errs.error?null:errs.data,save_problems_7d:saves.error?null:saves.data}});
 });
