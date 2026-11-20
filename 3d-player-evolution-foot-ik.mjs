@@ -73,13 +73,13 @@ export function createFooteraFootPlant(root,mocap){
   // Reference forward follows capture-driven pelvis rotation, rather than
   // staying fixed in the scene when the player turns or changes direction.
   const forward=limb.forwardLocal.clone()
-   .applyQuaternion(pelvis.getWorldQuaternion(new THREE.Quaternion()))
-   .addScaledVector(direction,-limb.forwardLocal.clone()
-    .applyQuaternion(pelvis.getWorldQuaternion(new THREE.Quaternion())).dot(direction));
+   .applyQuaternion(pelvis.getWorldQuaternion(new THREE.Quaternion()));
+  forward.addScaledVector(direction,-forward.dot(direction));
   if(forward.lengthSq()<1e-6)return null;
   forward.normalize();
   const lateral=new THREE.Vector3().crossVectors(direction,forward).normalize();
-  const observed=knee.sub(hip).addScaledVector(direction,-knee.sub(hip).dot(direction));
+  const observed=knee.sub(hip);
+  observed.addScaledVector(direction,-observed.dot(direction));
   if(observed.lengthSq()<1e-8)observed.copy(forward);
   else observed.normalize();
   const angle=Math.atan2(observed.dot(lateral),observed.dot(forward));
