@@ -102,3 +102,38 @@ test('Foot stance is phased, capped and deliberately disabled in swing',()=>{
  const at=cap.anchor('run','l');
  assert.ok(at.distanceTo(cap.anchor('run','l'))<1e-8);
 });
+
+test('Captured root travel stabilizes stance feet without stretching knees',()=>{
+ const {root}=rig(),cap=createFooteraCapturedGait(root);
+ for(const clip of FOOTERA_MOCAP_GAITS){
+  const leftTarget=cap.anchor(clip,'l');
+  const dL=cap.rootTravel(clip,.5);
+  for(const p of [.08,.16,.25,.35,.44]){
+   const sample=cap.sample(clip,p);
+   const track=cap.rootTravel(clip,p,sample.feet);
+   const current=new THREE.Vector3(...sample.feet.l).add(track);
+   assert.ok(Math.hypot(current.x-leftTarget.x,current.z-leftTarget.z)<.00005,
+    clip+' left shoe planted at '+p);
+  }
+  const rightTarget=cap.anchor(clip,'r').add(dL);
+  for(const p of [.57,.68,.79,.92]){
+   const sample=cap.sample(clip,p);
+   const track=cap.rootTravel(clip,p,sample.feet);
+   const current=new THREE.Vector3(...sample.feet.r).add(track);
+   assert.ok(Math.hypot(current.x-rightTarget.x,current.z-rightTarget.z)<.00005,
+    clip+' right shoe planted at '+p);
+  }
+  const cycleStart=cap.rootTravel(clip,1);
+  const expected=cap.rootTravel(clip,.999999);
+  assert.ok(cycleStart.distanceTo(expected)<.03,clip+' must loop continuously');
+  const pos=new THREE.Vector3(0,0,0),quat=new THREE.Quaternion();
+  const world=cap.worldFootAnchor(clip,.25,'l',pos,quat);
+  const current=cap.sample(clip,.25);
+  const placed=new THREE.Vector3(...current.feet.l).add(cap.rootTravel(clip,.25,current.feet));
+  assert.ok(Math.hypot(world.x-placed.x,world.z-placed.z)<.00005);
+  const before=cap.sample(clip,.15).feet.l,after=cap.sample(clip,.35).feet.l;
+  const slide=Math.hypot(after[0]-before[0],after[2]-before[2]);
+  assert.ok(slide>.02,clip+' original in-place capture must visibly move its stance foot');
+ }
+ assert.throws(()=>cap.rootTravel('run',NaN),RangeError);
+});
