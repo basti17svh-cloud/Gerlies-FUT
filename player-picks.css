@@ -50,3 +50,4 @@
 .founder-upgrade-card.founder-upgrade-reveal{width:min(240px,62vw);animation:founderUpgradeReveal 1.1s cubic-bezier(.2,.9,.25,1.15) both}.founder-upgrade-card.founder-upgrade-reveal .card-shell{max-width:240px}
 @keyframes founderUpgradeReveal{0%{transform:scale(.6) rotateY(90deg);filter:brightness(3)}60%{transform:scale(1.06) rotateY(0);filter:brightness(1.6)}100%{transform:scale(1);filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.founder-upgrade-card.founder-upgrade-reveal{animation:none}}
+.pick-ticket.pick-gift{background:linear-gradient(110deg,#6b1240,#ff7ac422 55%,#1f1219);border-color:#ff9fd4}.pick-ticket.pick-gift .pick-ticket-rating{color:#ffe0f1}

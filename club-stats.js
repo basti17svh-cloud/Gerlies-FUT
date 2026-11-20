@@ -22,6 +22,22 @@
   item.clubAssists=item.clubStats.overall.assists;
   return item.clubStats
  }
+ // Read-only view for lists and leaders: never writes empty buckets into the save.
+ // 2.700 cards x 5 empty mode buckets once grew a save past Safari's 5 MB localStorage limit.
+ function readBucket(item,key){
+  const stats=item?.clubStats&&typeof item.clubStats==="object"?item.clubStats:null;
+  if(key!=="all")return normaliseBucket(stats?.modes?.[key]);
+  const out=normaliseBucket(stats?.overall);
+  if(!stats?._legacyMigrated){out.goals=Math.max(out.goals,num(item?.clubGoals));out.assists=Math.max(out.assists,num(item?.clubAssists))}
+  return out
+ }
+ function emptyBucket(raw){return !raw||typeof raw!=="object"||Object.keys(EMPTY_STAT()).every(k=>!num(raw[k]))}
+ // Drops all-zero buckets (and the whole record for cards that never played).
+ function compactItemStats(item){
+  const stats=item?.clubStats;if(!stats||typeof stats!=="object")return;
+  if(stats.modes&&typeof stats.modes==="object")for(const k of Object.keys(stats.modes))if(emptyBucket(stats.modes[k]))delete stats.modes[k];
+  if(emptyBucket(stats.overall)&&!Object.keys(stats.modes||{}).length&&!num(item.clubGoals)&&!num(item.clubAssists))delete item.clubStats
+ }
  function modeKey(mode){const m=String(mode||"").toLowerCase();if(m==="squad")return"squad";if(m==="rivals")return"rivals";if(m.startsWith("friendly"))return"friendly";if(m.includes("weekend")||m.includes("champ"))return"weekend";return m||"other"}
  function modeBucket(item,key){const stats=ensureItemStats(item);if(!stats)return EMPTY_STAT();if(key==="all")return stats.overall;if(!stats.modes[key])stats.modes[key]=EMPTY_STAT();else stats.modes[key]=normaliseBucket(stats.modes[key]);return stats.modes[key]}
  function addPerformance(bucket,row,{start=false,sub=false,motm=false}={}){
@@ -63,7 +79,7 @@
 
  function averageRating(bucket){return num(bucket?.ratedMatches)?num(bucket.ratingTotal)/num(bucket.ratedMatches):0}
  function statRows(mode=statsMode){
-  return (state.club||[]).map(item=>{const base=displayBase(item);if(!base)return null;const b=modeBucket(item,mode),cards=num(b.yellow)+num(b.red);return{item,base,b,goals:num(b.goals),assists:num(b.assists),scorer:num(b.goals)+num(b.assists),matches:num(b.matches),starts:num(b.starts),subs:num(b.subApps),minutes:num(b.minutes),avg:averageRating(b),motm:num(b.motm),yellow:num(b.yellow),red:num(b.red),cards,saves:num(b.saves),conceded:num(b.conceded),cleanSheets:num(b.cleanSheets)}}).filter(Boolean)
+  return (state.club||[]).map(item=>{const base=displayBase(item);if(!base)return null;const b=readBucket(item,mode),cards=num(b.yellow)+num(b.red);return{item,base,b,goals:num(b.goals),assists:num(b.assists),scorer:num(b.goals)+num(b.assists),matches:num(b.matches),starts:num(b.starts),subs:num(b.subApps),minutes:num(b.minutes),avg:averageRating(b),motm:num(b.motm),yellow:num(b.yellow),red:num(b.red),cards,saves:num(b.saves),conceded:num(b.conceded),cleanSheets:num(b.cleanSheets)}}).filter(Boolean)
  }
  function activeRows(mode=statsMode){return statRows(mode).filter(r=>r.matches||r.goals||r.assists||r.cards||r.saves||r.cleanSheets)}
  function topRow(rows,key,min=0){return [...rows].filter(r=>num(r[key])>=min).sort((a,b)=>num(b[key])-num(a[key])||b.scorer-a.scorer||b.matches-a.matches)[0]||null}
@@ -153,5 +169,10 @@
   const stored=e.target.closest("[data-club-storage-player]");if(stored){const item=(state.sbcStorage||[]).find(x=>String(x.uid)===String(stored.dataset.clubStoragePlayer));if(item)openBiography(item,null);return}
  });
  initUi();
- for(const item of state.club||[])ensureItemStats(item);
+ {
+  // One-time cleanup at start: big clubs carried ~1 MB of empty stat buckets.
+  let changed=false;
+  for(const item of [...(state.club||[]),...(state.sbcStorage||[])]){const before=item?.clubStats?JSON.stringify(item.clubStats):"";compactItemStats(item);if(before!==(item?.clubStats?JSON.stringify(item.clubStats):""))changed=true}
+  if(changed&&typeof save==="function")save();
+ }
 })();

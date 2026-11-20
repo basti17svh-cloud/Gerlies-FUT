@@ -191,3 +191,27 @@ test('only Max gets the Tippspiel pack, once, and it holds exactly 100,000 Foote
  const recovered=app({saved});assert.equal(recovered.run('grantDirectRewards().length'),0);
  recovered.ctx.state.packs[TIPP]=1;recovered.open(TIPP);assert.equal(recovered.ctx.state.points,100500);assert.equal(recovered.ctx.state.packs[TIPP],0)
 });
+
+const BDAY='geburtstag-max-20261120',BDAY_CLAIM='max_birthday_points_20261120',BDAY_PICK='max_birthday_pick_20261120';
+test('Max gets his birthday gifts once: 200,000 Points pack and a tradeable 2-of-6 90+ pick',()=>{
+ for(const owner of ['GF-OTHER',OWNER,'GF-9AE6CDDEFE8A458D']){
+  const a=app({owner});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[BDAY],undefined);assert.equal(a.ctx.state.giftPicks,undefined);
+  a.ctx.state.packs[BDAY]=1;a.open(BDAY);assert.equal(a.ctx.state.points,500)
+ }
+ const a=app({owner:MAX,at:'2026-11-20T08:00:00Z'});
+ const granted=a.run('grantDirectRewards()').map(r=>r.id);
+ assert.ok(granted.includes(BDAY_CLAIM));assert.ok(granted.includes(BDAY_PICK));
+ assert.equal(a.ctx.state.packs[BDAY],1);
+ assert.equal(a.ctx.state.giftPicks.length,1);
+ const pick=a.ctx.state.giftPicks[0];
+ assert.deepEqual([pick.id,pick.choices,pick.count,pick.minRating,pick.tradeable,pick.options],['giftpick-max-geburtstag-20261120',6,2,90,true,null]);
+ a.run('renderStore()');assert.match(a.get('ownedPacks').innerHTML,/Geburtstags-Pack/);
+ assert.equal(a.run(`packArtSrc('${BDAY}')`),'./assets/footera/geburtstag-pack.svg');
+ a.open(BDAY);assert.equal(a.ctx.state.points,200500);assert.equal(a.ctx.state.packs[BDAY],0);
+ a.open(BDAY);assert.equal(a.ctx.state.points,200500);
+ assert.equal(a.run('grantDirectRewards().length'),0);assert.equal(a.ctx.state.giftPicks.length,1,'only once');
+ a.ctx.state.giftPicks=[];a.ctx.state.giftPickClaims={'giftpick-max-geburtstag-20261120':{claimedAt:1}};
+ delete a.ctx.state.directClaims[BDAY_PICK];a.run('grantDirectRewards()');
+ assert.equal(a.ctx.state.giftPicks.length,0,'a claimed ticket never comes back');
+ assert.ok(fs.existsSync(path.join(__dirname,'..','assets','footera','geburtstag-pack.svg')));
+});
