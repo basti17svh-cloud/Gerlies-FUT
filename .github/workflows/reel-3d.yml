@@ -39,7 +39,8 @@ jobs:
           FROM: ${{ matrix.from || '0' }}
           MAXF: ${{ matrix.maxf || '1100' }}
         run: |
-          node reel-render/cap.cjs /tmp/cap/${{ matrix.name }} '${{ matrix.id }}' '${{ matrix.coach || '' }}'
+          if [ "${{ matrix.kabine || '' }}" = "1" ]; then node reel-render/kabine.cjs /tmp/cap/${{ matrix.name }}; [ -f /tmp/cap/${{ matrix.name }}/siegerfoto.jpg ] && mkdir -p out && cp /tmp/cap/${{ matrix.name }}/siegerfoto.jpg out/${{ matrix.name }}-siegerfoto.jpg || true; else
+          node reel-render/cap.cjs /tmp/cap/${{ matrix.name }} '${{ matrix.id }}' '${{ matrix.coach || '' }}'; fi
           mkdir -p out
           ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
           cp /tmp/cap/${{ matrix.name }}/meta.json out/${{ matrix.name }}.json
@@ -60,7 +61,7 @@ jobs:
       - name: Commit
         run: |
           mkdir -p reel-render/cap
-          find /tmp/arts -type f \( -name '*.mp4' -o -name '*.json' \) -exec cp {} reel-render/cap/ \;
+          find /tmp/arts -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.jpg' \) -exec cp {} reel-render/cap/ \;
           git config user.name 'Footera Asset Bot'
           git config user.email 'footera-assets@users.noreply.github.com'
           git add reel-render/cap

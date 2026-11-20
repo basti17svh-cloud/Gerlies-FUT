@@ -28,10 +28,10 @@ const COACHES={
  // The coach at the bench (kick-off) / at the change: our two named managers.
  const ev=REC.ev;
  // Club kits of the two teams (presentation only).
- Object.assign(ev,{homeColor:'#16161a',homeSecondary:'#e3202b',homePattern:'solid',homeShorts:'#16161a',homeSocks:'#16161a',homeKitConfigured:true,
-  awayColor:'#efe6c8',awaySecondary:'#b8902f',awayPattern:'solid',awayShorts:'#efe6c8',awaySocks:'#efe6c8',awayKitConfigured:true});
+ Object.assign(ev,{awayColor:'#16161a',awaySecondary:'#e3202b',awayPattern:'solid',awayShorts:'#16161a',awaySocks:'#16161a',awayKitConfigured:true,
+  homeColor:'#efe6c8',homeSecondary:'#b8902f',homePattern:'solid',homeShorts:'#efe6c8',homeSocks:'#efe6c8',homeKitConfigured:true});
  if(ev.ceremony==='kickoff'||ev.ceremony==='substitution'){
-  const c=COACHES[coachVariant||'totw'];
+  const c=COACHES[coachVariant||'icons'];
   ev.coach=await page.evaluate(async c=>{state.profile.manager=c.manager;try{localStorage.removeItem(FooteraManager.PORTRAIT_KEY)}catch(e){}
    await Promise.race([FooteraManager.ensurePortrait(),new Promise(r=>setTimeout(r,90000))]).catch(()=>{});
    const k=FooteraManager.forKickoff();if(k){k.label=c.label}return k},c);
