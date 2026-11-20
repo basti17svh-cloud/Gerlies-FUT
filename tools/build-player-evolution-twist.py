@@ -123,16 +123,17 @@ def modify_weights(pos, weights, joints, descriptors):
         direction=vector/length
         progress=((pos-a)@direction)/length
         distance=np.linalg.norm((pos-a)-((pos-a)@direction)[:,None]*direction,axis=1)
-        fade=np.clip((progress-.18)/.65,0,1)
+        fade=np.clip((progress-.12)/.73,0,1)
         fade=fade*fade*(3-2*fade)
         parent_slots=np.where(idx==d['parent_skin_index'],w,0.)
-        primary=parent_slots.max(axis=1)>.12
+        primary=parent_slots.max(axis=1)>.07
         # MetaHuman's authored pivot axes are not centered in the fitted
         # garment volume. Prefer vertices ACTUALLY weighted to this bone over
         # an unrealistically tight fixed-radius heuristic.
-        local=primary&(progress>.08)&(progress<1.18)
+        local=primary&(progress>.08)&(progress<1.08)
         if np.any(local):
-            adaptive=max(d['radius'],float(np.percentile(distance[local],85))*1.08)
+            adaptive=min(max(d['radius'],float(np.percentile(distance[local],85))*1.08),
+                         .34 if 'thigh' in d['name'] or 'calf' in d['name'] else .25)
         else:
             adaptive=d['radius']
         candidate=np.where(local&(distance<adaptive))[0]
@@ -146,10 +147,10 @@ def modify_weights(pos, weights, joints, descriptors):
             slots=np.where(idx[vi]==d['parent_skin_index'])[0]
             if len(slots)==0: continue
             parent=int(slots[np.argmax(w[vi,slots])])
-            if w[vi,parent]<.12:
+            if w[vi,parent]<.07:
                 continue
-            transfer=float(w[vi,parent] * .48 * fade[vi])
-            if transfer<.012:
+            transfer=float(w[vi,parent] * .47 * fade[vi])
+            if transfer<.009:
                 continue
             other=[s for s in range(4) if s!=parent]
             unused=[s for s in other if w[vi,s]<1e-7]
@@ -242,10 +243,26 @@ def build():
             normalized=wa.get('normalized',False),target=34962)
         report['twist_influence_vertices'][name]=affected
         report['mesh_weight_changes'][name]=changed
-    counts=report['twist_influence_vertices']['FooteraBody']
-    for name,count in counts.items():
-        if count<20:
-            raise ValueError('Unweighted twist '+name+': only '+str(count)+' body vertices')
+    # The source deliberately removes body triangles hidden beneath the kit.
+    # A calf lives mainly in FooteraSocks and a thigh in FooteraShorts.
+    # Requiring 20 *body-only* vertices is an invalid skinning acceptance test.
+    # Count real, nonzero influences on all visible, actually skinned surfaces.
+    coverage={}
+    for d in descriptors:
+        key=d['name']
+        part=key.split('_twist_')[0]
+        preferred={'upperarm':'FooteraShirt','lowerarm':'FooteraBody',
+                   'thigh':'FooteraShorts','calf':'FooteraSocks'}[part]
+        per_mesh={m:report['twist_influence_vertices'][m][key] for m in PARTS}
+        total=sum(per_mesh.values())
+        coverage[key]={'visible_mesh':preferred,'per_mesh':per_mesh,'total':total}
+        if total<20:
+            raise ValueError('Unweighted twist '+key+': '+str(total)+
+                             ' vertices across body+kit; distribution='+str(per_mesh))
+        if per_mesh[preferred]<8:
+            raise ValueError('Missing anatomical surface '+key+': only '+
+                             str(per_mesh[preferred])+' '+preferred+' vertices')
+    report['coverage']=coverage
     info=j['extras']['footera']
     info['bones']=orig+[d['name'] for d in descriptors]
     info['evolutionTwist']={'stage':'experimental',
