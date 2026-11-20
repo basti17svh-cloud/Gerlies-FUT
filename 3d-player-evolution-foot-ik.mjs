@@ -73,7 +73,7 @@ export function createFooteraFootPlant(root,mocap){
   aim(mid,end,target);
   return true;
  }
- function computePose({clip='run',phase=0,strength=1}={}){
+ function computePose({clip='run',phase=0,strength=1,anchorWorlds=null}={}){
   if(!Number.isFinite(phase)||!Number.isFinite(strength)||strength<0||strength>1)
    throw new RangeError('Invalid foot plant arguments');
   const pose=new Map(),results={};
@@ -87,7 +87,9 @@ export function createFooteraFootPlant(root,mocap){
    root.updateMatrixWorld(true);
    const footQ=end.getWorldQuaternion(new THREE.Quaternion());
    const current=end.getWorldPosition(new THREE.Vector3());
-   const anchor=root.localToWorld(mocap.anchor(clip,side));
+   const anchor=anchorWorlds?.[side]
+    ?new THREE.Vector3(...anchorWorlds[side])
+    :root.localToWorld(mocap.anchor(clip,side));
    // In the stationary 3D lab, anchor is a captured mid-stance footprint.
    // Never apply huge corrections to a bad retarget or unreachable target.
    const shift=anchor.clone().sub(current);
