@@ -111,6 +111,8 @@ test('Original Mixamo directional support gets a bounded IK overlay without chan
     groundContact:true,contactWeights:weights,contactPhases:phases});
    assert.ok(support.contactWeight>=0&&support.contactWeight<=1);
    assert.ok(support.supportProgress>=0&&support.supportProgress<=1);
+   assert.ok(support.inertiaShift.length()<=.023,'COM lag exceeds anatomical limit');
+   assert.ok(support.inferredAcceleration.toArray().every(Number.isFinite));
    assert.ok(output.pose.size<=6,'Only thigh/calf/foot should be IK-owned');
    for(const side of ['l','r']){
     assert.ok(Number.isFinite(output.feet[side].correction));
