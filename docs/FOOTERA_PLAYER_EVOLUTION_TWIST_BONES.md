@@ -96,3 +96,23 @@ Die sichtbar animierte Hüfte ist **ein technischer Verbesserungsschritt, kein f
 4. Benutzerfreigabe vor Merge oder irgendeiner Produktionsaktivierung. `main` und das Livespiel bleiben unverändert.
 
 **Abnahmezustand:** Die technische 60-Bone-Implementierung einschließlich Engine-Testnachweis ist erfüllt; optische und mobile Endabnahme steht noch aus. Nicht als fertig für Produktionsspiel veröffentlichen.
+
+
+## Schritt 4 – Knee Alignment (20.11.2026, isolierter Entwicklungsbranch)
+
+### Technischer Befund
+- Die vier unveränderten originalen Adobe-Mixamo-Captures (walk, jog, run, sprint) sind Grundlage sämtlicher Locomotion-Tests.
+- Der ursprüngliche Fuß-IK-Solver projizierte die **bereits retargetete Knieposition** als Pole-Vector. Seitliche Retarget-Fehler wurden dadurch unverändert zur bevorzugten Knie-Beugeebene. Eine beckenbezogene anatomische Ebene gab es bisher nicht.
+- Aus der GLB-Bind-Pose ergibt sich ein Knie-Pole-Winkel von ungefähr +27 Grad links beziehungsweise -27 Grad rechts gegenüber der becken- und schuhbezogenen Vorwärtsrichtung. Das zeigt die erhöhte Empfindlichkeit bei beinahe gestrecktem Bein, ist aber noch kein vollständiger Beleg für die Stärke des dynamischen Knie-Schlackerns.
+- Skinning/Twist-Bones ändern nicht die Knochenachsen und sind daher nicht die primäre Ursache; die vorhandenen Skin-Gewichte bleiben erhalten.
+
+### Isolierte Korrektur
+- Anatomischer Vorwärtsvektor aus der echten Schuhspitze in der Bind-Pose relativ zum Becken; diese Referenz dreht mit der Hüfte mit und bleibt nicht im Weltkoordinatensystem stehen.
+- Seitliche Knieachse wird in einen begrenzten 14-Grad-Korridor geführt; zulässige lateral-anatomische Bewegung und originaler Knie-Flex bleiben grundsätzlich erhalten.
+- Ursprüngliche Mixamo-Quaternions, reale Schrittlänge, Schuh-Weltrotation, Bone-Längen und vorheriger PoseDirector-Zustand bleiben unangetastet. Knieausrichtung und Fußkontakt können unabhängig aktiviert werden.
+- Neue UI-Schalter im Studio: Knieachse stabil/original sowie Knie-Nahaufnahme; dieselbe 60-Bone-GLB, Kamera, Zeitphase und Licht bei A/B.
+- Automatisierter Test der vier Original-Gangarten und Richtungsrotationen von +/-0,48 Radiant. Der bisherige Cut-Stresstest ist synthetisch; ein echter vollständig integrierter Richtungswechsel-Clip steht für diesen isolierten Test nicht zur Verfügung.
+- Automatisiertes Browser-Skript erzeugt Front- und Seitenansichten (vorher/nachher), Vergleichsblatt, zweispaltige echte GLB/WebGL-MP4 sowie Winkel-, Beuge- und Fußmetriken im JSON-Report.
+
+### Abnahmegrenzen
+Der Erfolg ist nur dann belegt, wenn die Node- und WebGL-Regressionssuite besteht und die Bilder sowie MP4 manuell überprüft wurden. Ein Pixelunterschied allein ist kein Qualitätsbeweis. Spielwelt-Integration, echter Cut-Mocap, Smartphone-Hardware-FPS und Match-Root sind weiterhin ausgenommen. Keine Übernahme auf main oder in das Livespiel; PR #240 bleibt Entwurf.
