@@ -43,6 +43,14 @@ Zahl pro Twist über Körper, Trikot, Hose und Stutzen. Das ist ein Einflussnach
 - Testartefakt: [A/B-Screenshots, Vergleichsblatt, MP4, GLB und Prüfbericht (ZIP)](https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44805902555/artifacts/14662757858) (GitHub-Artefakte 30 Tage gespeichert).
 - Dateinamen im ZIP: `real-3d-before-after-contact-sheet.jpg`, `footera-60-bone-engine-proof.mp4`, `report.json`, `skin-report.json`, Gelenk- und Bewegungs-`.png` sowie die experimentelle `.glb`.
 
+## Sichtprüfung der echten Renderdateien
+
+Die generierten PNGs, das Kontaktblatt und mehrere Frames des MP4 wurden nach dem erfolgreichen CI-Lauf tatsächlich geöffnet und verglichen.
+
+**Befund:** Das 60-Bone-Modell zeigt in den ±90°-Tests andere Deformationen als der 52-Bone-Master. Im Normalmaßstab sind viele dieser Unterschiede jedoch **dezent**; aus dem A/B-Bild folgt noch kein überzeugender Premium-Qualitätssprung. Besonders die Armhaltung und Oberarm-/Schulterpartie wirken in einzelnen Stand- und Bewegungsaufnahmen weiterhin relativ steif. Die Walk-/Kick-/Cut-Aufnahmen sind bewusst synthetische Stressposen und noch **keine** hochwertigen echten Match-Mocap-Sequenzen. In den betrachteten Einzelbildern waren keine völlig losgelösten Körperteile zu erkennen; eine Prüfung jedes einzelnen deformierten Dreiecks ist damit ausdrücklich nicht bewiesen.
+
+**Urteil zur Optik:** technisch funktionsfähiger 60-Bone-Kandidat, **visuelle Premium-Abnahme nicht bestanden / weiter offen**. Nicht mit «realistische Bewegungen fertig» gleichsetzen.
+
 ## Offene Abnahmepunkte
 
 1. **Optische Sichtprüfung echter Deformationen**: Schulter, Ellbogen, Hüfte, Knie, Trikot-/Hosen-/Stutzen-Säume bei Belastung. Der automatisierte Pixelvergleich erkennt Unterschiede, nicht deren ästhetische Qualität.
