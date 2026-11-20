@@ -9,6 +9,7 @@ on:
       - '3d-player-evolution-twist.mjs'
       - '3d-player-evolution-gait.mjs'
       - '3d-player-evolution-mocap.mjs'
+      - '3d-player-evolution-shoulders.mjs'
       - '3d-player-evolution-foot-ik.mjs'
       - 'tools/build-player-evolution-twist.py'
       - 'tests/player-evolution-twist.test.mjs'
@@ -41,6 +42,7 @@ jobs:
           node --check 3d-player-evolution-twist.mjs
           node --check 3d-player-evolution-gait.mjs
           node --check 3d-player-evolution-mocap.mjs
+          node --check 3d-player-evolution-shoulders.mjs
           node --check 3d-player-evolution-foot-ik.mjs
           node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
@@ -51,7 +53,7 @@ jobs:
           FFMPEG_BIN=$(node -p "require('/tmp/footera-twist-qa/node_modules/@ffmpeg-installer/ffmpeg').path")
           test -x "$FFMPEG_BIN"
           echo "FOOTERA_FFMPEG=$FFMPEG_BIN" >> "$GITHUB_ENV"
-      - name: Render authentic Mixamo knee-alignment A/B, axial poses and synchronized MP4
+      - name: Render original Mixamo shoulder and knee A/B, axial poses and synchronized MP4
         env:
           NODE_PATH: /tmp/footera-twist-qa/node_modules
           FOOTERA_CHROME_PATH: /usr/bin/google-chrome
@@ -121,6 +123,15 @@ jobs:
                   ImageDraw.Draw(knee).text((col*660+12,row*520+7),
                       f'Mixamo {view} / Knee alignment {condition}',fill='white')
           knee.save(p/'knee-axis-real-3d-before-after.jpg',quality=92)
+          shoulders=Image.new('RGB',(1320,1040),'#06131d')
+          for row,view in enumerate(['front','side']):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'shoulder-{view}-{state}.png').convert('RGB')
+                  source.thumbnail((635,485))
+                  shoulders.paste(source,(col*660+(660-source.width)//2,row*520+27))
+                  ImageDraw.Draw(shoulders).text((col*660+12,row*520+7),
+                      f'Original Mixamo / shoulder {view} / {state}',fill='white')
+          shoulders.save(p/'shoulder-mixamo-real-3d-before-after.jpg',quality=92)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
