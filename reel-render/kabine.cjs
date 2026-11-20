@@ -8,7 +8,8 @@ const KAB=fs.readFileSync(path.join(__dirname,'kabine.json'),'utf8');
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}`;
  const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
- const page=await browser.newPage({viewport:{width:432,height:768},deviceScaleFactor:2.5,serviceWorkers:'block'});
+ const page=await browser.newPage({viewport:{width:432,height:768},deviceScaleFactor:2.5,serviceWorkers:'block',timezoneId:'Europe/Berlin',locale:'de-DE'});
+ await page.clock.setFixedTime(new Date('2026-11-23T20:49:00Z'));
  page.on('pageerror',e=>console.log('pageerror',e.message));page.on('console',m=>{if(/Kabin|photo|Foto/i.test(m.text()))console.log('console',m.text().slice(0,200))});
  await page.addInitScript(k=>{try{localStorage.setItem('footera-kabine-v1',k);localStorage.setItem('footera-sound-v1','off')}catch(e){}
   Object.defineProperty(navigator,'deviceMemory',{configurable:true,get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},KAB);
@@ -29,6 +30,7 @@ const KAB=fs.readFileSync(path.join(__dirname,'kabine.json'),'utf8');
  for(let i=0;i<10;i++)await snap('read');
  console.log('chips',await page.evaluate(()=>[...document.querySelectorAll('[data-kb-reply]')].map(b=>b.dataset.kbReply+':'+b.textContent).join(' | ')));
  await page.evaluate(()=>document.querySelector('[data-kb-reply="photo"]')?.click());
+ for(let i=0;i<120;i++){await snap('photo');const b=await page.evaluate(()=>{const b=document.querySelector('[data-kb-photo-develop]');if(b&&!document.querySelector('.kb-typing')){b.click();return true}return false});if(b)break}
  let readyAt=-1;
  for(let i=0;i<700;i++){await snap('photo');const ready=await page.evaluate(()=>!!document.querySelector('.kb-photo.ready img'));if(ready&&readyAt<0){readyAt=i;await page.evaluate(()=>{const l=document.querySelector('#kabineList');l.scrollTop=l.scrollHeight})}if(readyAt>=0&&i-readyAt>25)break}
  const img=await page.evaluate(()=>document.querySelector('.kb-photo.ready img')?.src||'');

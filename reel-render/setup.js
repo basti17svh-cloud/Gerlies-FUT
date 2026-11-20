@@ -13,6 +13,8 @@ window.__reelSetup=function(opts={}){
  homeIdentity.crest={...homeIdentity.crest,initials:'TOTW',symbol:'star',primary:'#e3202b',secondary:'#120406',accent:'#ffffff',borderColor:'#e3202b'};
  homeIdentity.stadium={name:'Footera Arena',style:'kessel',seatPrimary:'#e3202b',seatSecondary:'#141418'};
  awayIdentity.crest={...awayIdentity.crest,initials:'ICON',symbol:'crown',primary:'#d9b45a',secondary:'#14110a',accent:'#ffffff',borderColor:'#d9b45a'};
+ awayIdentity.colors={primary:'#d9b45a',secondary:'#14110a',accent:'#efe6c8'};awayIdentity.kits={...awayIdentity.kits,home:{pattern:'solid',shirtPrimary:'#efe6c8',shirtSecondary:'#b8902f',shorts:'#efe6c8',socks:'#efe6c8'}};
+ homeIdentity.colors={primary:'#e3202b',secondary:'#16161a',accent:'#ffffff'};homeIdentity.kits={...homeIdentity.kits,home:{pattern:'solid',shirtPrimary:'#16161a',shirtSecondary:'#e3202b',shorts:'#16161a',socks:'#16161a'}};
  const iconItems=icons.map(b=>makeItem(b,false));
  state.club=iconItems;state.squad=iconItems.map(i=>i.uid);state.formation='4-3-3';state.tactic='balanced';
  awayIdentity.stadium=homeIdentity.stadium;
