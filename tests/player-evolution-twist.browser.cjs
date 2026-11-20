@@ -452,6 +452,22 @@ const server=http.createServer((req,res)=>{
    report.groundIK2.gait.push({clip,active,soles:b.mocap.soles,
     rootMeters:b.rootPosition});
   }
+  // Readable fixed-WORLD-camera sole detail, same time and source pose.
+  // The regular route video stays full-frame and fixed, while these stills
+  // permit real inspection of each boot instead of using a fake zoom crop.
+  report.groundIK2.closeupImages=[];
+  for(const clip of ['walk','jog','run','sprint']){
+   const opts={version:'master',mode:'mocap',mocapClip:clip,
+    time:.27/gaitRates[clip],angle:Math.PI/2,zoom:'knees',
+    cameraFixed:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
+    rootTravel:true};
+   for(const groundIK of [false,true]){
+    const suffix=groundIK?'after':'before';
+    const name='foot-ik2-close-'+clip+'-'+suffix;
+    await capture(name,{...opts,groundIK});
+    report.groundIK2.closeupImages.push(name+'.png');
+   }
+  }
   for(const direction of ['strafeLeft','strafeRight','backpedal']){
    const args={version:'master',mode:'directional',direction,time:1.35,
     angle:direction==='backpedal'?Math.PI/2:0,
