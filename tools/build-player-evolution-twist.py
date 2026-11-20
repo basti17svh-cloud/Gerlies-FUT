@@ -103,6 +103,18 @@ def world_matrices(nodes):
 
 
 def modify_weights(pos, weights, joints, descriptors):
+    # An earlier exporter call accidentally swapped JOINTS_0 and WEIGHTS_0.
+    # Both use uint8: test their semantic ranges, not merely their dtypes.
+    if joints.dtype.kind not in 'ui' or np.max(joints)>=52:
+        raise ValueError('Invalid JOINTS_0: expected original 52-bone indices')
+    if weights.dtype==np.uint8:
+        if not np.all(weights.astype(np.int32).sum(axis=1)==255):
+            raise ValueError('Invalid WEIGHTS_0: normalized uint8 skinning required')
+    elif weights.dtype==np.float32:
+        if not np.allclose(weights.sum(axis=1),1,atol=.005):
+            raise ValueError('Invalid WEIGHTS_0: normalized float skinning required')
+    else:
+        raise ValueError('Unsupported WEIGHTS_0 format')
     initial=weights.copy()
     if weights.dtype == np.uint8:
         w=weights.astype(np.float64)/255.0
