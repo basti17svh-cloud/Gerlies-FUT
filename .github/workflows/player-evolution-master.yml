@@ -1,0 +1,81 @@
+name: Footera Player Evolution Step 2 – Master GLB and Render Proof
+on:
+  push:
+    branches: ['feature/player-evolution-step2-master']
+    paths:
+      - 'tools/build-player-evolution-master.py'
+      - 'tests/player-evolution-master.test.mjs'
+      - 'tests/player-evolution-lab.browser.cjs'
+      - 'player-evolution-lab.html'
+      - '.github/workflows/player-evolution-master.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-master:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install model sculpt tools
+        run: python -m pip install --disable-pip-version-check numpy pillow
+      - name: Build separate authentic GLB from existing MetaHuman source
+        run: |
+          python tools/build-player-evolution-master.py > /tmp/footera-evolution-build.json
+          cat /tmp/footera-evolution-build.json
+          test -s assets/footera/models/footera-evolution-master.glb
+      - name: Rig and new model regression tests
+        run: |
+          node --test tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs tests/3d-player-retarget.test.cjs tests/metahuman-players.test.mjs
+      - name: Install Chromium and Playwright for real 3D renders
+        run: |
+          npm install --prefix /tmp/footera-evolution-ci playwright@1.51.1
+          /tmp/footera-evolution-ci/node_modules/.bin/playwright install --with-deps chromium
+      - name: Render WebGL stills and MP4 proof
+        env: {NODE_PATH: /tmp/footera-evolution-ci/node_modules}
+        run: |
+          node tests/player-evolution-lab.browser.cjs
+          cp /tmp/footera-evolution-build.json test-artifacts/player-evolution/model-build-report.json
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          p=Path('test-artifacts/player-evolution')
+          cells=[]
+          for view in ['front','threequarter','back','face']:
+              for version in ['before','master']:
+                  image=Image.open(p/f'{view}-{version}.png').convert('RGB')
+                  image.thumbnail((435,480))
+                  panel=Image.new('RGB',(450,515),'#101e2a')
+                  panel.paste(image,((450-image.width)//2,28))
+                  ImageDraw.Draw(panel).text((12,8),f'{view.upper()} — {version.upper()}',fill='white')
+                  cells.append(panel)
+          sheet=Image.new('RGB',(900,2060),'#06121b')
+          for i,cell in enumerate(cells):sheet.paste(cell,((i%2)*450,(i//2)*515))
+          sheet.save(p/'before-after-contact-sheet.jpg',quality=88)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-player-evolution-step2-proof
+          path: |
+            test-artifacts/player-evolution/*.png
+            test-artifacts/player-evolution/*.jpg
+            test-artifacts/player-evolution/*.mp4
+            test-artifacts/player-evolution/*.json
+            assets/footera/models/footera-evolution-master.glb
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Publish isolated master binary to feature branch
+        if: success() && github.event_name == 'push' && github.ref_name == 'feature/player-evolution-step2-master'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/footera/models/footera-evolution-master.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "build(player-evolution): publish verified Step 2 master GLB [skip ci]"
+            git push origin HEAD:refs/heads/feature/player-evolution-step2-master
+          fi
