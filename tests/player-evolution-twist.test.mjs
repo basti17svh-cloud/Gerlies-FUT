@@ -55,7 +55,7 @@ test('Source materials, geometry positions, face morphs and game assets unchange
   assert.deepEqual(accessor(dst,mesh(dst).attributes.POSITION),accessor(src,mesh(src).attributes.POSITION),name);
  }
 });
-test('Each twist bone actually deforms skin in body; weighted vertices sum to 1',()=>{
+test('Each twist bone deforms its anatomically visible mesh; weights sum to one',()=>{
  const joints=dst.j.skins[0].joints,byId=new Map(joints.map((i,k)=>[dst.j.nodes[i].name,k]));
  const active=new Map(pairs.map(d=>[d.name,0]));
  const surfaces=new Map(pairs.map(d=>[d.name,new Map()]));
@@ -108,7 +108,7 @@ test('Twist correction counter-rotates parent axial motion only; no primary bone
  assert.equal(report.auxiliaryBones,8);
  const solver=createFooteraTwistSolver(root);
  const shoulder=map.get('upperarm_l'),twist=map.get('upperarm_twist_l');
- const orig=shoulder.quaternion.clone(),axis=new THREE.Vector3(0,1,0);
+ const orig=shoulder.quaternion.clone(),axis=map.get('lowerarm_l').position.clone().normalize();
  shoulder.quaternion.setFromAxisAngle(axis,Math.PI/2);
  solver.update();
  assert.ok(twist.quaternion.angleTo(new THREE.Quaternion().setFromAxisAngle(axis,-Math.PI/4))<1e-6);
