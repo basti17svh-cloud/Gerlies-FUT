@@ -57,8 +57,11 @@ test('All four genuine shipped Mixamo captures can be sampled as 52 local quater
    clip+' should animate the left arm');
   assert.ok(Math.abs(a.translation.y)<=.045);
   assert.ok(a.feet.l.every(Number.isFinite)&&a.feet.r.every(Number.isFinite));
-  assert.ok(qDistance(a.pose.get('pelvis'),capture.sample(clip,.11).pose.get('pelvis'))<1e-6,
-   clip+' seek determinism');
+  const replay=capture.sample(clip,.11).pose.get('pelvis');
+  const first=a.pose.get('pelvis');
+  for(const axis of ['x','y','z','w'])
+   assert.ok(Math.abs(first[axis]-replay[axis])<1e-7,
+    clip+' deterministic '+axis+' (component-wise, independent of float32 dot rounding)');
  }
  FOOTERA_EVOLUTION_BONES.forEach(({name},i)=>{
   assert.ok(qDistance(bones.get(name).quaternion,before[i])<1e-6,name+' not mutated');
