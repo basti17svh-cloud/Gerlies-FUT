@@ -436,12 +436,17 @@ const server=http.createServer((req,res)=>{
    const a=await capture('foot-ik2-'+clip+'-before',{...args,groundIK:false});
    const b=await capture('foot-ik2-'+clip+'-after',{...args,groundIK:true});
    assert.ok(!a.mocap.groundContact&&b.mocap.groundContact,'Ground A/B mode invalid');
-   assert.ok(Math.hypot(...a.rootPosition.map((x,i)=>x-b.rootPosition[i]))<.000001,
-    'Ground IK must not alter the original captured root track');
+   assert.ok(Math.hypot(a.rootPosition[0]-b.rootPosition[0],
+      a.rootPosition[2]-b.rootPosition[2])<.000001,
+    'Ground IK must preserve horizontal captured root track');
+   assert.ok(Math.abs(b.mocap.rootGroundOffsetY)<=.10001,
+    'Preview contact root height correction exceeds 10 cm');
    const active=Object.values(b.mocap.feet).filter(f=>f.active);
    assert.ok(active.length>=1,clip+' no ground-contact foot');
    for(const foot of active){
-    assert.ok(foot.floorPenetration>=0&&Number.isFinite(foot.floorPenetration));
+    assert.ok(foot.floorPenetration>=0&&foot.floorPenetration<.02);
+    assert.ok(Math.min(foot.heelHeight,foot.toeHeight)<.025,
+     clip+' support shoe must be close to actual floor');
     assert.ok(Math.abs(foot.soleLift)<=.07001&&Math.abs(foot.rollDeg)<11.6);
    }
    report.groundIK2.gait.push({clip,active,soles:b.mocap.soles,
@@ -456,13 +461,20 @@ const server=http.createServer((req,res)=>{
    const on=await capture('foot-ik2-'+direction+'-after',{...args,groundIK:true});
    assert.equal(on.mocap.direction.groundIKEnabled,true);
    assert.equal(off.mocap.direction.groundIKEnabled,false);
-   assert.ok(Math.hypot(...off.rootPosition.map((x,i)=>x-on.rootPosition[i]))<.000001,
-    direction+' ground correction must not move the preview root');
+   assert.ok(Math.hypot(off.rootPosition[0]-on.rootPosition[0],
+     off.rootPosition[2]-on.rootPosition[2])<.000001,
+    direction+' ground correction must preserve horizontal preview root');
+   assert.ok(Math.abs(on.mocap.direction.rootGroundOffsetY)<=.10001,
+    direction+' preview vertical root correction exceeds 10 cm');
    const feet=on.mocap.direction.groundFeet;
    assert.ok(feet?.l&&feet?.r,direction+' missing shoe diagnostics');
    const active=Object.values(feet).filter(f=>f.active);
-   for(const foot of active)
+   for(const foot of active){
     assert.ok(Math.abs(foot.soleLift)<=.07001&&Math.abs(foot.rollDeg)<=11.6);
+    assert.ok(foot.floorPenetration<.025&&
+      Math.min(foot.heelHeight,foot.toeHeight)<.035,
+      direction+' planted shoe must not float or penetrate in flat studio');
+   }
    report.groundIK2.directional.push({direction,
     source:on.mocap.source,active,rootMeters:on.rootPosition,
     support:on.mocap.direction.estimatedContactSide});
