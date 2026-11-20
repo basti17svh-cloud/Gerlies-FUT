@@ -22,7 +22,7 @@ for (const side of SIDES) {
   ['clavicle','spine_03'],['upperarm','clavicle'],['lowerarm','upperarm'],
   ['hand','lowerarm'],['thigh','pelvis'],['calf','thigh'],
   ['foot','calf'],['ball','foot']
- ]) definition.push([bone+'_'+side,parent.includes('_')?parent:parent+'_'+side]);
+ ]) definition.push([bone+'_'+side,parent==='pelvis'||parent.includes('_')?parent:parent+'_'+side]);
  for (const finger of FINGERS)
   for (let joint=1;joint<=3;joint++)
    definition.push([finger+'_0'+joint+'_'+side,
