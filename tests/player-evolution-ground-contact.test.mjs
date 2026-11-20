@@ -9,7 +9,7 @@ import {FOOTERA_EVOLUTION_BONES,createFooteraPoseDirector}
  from '../3d-player-evolution-rig.mjs';
 import {createFooteraCapturedGait,FOOTERA_MOCAP_GAITS}
  from '../3d-player-evolution-mocap.mjs';
-import {createFooteraFootPlant} from '../3d-player-evolution-foot-ik.mjs';
+import {createFooteraFootPlant,footeraGroundRootOffset} from '../3d-player-evolution-foot-ik.mjs';
 import {createFooteraDirectionalTransitions,FOOTERA_DIRECTION_MOVES}
  from '../3d-player-evolution-transitions.mjs';
 import {createFooteraDirectionalContact}
@@ -37,6 +37,18 @@ function rig(){
  }
  root.updateMatrixWorld(true);return{root,bones};
 }
+
+test('Ground-root vertical contact prevents floating without changing anatomy or clipping',()=>{
+ const planted={l:{active:true,weight:1,heelHeight:.108,toeHeight:.081},
+  r:{active:false,weight:0,heelHeight:null,toeHeight:null}};
+ const correction=footeraGroundRootOffset(planted);
+ assert.ok(Math.abs(correction+.078)<.0001,'measured sole must reach floor');
+ assert.ok(Math.abs(footeraGroundRootOffset({l:{...planted.l,heelHeight:.20,
+  toeHeight:.14}})+.10)<1e-8,'never lower root more than 10 cm');
+ assert.equal(footeraGroundRootOffset({l:{...planted.l,active:false}}),0);
+ assert.equal(footeraGroundRootOffset(null),0);
+ assert.throws(()=>footeraGroundRootOffset(planted,{maxOffset:0}),RangeError);
+});
 
 test('Foot IK 2.0 keeps captured limbs reversible and constrains shoe roll/lift across four gaits',()=>{
  const {root,bones}=rig(),cap=createFooteraCapturedGait(root),
