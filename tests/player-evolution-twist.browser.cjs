@@ -226,6 +226,84 @@ const server=http.createServer((req,res)=>{
    path.join(out,'footera-knee-alignment-3d-before-after.mp4')]);
   assert.ok(fs.statSync(path.join(out,'footera-knee-alignment-3d-before-after.mp4')).size>30000);
   report.mixamo.kneeAxis.video='footera-knee-alignment-3d-before-after.mp4';
+  // Same 60-bone GLB on BOTH sides: original recorded Mixamo upper arms
+  // against pelvis-relative shoulder retarget (no added synthetic swing).
+  report.mixamo.shoulders={source:'Adobe Mixamo originals retained',samples:[],
+   maxBeforeDegrees:0,maxAfterDegrees:0,casesCorrected:0,
+   geometryIdentical:true,visualApproval:false};
+  let worst={excess:0,clip:'sprint',phase:.25,side:'l'};
+  for(const clip of ['walk','jog','run','sprint']){
+   const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[clip];
+   for(const phase of [.12,.28,.48,.72,.88]){
+    const args={version:'master',mode:'mocap',mocapClip:clip,
+     time:phase/rate,footPlant:true,kneeAlign:true,rootTravel:true,
+     angle:0,zoom:'chest'};
+    const a=await page.evaluate(v=>window.footeraQaRender(v),
+     {...args,shoulderAlign:false});
+    const b=await page.evaluate(v=>window.footeraQaRender(v),
+     {...args,shoulderAlign:true});
+    assert.equal(a.mocap.clip,clip);
+    assert.ok(b.mocap.shoulderSource.includes('Mixamo'));
+    for(const side of ['l','r']){
+     const x=a.mocap.shoulders[side],y=b.mocap.shoulders[side];
+     assert.ok([x.beforeDeg,y.afterDeg,y.changeDeg].every(Number.isFinite));
+     assert.ok(y.afterDeg<=x.beforeDeg+.01,'Shoulder wider than original');
+     const excess=x.beforeDeg-y.afterDeg;
+     if(excess>.1)report.mixamo.shoulders.casesCorrected++;
+     if(excess>worst.excess)worst={excess,clip,phase,side};
+     report.mixamo.shoulders.maxBeforeDegrees=Math.max(
+      report.mixamo.shoulders.maxBeforeDegrees,x.beforeDeg);
+     report.mixamo.shoulders.maxAfterDegrees=Math.max(
+      report.mixamo.shoulders.maxAfterDegrees,y.afterDeg);
+     report.mixamo.shoulders.samples.push({clip,phase,side,
+      original:x.beforeDeg,after:y.afterDeg,change:excess});
+    }
+    for(const side of ['l','r']){
+     const afoot=a.actualFeet[side],bfoot=b.actualFeet[side];
+     assert.ok(Math.hypot(...afoot.map((p,i)=>p-bfoot[i]))<.0002,
+      'Upper body must not change captured foot placement: '+clip+side);
+    }
+   }
+  }
+  report.mixamo.shoulders.worst=worst;
+  assert.ok(report.mixamo.shoulders.casesCorrected>0,
+   'The source mocap should expose at least one excessive arm-out pose');
+  const worstRate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[worst.clip];
+  for(const [view,angle] of [['front',0],['side',Math.PI/2]]){
+   for(const [suffix,shoulderAlign] of [['before',false],['after',true]])
+    await capture('shoulder-'+view+'-'+suffix,{version:'master',mode:'mocap',
+     mocapClip:worst.clip,time:worst.phase/worstRate,angle,zoom:'chest',
+     footPlant:true,kneeAlign:true,rootTravel:true,shoulderAlign});
+  }
+  // Capture synchronized before/after video with identical original gait
+  // phases, real Three.js skin deformation and camera. Avoid fabricated images.
+  const shoulderFrames=path.join(out,'shoulder-pair-frames');
+  fs.mkdirSync(shoulderFrames,{recursive:true});
+  for(let i=0;i<36;i++){
+   const clip=i<12?'jog':i<24?'run':'sprint',
+    rate={jog:1.4,run:1.7,sprint:2.1}[clip],
+    shot={version:'master',mode:'mocap',mocapClip:clip,time:(i%12)/12/rate,
+     angle:i<18?0:Math.PI/2,zoom:'full',
+     kneeAlign:true,footPlant:true,rootTravel:true};
+   const views=[];
+   for(const shoulderAlign of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),{...shot,shoulderAlign});
+    views.push(PNG.sync.read(await page.locator('canvas').screenshot()));
+   }
+   const pair=new PNG({width:2*views[0].width,height:views[0].height});
+   views.forEach((p,j)=>PNG.bitblt(p,pair,0,0,p.width,p.height,j*p.width,0));
+   fs.writeFileSync(path.join(shoulderFrames,'frame-'+String(i).padStart(3,'0')+'.png'),
+    PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(shoulderFrames,'frame-%03d.png'),'-vf','scale=1440:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,'footera-shoulder-mixamo-before-after.mp4')]);
+  report.mixamo.shoulders.video='footera-shoulder-mixamo-before-after.mp4';
+  report.mixamo.shoulders.images=['shoulder-front-before.png',
+   'shoulder-front-after.png','shoulder-side-before.png','shoulder-side-after.png'];
+  assert.ok(fs.statSync(path.join(out,report.mixamo.shoulders.video)).size>30000);
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
