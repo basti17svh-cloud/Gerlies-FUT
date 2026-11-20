@@ -11,6 +11,7 @@ on:
       - '3d-player-evolution-mocap.mjs'
       - '3d-player-evolution-shoulders.mjs'
       - '3d-player-evolution-transitions.mjs'
+      - '3d-player-evolution-direction-contact.mjs'
       - '3d-player-evolution-foot-ik.mjs'
       - 'tools/build-player-evolution-twist.py'
       - 'tests/player-evolution-twist.test.mjs'
@@ -45,6 +46,7 @@ jobs:
           node --check 3d-player-evolution-mocap.mjs
           node --check 3d-player-evolution-shoulders.mjs
           node --check 3d-player-evolution-transitions.mjs
+          node --check 3d-player-evolution-direction-contact.mjs
           node --check 3d-player-evolution-foot-ik.mjs
           node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
@@ -55,7 +57,7 @@ jobs:
           FFMPEG_BIN=$(node -p "require('/tmp/footera-twist-qa/node_modules/@ffmpeg-installer/ffmpeg').path")
           test -x "$FFMPEG_BIN"
           echo "FOOTERA_FFMPEG=$FFMPEG_BIN" >> "$GITHUB_ENV"
-      - name: Render authentic Mixamo gait, shoulder, knee and directional preview MP4s
+      - name: Render authentic Mixamo knee, shoulder, directional root-contact and skinning A/B MP4s
         env:
           NODE_PATH: /tmp/footera-twist-qa/node_modules
           FOOTERA_CHROME_PATH: /usr/bin/google-chrome
@@ -143,6 +145,15 @@ jobs:
                   ImageDraw.Draw(directions).text((col*660+12,row*520+8),
                       f'Original Mixamo {name} / t={time}',fill='white')
           directions.save(p/'direction-mixamo-real-3d-contact-sheet.jpg',quality=92)
+          contacts=Image.new('RGB',(1320,1560),'#06131d')
+          for row,name in enumerate(['strafeLeft','strafeRight','backpedal']):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'direction-root-{name}-{state}.png').convert('RGB')
+                  source.thumbnail((635,475))
+                  contacts.paste(source,(col*660+(660-source.width)//2,row*520+30))
+                  ImageDraw.Draw(contacts).text((col*660+12,row*520+8),
+                      f'Original Mixamo {name} / contact root {state}',fill='white')
+          contacts.save(p/'direction-foot-contact-real-3d-before-after.jpg',quality=92)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
