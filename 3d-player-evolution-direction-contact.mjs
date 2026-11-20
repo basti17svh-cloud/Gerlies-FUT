@@ -111,9 +111,22 @@ export function createFooteraDirectionalContact(transitions,{
   // Smooth the inferred support boundary rather than snapping an IK lock.
   const contactWeight=smooth(0,.085,supportAge)*
    (next?1-smooth(-.10,0,time-next.time):1);
+  // Low-pass finite difference of the captured-foot-derived ROOT path.
+  // The tiny local COM lag is physical secondary motion, not a replacement
+  // leg animation or an extra movement of the authoritative preview root.
+  const radius=8,previous=data.rows[Math.max(0,i-radius)].offset;
+  const following=data.rows[Math.min(data.rows.length-1,i+radius)].offset;
+  const dt=radius/hz;
+  const accel=following.clone().add(previous)
+   .addScaledVector(a.offset,-2).multiplyScalar(1/(dt*dt));
+  const fade=smooth(0,.15,time)*(1-smooth(2.85,3,time));
+  const inertiaShift=new THREE.Vector3(
+   clamp(-accel.x*.0012,-.018,.018)*fade,0,
+   clamp(-accel.z*.0010,-.014,.014)*fade);
   return{time,direction,rootTravel:translation,
    supportSide:a.support,estimatedFootprint:a.footprint.clone(),
    supportAge,supportProgress,contactWeight,
+   inferredAcceleration:accel.clone(),inertiaShift,
    footprintSlip:enabled?plantedError:null,
    activeFootHeight:localFoot.y,
    speedLimited:a.speedLimited,limits:data.stats,
