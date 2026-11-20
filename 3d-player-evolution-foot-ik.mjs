@@ -23,6 +23,65 @@ const MAX_KNEE_LATERAL=14/DEG;
 const MAX_FOOT_REACH=.18;
 const EPS=1e-8;
 const getPoint=(b)=>b.getWorldPosition(new THREE.Vector3());
+const UP=new THREE.Vector3(0,1,0);
+const MAX_SOLE_LIFT=.07,MAX_SOLE_ROLL=.20;
+
+/**
+ * Record sole landmarks from the actual skinned boot vertices IN BIND POSE.
+ * Markers stay foot-local, hence later follow real Mixamo foot rotations.
+ * A kinematic bone-only fallback is kept for synthetic unit-test rigs.
+ */
+function measureSoleMarkers(root,foot,ball){
+ root.updateMatrixWorld(true);
+ const ballLocal=foot.worldToLocal(getPoint(ball));
+ const forward=ballLocal.clone().setY(0);
+ if(forward.lengthSq()<1e-6)throw new Error('Invalid shoe forward axis');
+ forward.normalize();
+ const vertices=[];
+ root.traverse(mesh=>{
+  if(!mesh.isSkinnedMesh||!/boot/i.test(mesh.name))return;
+  const pos=mesh.geometry?.getAttribute('position');
+  const joints=mesh.geometry?.getAttribute('skinIndex');
+  const weights=mesh.geometry?.getAttribute('skinWeight');
+  if(!pos||!joints||!weights||!mesh.skeleton)return;
+  const indices=['getX','getY','getZ','getW'];
+  for(let i=0;i<pos.count;i++){
+   let influence=0;
+   for(const read of indices){
+    const b=mesh.skeleton.bones[joints[read](i)];
+    if(b===foot||b===ball)influence+=weights[read](i);
+   }
+   if(influence<.28)continue;
+   const point=new THREE.Vector3().fromBufferAttribute(pos,i);
+   mesh.localToWorld(point);foot.worldToLocal(point);
+   vertices.push({point,progress:point.dot(forward)});
+  }
+ });
+ if(vertices.length<24){
+  return{heel:ballLocal.clone().multiplyScalar(-.33)
+    .add(new THREE.Vector3(0,-.012,0)),
+   toe:ballLocal.clone(),meshCalibrated:false,vertexCount:vertices.length};
+ }
+ const byHeight=[...vertices].sort((a,b)=>a.point.y-b.point.y);
+ const cutoff=byHeight[Math.min(byHeight.length-1,Math.floor(byHeight.length*.17))].point.y+.008;
+ const outsole=vertices.filter(v=>v.point.y<=cutoff).sort((a,b)=>a.progress-b.progress);
+ if(outsole.length<12)
+  return{heel:ballLocal.clone().multiplyScalar(-.33),toe:ballLocal.clone(),
+   meshCalibrated:false,vertexCount:vertices.length};
+ const band=Math.max(3,Math.floor(outsole.length*.16));
+ const centroid=arr=>arr.reduce((v,p)=>v.add(p.point),new THREE.Vector3())
+  .multiplyScalar(1/arr.length);
+ const heel=centroid(outsole.slice(0,band));
+ const toe=centroid(outsole.slice(-band));
+ if(heel.distanceTo(toe)<.07)throw new Error('Degenerate real boot sole');
+ return{heel,toe,meshCalibrated:true,vertexCount:vertices.length};
+}
+function soleWorld(limb){
+ const heel=limb.end.localToWorld(limb.sole.heel.clone());
+ const toe=limb.end.localToWorld(limb.sole.toe.clone());
+ return{heel,toe,lowest:Math.min(heel.y,toe.y),
+  span:Math.hypot(toe.x-heel.x,toe.z-heel.z)};
+}
 
 export function footeraStanceWeight(phase,side){
  if(!Number.isFinite(phase)||!['l','r'].includes(side))
@@ -50,7 +109,8 @@ export function createFooteraFootPlant(root,mocap){
   if(forwardLocal.lengthSq()<1e-5)
    throw new Error('Missing anatomical toe-forward axis: '+side);
   forwardLocal.normalize();
-  return {side,upper,mid,end,upperLen:hip.distanceTo(knee),
+  return {side,upper,mid,end,toe,sole:measureSoleMarkers(root,end,toe),
+   upperLen:hip.distanceTo(knee),
    lowerLen:knee.distanceTo(ankle),forwardLocal};
  });
  const parentQ=new THREE.Quaternion();
@@ -122,9 +182,15 @@ export function createFooteraFootPlant(root,mocap){
   return{requestedDistance:rawDist,reachedDistance:distance};
  }
  function computePose({clip='run',phase=0,strength=1,kneeAlignment=strength,
-                      anchorWorlds=null}={}){
-  if(![phase,strength,kneeAlignment].every(Number.isFinite)||
-   strength<0||strength>1||kneeAlignment<0||kneeAlignment>1)
+                      anchorWorlds=null,groundContact=false,groundY=0,
+                      contactWeights=null,contactPhases=null}={}){
+  if(![phase,strength,kneeAlignment,groundY].every(Number.isFinite)||
+   strength<0||strength>1||kneeAlignment<0||kneeAlignment>1||
+   groundY<-.2||groundY>.3||
+   (contactWeights&&['l','r'].some(s=>contactWeights[s]!=null&&
+    (!Number.isFinite(contactWeights[s])||contactWeights[s]<0||contactWeights[s]>1)))||
+   (contactPhases&&['l','r'].some(s=>contactPhases[s]!=null&&
+    (!Number.isFinite(contactPhases[s])||contactPhases[s]<0||contactPhases[s]>1))))
    throw new RangeError('Invalid foot plant or knee alignment arguments');
   const pose=new Map(),results={},knees={};
   for(const limb of legs){
@@ -134,7 +200,9 @@ export function createFooteraFootPlant(root,mocap){
    const anchor=anchorWorlds?.[side]
     ?new THREE.Vector3(...anchorWorlds[side])
     :root.localToWorld(mocap.anchor(clip,side));
-   const weight=footeraStanceWeight(phase,side)*strength;
+   const sourceWeight=contactWeights?.[side]??footeraStanceWeight(phase,side);
+   const weight=sourceWeight*strength;
+   const soleBefore=groundContact?soleWorld(limb):null;
    const shift=anchor.clone().sub(current);
    const stats={weight,active:false,errorBefore:Math.hypot(shift.x,shift.z),
     errorAfter:Math.hypot(shift.x,shift.z),correction:0};
@@ -142,6 +210,15 @@ export function createFooteraFootPlant(root,mocap){
    const wanted=shift.length(),bounded=Math.min(1,MAX_FOOT_REACH/
     Math.max(wanted,1e-9))*weight;
    const goal=current.clone().addScaledVector(shift,bounded);
+   // Keep the ankle within the existing 18 cm reach bound. A secondary,
+   // bounded Y-only correction brings the actual outsole close to the pitch.
+   // Swing shoes are NEVER pinned, and source toe-off remains free.
+   const soleLift=soleBefore&&weight>.01
+    ?clamp(groundY+.004-soleBefore.lowest,-MAX_SOLE_LIFT,MAX_SOLE_LIFT)*weight
+    :0;
+   goal.y+=soleLift;
+   stats.soleLift=soleLift;
+   stats.meshCalibrated=limb.sole.meshCalibrated;
    const plane=kneePlane(limb,goal);
    const deviationBefore=plane?.angle*DEG||0;
    const needsKnee=kneeAlignment>.001&&
@@ -160,6 +237,39 @@ export function createFooteraFootPlant(root,mocap){
      end.parent.getWorldQuaternion(parentQ).invert();
      end.quaternion.copy(parentQ).multiply(footQ).normalize();
      root.updateMatrixWorld(true);
+     // Original captured shoe orientation dominates touchdown and toe-off.
+     // During true support only, correct a measured heel/toe height gradient
+     // around the anatomical lateral axis. No synthetic sine/clip is added.
+     const wrapped=((phase+(side==='r'?.5:0))%1+1)%1;
+     const progress=contactPhases?.[side]??clamp(wrapped/.55);
+     let rollDeg=0;
+     if(soleBefore&&weight>.01){
+      const measured=soleWorld(limb);
+      if(measured.span>.055){
+       const forward=measured.toe.clone().sub(measured.heel).setY(0).normalize();
+       const axis=new THREE.Vector3().crossVectors(UP,forward).normalize();
+       const desired=clamp(Math.atan2(measured.toe.y-measured.heel.y,
+         measured.span),-MAX_SOLE_ROLL,MAX_SOLE_ROLL);
+       const flatten=smooth(.12,.30,progress)*
+        (1-smooth(.73,.94,progress))*weight;
+       const roll=desired*flatten;
+       if(Math.abs(roll)>1e-8){
+        end.getWorldQuaternion(worldQ);
+        worldQ.premultiply(new THREE.Quaternion().setFromAxisAngle(axis,roll));
+        end.parent.getWorldQuaternion(parentQ).invert();
+        end.quaternion.copy(parentQ).multiply(worldQ).normalize();
+        root.updateMatrixWorld(true);
+       }
+       rollDeg=roll*DEG;
+      }
+     }
+     const contactSole=soleBefore?soleWorld(limb):null;
+     stats.rollDeg=rollDeg;
+     stats.heelHeight=contactSole?.heel.y??null;
+     stats.toeHeight=contactSole?.toe.y??null;
+     stats.floorPenetration=contactSole?
+      Math.max(0,groundY-contactSole.lowest):null;
+     stats.contactProgress=progress;
      const corrected=getPoint(end);
      stats.errorAfter=Math.hypot(corrected.x-anchor.x,corrected.z-anchor.z);
      stats.correction=corrected.distanceTo(current);
@@ -176,7 +286,12 @@ export function createFooteraFootPlant(root,mocap){
    }
   }
   return{pose,feet:results,knees,
-   source:'Captured Mixamo + anatomical pelvis-space knee pole + bounded 2-bone foot IK'};
+   source:groundContact
+    ?'Captured Mixamo + measured boot outsole, bounded ground correction / foot roll / knee IK'
+    :'Captured Mixamo + anatomical pelvis-space knee pole + bounded 2-bone foot IK'};
  }
- return{computePose,legs:legs.length,maxLateralDegrees:MAX_KNEE_LATERAL*DEG};
+ return{computePose,legs:legs.length,maxLateralDegrees:MAX_KNEE_LATERAL*DEG,
+  soles:Object.fromEntries(legs.map(x=>[x.side,{meshCalibrated:x.sole.meshCalibrated,
+   vertexCount:x.sole.vertexCount}])),
+  maxSoleLift:MAX_SOLE_LIFT,maxSoleRollDegrees:MAX_SOLE_ROLL*DEG};
 }
