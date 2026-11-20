@@ -77,7 +77,7 @@ export function createFooteraDirectionalContact(transitions,{
    counters.maxSupportDrift=Math.max(counters.maxSupportDrift,deviation);
    counters.maxFootHeightDelta=Math.max(counters.maxFootHeightDelta,
     Math.abs(left.y-right.y));
-   rows.push({time,offset:root.clone(),support,
+   rows.push({time,offset:root.clone(),support,lastSwitch,
     footprint:worldFootprint[support].clone(),
     drift:deviation,speedLimited,
     feet:{l:left.toArray(),r:right.toArray()}});
@@ -104,8 +104,16 @@ export function createFooteraDirectionalContact(transitions,{
   const localFoot=foot(from,a.support);
   const currentFoot=translation.clone().add(lateral(localFoot));
   const plantedError=currentFoot.distanceTo(a.footprint);
+  const next=data.rows.slice(j).find(row=>row.support!==a.support);
+  const supportAge=Math.max(0,time-a.lastSwitch);
+  const supportDuration=Math.max(minHold,(next?.time??END)-a.lastSwitch);
+  const supportProgress=clamp(supportAge/supportDuration,0,1);
+  // Smooth the inferred support boundary rather than snapping an IK lock.
+  const contactWeight=smooth(0,.085,supportAge)*
+   (next?1-smooth(-.10,0,time-next.time):1);
   return{time,direction,rootTravel:translation,
    supportSide:a.support,estimatedFootprint:a.footprint.clone(),
+   supportAge,supportProgress,contactWeight,
    footprintSlip:enabled?plantedError:null,
    activeFootHeight:localFoot.y,
    speedLimited:a.speedLimited,limits:data.stats,
