@@ -268,6 +268,8 @@ function capturedDirectionalPose(model,t){
    speedLimited:contact.speedLimited,
    contactInferred:contact.contactInferred,
    supportProgress:contact.supportProgress,contactWeight:contact.contactWeight,
+   inferredAcceleration:contact.inferredAcceleration.toArray(),
+   inertiaShift:states.groundIK?contact.inertiaShift.toArray():[0,0,0],
    groundIKEnabled:!!ground,groundFeet:ground?.feet??null,
    groundKnees:ground?.knees??null,
    rootContactEnabled:states.directionContact,
