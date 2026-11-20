@@ -64,6 +64,27 @@ const server=http.createServer((req,res)=>{
     }
    }
   }
+  // Same 60-bone geometry, OLD synthetic gait vs NEW biomechanics.
+  // A change in pixel values is not an aesthetic/IK-quality guarantee.
+  const hipBefore=await capture('hip-walk-stiff-before',
+   {version:'master',mode:'walk',zoom:'hips',time:.17,hipNatural:false});
+  const hipAfter=await capture('hip-walk-natural-after',
+   {version:'master',mode:'walk',zoom:'hips',time:.17,hipNatural:true});
+  assert.ok(hipBefore.pelvisOffset.every(x=>Math.abs(x)<1e-9),
+   'Legacy gait must keep the pelvis locked');
+  assert.ok(Math.abs(hipAfter.pelvisOffset[0])>.01,
+   'New gait needs actual pelvis weight transfer');
+  assert.ok(hipBefore.pelvisRotation.some((x,i)=>Math.abs(x-hipAfter.pelvisRotation[i])>.01),
+   'Pelvis quaternion must actually change, not just skin shading');
+  assert.notDeepEqual(fs.readFileSync(path.join(out,'hip-walk-stiff-before.png')),
+   fs.readFileSync(path.join(out,'hip-walk-natural-after.png')),
+   'Visual hip comparison must show a different pose');
+  report.hipComparison={
+   sameModelAndGeometry:true,oldHipOffset:hipBefore.pelvisOffset,
+   newHipOffset:hipAfter.pelvisOffset,
+   hipQuaternionChanged:true,imageDifference:true,
+   images:['hip-walk-stiff-before.png','hip-walk-natural-after.png']
+  };
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
