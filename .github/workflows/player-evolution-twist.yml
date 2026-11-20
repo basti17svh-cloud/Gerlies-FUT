@@ -6,6 +6,8 @@ on:
       - '3d-player-evolution-twist.mjs'
       - 'tools/build-player-evolution-twist.py'
       - 'tests/player-evolution-twist.test.mjs'
+      - 'tests/player-evolution-twist.browser.cjs'
+      - 'player-evolution-twist-lab.html'
       - '.github/workflows/player-evolution-twist.yml'
   workflow_dispatch:
 permissions:
@@ -13,7 +15,7 @@ permissions:
 jobs:
   twist:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 32
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - name: Install model tool dependencies
-        run: python -m pip install --disable-pip-version-check numpy
+        run: python -m pip install --disable-pip-version-check numpy pillow
       - name: Generate 60-joint twist prototype from verified 52-joint master
         run: |
           python tools/build-player-evolution-twist.py > twist-build-report.json
@@ -30,6 +32,36 @@ jobs:
         run: |
           node --check 3d-player-evolution-twist.mjs
           node --test tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
+      - name: Install real Chromium renderer and video encoder
+        run: |
+          npm install --prefix /tmp/footera-twist-qa playwright@1.51.1
+          /tmp/footera-twist-qa/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Render 0 45 90 and minus 90 axial poses plus run kick comparison and MP4
+        env: {NODE_PATH: /tmp/footera-twist-qa/node_modules}
+        run: |
+          node tests/player-evolution-twist.browser.cjs
+          cp twist-build-report.json test-artifacts/player-evolution-twist/skin-report.json
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          p=Path('test-artifacts/player-evolution-twist')
+          cells=[]
+          for limb in ['upperarm-l','lowerarm-l','thigh-r','calf-r']:
+              for kind in ['52','twist']:
+                  f=p/f'{limb}-plus90-{kind}.png'
+                  img=Image.open(f).convert('RGB')
+                  img.thumbnail((450,460))
+                  box=Image.new('RGB',(470,490),'#10232d')
+                  box.paste(img,((470-img.width)//2,22))
+                  ImageDraw.Draw(box).text((12,7),f'{limb} / {kind} / 90 deg',fill='white')
+                  cells.append(box)
+          canvas=Image.new('RGB',(940,1960),'#06131d')
+          for i,img in enumerate(cells):
+              canvas.paste(img,((i%2)*470,(i//2)*490))
+          canvas.save(p/'real-3d-before-after-contact-sheet.jpg',quality=88)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -37,10 +69,14 @@ jobs:
           path: |
             assets/footera/models/footera-evolution-twist-prototype.glb
             twist-build-report.json
+            test-artifacts/player-evolution-twist/*.png
+            test-artifacts/player-evolution-twist/*.jpg
+            test-artifacts/player-evolution-twist/*.mp4
+            test-artifacts/player-evolution-twist/*.json
           retention-days: 30
           if-no-files-found: warn
       - name: Save verified experimental GLB to twist branch only
-        if: success() && github.event_name == 'push'
+        if: success() && github.event_name == 'push' && github.ref_name == 'feature/player-evolution-twist-bones'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
