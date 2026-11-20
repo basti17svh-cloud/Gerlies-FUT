@@ -17,6 +17,7 @@ on:
       - 'tests/player-evolution-twist.test.mjs'
       - 'tests/player-evolution-gait.test.mjs'
       - 'tests/player-evolution-mocap.test.mjs'
+      - 'tests/player-evolution-ground-contact.test.mjs'
       - 'tests/player-evolution-twist.browser.cjs'
       - 'player-evolution-twist-lab.html'
       - '.github/workflows/player-evolution-twist.yml'
@@ -48,7 +49,7 @@ jobs:
           node --check 3d-player-evolution-transitions.mjs
           node --check 3d-player-evolution-direction-contact.mjs
           node --check 3d-player-evolution-foot-ik.mjs
-          node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
+          node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-ground-contact.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
         run: |
           npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
@@ -154,6 +155,17 @@ jobs:
                   ImageDraw.Draw(contacts).text((col*660+12,row*520+8),
                       f'Original Mixamo {name} / contact root {state}',fill='white')
           contacts.save(p/'direction-foot-contact-real-3d-before-after.jpg',quality=92)
+          # Step 8: identical real 3D captures, with a true fixed world camera.
+          names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal']
+          ground=Image.new('RGB',(1320,520*len(names)),'#06131d')
+          for row,name in enumerate(names):
+              for col,kind in enumerate(['before','after']):
+                  source=Image.open(p/f'foot-ik2-{name}-{kind}.png').convert('RGB')
+                  source.thumbnail((635,480))
+                  ground.paste(source,(col*660+(660-source.width)//2,row*520+30))
+                  ImageDraw.Draw(ground).text((col*660+12,row*520+8),
+                      f'{name} / Foot IK 2.0 {kind.upper()} / FIXED CAMERA',fill='white')
+          ground.save(p/'foot-ik2-fixed-camera-real-3d-before-after.jpg',quality=91)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
