@@ -465,7 +465,7 @@
     cast.x=others[0]||null;cast.y=others[1]||null;
     if(g.lines.some(([r])=>!cast[r]))continue;
     if(!room(g.lines.length))return false;
-    const gv={...vars};for(const r of [...ROLES,"kasse","striker"])if(cast[r])gv[r]=short(cast[r].name);
+    const gv={...vars};for(const r of [...ROLES,"kasse","striker","keeper","captain"])if(cast[r])gv[r]=short(cast[r].name);
     g.lines.forEach(([r,t],k)=>say(cast[r],fill(t,gv),k===g.lines.length-1&&hash(s+g.id)%3===0?{e:"😂",n:reactN(g.id,3,9)}:null));
     usedGags.push(g.id);return true;
    }
@@ -971,7 +971,7 @@
  // V21.488 (Basti: Siegerfoto "scharf in HD, nicht so Taschenrechner"): photos
  // render at 1600 px and live in IndexedDB (too big for localStorage next to the
  // save). The old 720 px cache (v1) is dropped, so a tap develops them again in HD.
- const PHOTO_KEY="footera-kabine-photos-v2",PHOTO_LEGACY_KEY="footera-kabine-photos-v1",PHOTO_DB="footera-kabine-photos",PHOTO_KEEP=8,PHOTO_HD=1600,PHOTO_SAFE=960,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21488";
+ const PHOTO_KEY="footera-kabine-photos-v2",PHOTO_LEGACY_KEY="footera-kabine-photos-v1",PHOTO_DB="footera-kabine-photos",PHOTO_KEEP=8,PHOTO_HD=1600,PHOTO_SAFE=960,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21491";
  let photoDbOpen=null;const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}

@@ -7155,7 +7155,7 @@ $("resultGrid").addEventListener("click",e=>{
 $("resultAllClub").addEventListener("click",()=>{
  const dupMap=packDuplicateMap();let added=0;const boosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.collectAll(state):0;
  pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)&&!isFounderItem(i)){if(!state.club.some(x=>x.uid===i.uid))state.club.push(i);pendingResolved.add(k);added++}});
- if(!added&&!boosts)return;state.pendingResolved=[...pendingResolved];save();flushSave();toast(boosts?`${added} Spieler und ${boosts} Chemie-Boosts zum Verein hinzugefügt.`:added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
+ if(!added&&!boosts)return;state.pendingResolved=[...pendingResolved];save();flushSave();toast(boosts?`${added?`${added} Spieler und `:""}${boosts} Chemie-Boost${boosts===1?"":"s"} zum Verein hinzugefügt.`:added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
  packResultsRefresh()
 });
 $("resultQuickSellAll").addEventListener("click",()=>resolvePackSellBatch());

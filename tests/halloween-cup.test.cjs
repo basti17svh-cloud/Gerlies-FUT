@@ -63,3 +63,12 @@ test('cup pack contains fifteen players all rated at least 82 and cannot be boug
  const t=setup(),pack=t.packs.find(p=>p.id==='reward-82-15');
  assert.ok(pack);assert.equal(pack.count,15);assert.equal(pack.min,82);assert.equal(pack.store,false);assert.equal(pack.reward,true);assert.equal(pack.coins,null);assert.equal(pack.points,null);
 });
+test('V21.491: after the event the Turniere tile only stays while an earned round waits to be claimed',()=>{
+ const t=setup(),c=t.cup,after=c.END+86400000;
+ assert.equal(c.visible(c.START+1000),true,'during the event');
+ assert.equal(c.visible(after),false,'never played: tile gone after the event');
+ assert.equal(c.record(match(t,1),'win',c.START+5000),true);
+ assert.equal(c.visible(after),true,'earned round 1 not claimed yet');
+ t.state.challengeClaims={[c.ID+':1']:true};
+ assert.equal(c.visible(after),false,'everything claimed: tile gone');
+});
