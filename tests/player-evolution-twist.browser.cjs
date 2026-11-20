@@ -148,6 +148,84 @@ const server=http.createServer((req,res)=>{
    peakCorrectionMetres:measured.correction,footIKChangedPose:
    yesIK.actualFeet.l.some((x,i)=>Math.abs(x-noIK.actualFeet.l[i])>.0001),
    caveat:'In-place test-studio foot plant; no live moving-root game footage'};
+  // Real, same-geometry 60-bone A/B: anatomical knee alignment OFF vs ON.
+  // Do not label a pixel difference alone as a biomechanical improvement.
+  report.mixamo.kneeAxis={geometry:'Same skinned 60-bone GLB',
+   limitDegrees:14,samples:[],maxDeviationBefore:0,maxDeviationAfter:0,
+   genuineCapture:true,visuallyReviewed:false};
+  const cadence={walk:1.05,jog:1.4,run:1.7,sprint:2.1};
+  let largest={deviation:-1,clip:'run',phase:.27,side:'l'};
+  for(const clip of ['walk','jog','run','sprint']){
+   for(const phase of [.12,.27,.63,.77]){
+    const opts={version:'master',mode:'mocap',mocapClip:clip,
+     time:phase/cadence[clip],angle:0,zoom:'knees',footPlant:true,rootTravel:true};
+    const before=await page.evaluate(v=>window.footeraQaRender(v),
+     {...opts,kneeAlign:false});
+    const after=await page.evaluate(v=>window.footeraQaRender(v),
+     {...opts,kneeAlign:true});
+    for(const side of ['l','r']){
+     const b=before.mocap.knees?.[side],a=after.mocap.knees?.[side];
+     assert.ok(b&&a,'Knee measurement missing: '+clip+side);
+     const original=Math.abs(b.deviationAfterDeg),corrected=Math.abs(a.deviationAfterDeg);
+     assert.ok(Number.isFinite(original)&&Number.isFinite(corrected));
+     if(original>largest.deviation)largest={deviation:original,clip,phase,side};
+     report.mixamo.kneeAxis.maxDeviationBefore=Math.max(
+      report.mixamo.kneeAxis.maxDeviationBefore,original);
+     report.mixamo.kneeAxis.maxDeviationAfter=Math.max(
+      report.mixamo.kneeAxis.maxDeviationAfter,corrected);
+     if(original>14.5)assert.ok(corrected<14.7,
+      clip+' '+phase+' '+side+' knee remains sideways: '+corrected+' deg');
+     assert.ok(a.flexAfterDeg>=0&&a.flexAfterDeg<=180,
+      'Impossible flex angle in '+clip+': '+a.flexAfterDeg);
+     report.mixamo.kneeAxis.samples.push({clip,phase,side,
+      originalLateralDegrees:original,alignedLateralDegrees:corrected,
+      flexBeforeDegrees:b.flexAfterDeg,flexAfterDegrees:a.flexAfterDeg});
+    }
+   }
+  }
+  report.mixamo.kneeAxis.mostAffected=largest;
+  // The largest abnormal knee pose receives camera-matched real screenshots,
+  // from both a straight-on and a lateral viewing angle.
+  const opts={version:'master',mode:'mocap',mocapClip:largest.clip,
+   time:largest.phase/cadence[largest.clip],footPlant:true,rootTravel:true,
+   zoom:'knees'};
+  for(const [view,angle] of [['front',0],['side',Math.PI/2]]){
+   await capture('knee-axis-'+view+'-before',
+    {...opts,angle,kneeAlign:false});
+   await capture('knee-axis-'+view+'-after',
+    {...opts,angle,kneeAlign:true});
+  }
+  report.mixamo.kneeAxis.images=['knee-axis-front-before.png','knee-axis-front-after.png',
+   'knee-axis-side-before.png','knee-axis-side-after.png'];
+  report.mixamo.kneeAxis.note='Authentic capture, not procedural gait; inspection still required';
+  // Render synchronized A/B frames for a second, dedicated before/after MP4.
+  // Same GLB, clip, frame, lighting, camera and root-travel on each side.
+  const pairFrames=path.join(out,'knee-pair-frames');
+  fs.mkdirSync(pairFrames,{recursive:true});
+  const {PNG}=require('pngjs');
+  for(let i=0;i<48;i++){
+   const clip=['walk','jog','run','sprint'][Math.floor(i/12)];
+   const time=((i%12)/12)/cadence[clip],angle=i<24?0:Math.PI/2;
+   const shot={version:'master',mode:'mocap',mocapClip:clip,time,
+    angle,zoom:'full',footPlant:true,rootTravel:true};
+   const result=[];
+   for(const kneeAlign of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),{...shot,kneeAlign});
+    const png=await page.locator('canvas').screenshot();
+    result.push(PNG.sync.read(png));
+   }
+   const width=result[0].width,height=result[0].height;
+   const pair=new PNG({width:2*width,height});
+   for(let j=0;j<2;j++)PNG.bitblt(result[j],pair,0,0,width,height,j*width,0);
+   fs.writeFileSync(path.join(pairFrames,'frame-'+String(i).padStart(3,'0')+'.png'),
+    PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',['-hide_banner','-loglevel','error','-y',
+   '-framerate','12','-i',path.join(pairFrames,'frame-%03d.png'),
+   '-vf','scale=1440:-2','-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+   path.join(out,'footera-knee-alignment-3d-before-after.mp4')]);
+  assert.ok(fs.statSync(path.join(out,'footera-knee-alignment-3d-before-after.mp4')).size>30000);
+  report.mixamo.kneeAxis.video='footera-knee-alignment-3d-before-after.mp4';
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
