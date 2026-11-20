@@ -304,6 +304,50 @@ const server=http.createServer((req,res)=>{
   report.mixamo.shoulders.images=['shoulder-front-before.png',
    'shoulder-front-after.png','shoulder-side-before.png','shoulder-side-after.png'];
   assert.ok(fs.statSync(path.join(out,report.mixamo.shoulders.video)).size>30000);
+  // Original Adobe Mixamo directional moves, NOT synthetic cutPose.
+  report.mixamo.directional={clips:[],genuineCaptures:true,headingsChecked:true,
+   worldFootPlantGuaranteed:false,liveRootMotion:false,
+   caveat:'In-place laboratory crossfades; game-root turn, contact and inertia pending'};
+  for(const direction of ['strafeLeft','strafeRight','backpedal']){
+   const sampled=[];
+   for(const time of [.4,.65,.85,1.05,1.35,1.55,1.75,1.95,2.3]){
+    const shot={version:'master',mode:'directional',direction,time,
+     angle:Math.PI/2,zoom:'full',shoulderAlign:true};
+    const qa=await page.evaluate(x=>window.footeraQaRender(x),shot);
+    assert.ok(qa.skinnedMeshes>=5);
+    assert.ok(qa.mocap.source.includes('original baked Adobe Mixamo'));
+    assert.equal(qa.mocap.direction.to,direction);
+    assert.equal(qa.mocap.direction.worldFootPlantGuaranteed,false);
+    assert.ok(qa.mocap.direction.feet.l.every(Number.isFinite));
+    assert.ok(qa.mocap.direction.feet.r.every(Number.isFinite));
+    sampled.push({time,blend:qa.mocap.direction.easedWeight,
+     sourceFrame:qa.mocap.direction.toFrame});
+    if([.85,1.35,1.75].includes(time))
+     await capture('direction-'+direction+'-'+time,{...shot,angle:0});
+   }
+   report.mixamo.directional.clips.push({direction,states:sampled,
+    capture:'Footera baked Adobe Mixamo, captured real 60-bone WebGL'});
+  }
+  // 3 seconds of real skinned 3D at 12fps. Every frame is rendered from
+  // the genuine Mixamo clip and interpolated source-joint quaternions.
+  const directionFrames=path.join(out,'direction-mixamo-frames');
+  fs.mkdirSync(directionFrames,{recursive:true});
+  for(let i=0;i<36;i++){
+   const direction=i<12?'strafeLeft':i<24?'strafeRight':'backpedal';
+   const t=(i%12)*2.4/11;
+   await page.evaluate(v=>window.footeraQaRender(v),{version:'master',
+    mode:'directional',direction,time:t,angle:i%2?0:Math.PI/2,
+    zoom:'full',shoulderAlign:true});
+   await page.locator('canvas').screenshot({path:path.join(directionFrames,
+    'frame-'+String(i).padStart(3,'0')+'.png')});
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(directionFrames,'frame-%03d.png'),'-vf','scale=1280:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,'footera-original-mixamo-directional-cuts.mp4')]);
+  report.mixamo.directional.video='footera-original-mixamo-directional-cuts.mp4';
+  assert.ok(fs.statSync(path.join(out,report.mixamo.directional.video)).size>20000);
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
