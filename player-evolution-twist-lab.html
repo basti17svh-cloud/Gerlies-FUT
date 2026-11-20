@@ -385,7 +385,7 @@ function renderAt(t=0){
   else resetPose(x);
  }
  const focus=states.zoom==='face'?1.57:states.zoom==='chest'?1.41:states.zoom==='hips'?1.03:states.zoom==='knees'?.56:.95;
- const distance=states.cameraFixed?7.4:
+ const distance=states.cameraFixed?(states.zoom==='knees'?3.2:7.4):
   states.zoom==='face'?1.12:states.zoom==='chest'?2.05:
   states.zoom==='hips'?2.55:states.zoom==='knees'?2.05:3.8;
  const center=states.cameraFixed?new THREE.Vector3(0,0,0):m.root.position;
