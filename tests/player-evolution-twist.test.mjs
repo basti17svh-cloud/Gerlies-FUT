@@ -58,6 +58,7 @@ test('Source materials, geometry positions, face morphs and game assets unchange
 test('Each twist bone actually deforms skin in body; weighted vertices sum to 1',()=>{
  const joints=dst.j.skins[0].joints,byId=new Map(joints.map((i,k)=>[dst.j.nodes[i].name,k]));
  const active=new Map(pairs.map(d=>[d.name,0]));
+ const surfaces=new Map(pairs.map(d=>[d.name,new Map()]));
  for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks']){
   const mesh=dst.j.meshes.find(m=>m.name===name).primitives[0];
   const ji=mesh.attributes.JOINTS_0,wi=mesh.attributes.WEIGHTS_0;
@@ -67,15 +68,21 @@ test('Each twist bone actually deforms skin in body; weighted vertices sum to 1'
    const sum=weights[i]+weights[i+1]+weights[i+2]+weights[i+3];
    assert.ok(Math.abs(sum-(byte?255:1))<1e-4,name+' skin sum at vertex '+i/4);
    for(let k=0;k<4;k++)assert.ok(idx[i+k]<60);
-   if(name==='FooteraBody')
-    for(const d of pairs)
-     for(let k=0;k<4;k++)
-      if(idx[i+k]===byId.get(d.name)&&weights[i+k]>(byte?0:1e-4))
-       {active.set(d.name,active.get(d.name)+1);break}
+   for(const d of pairs)
+    for(let k=0;k<4;k++)
+     if(idx[i+k]===byId.get(d.name)&&weights[i+k]>(byte?0:1e-4)){
+      active.set(d.name,active.get(d.name)+1);
+      surfaces.get(d.name).set(name,(surfaces.get(d.name).get(name)||0)+1);break;
+     }
   }
  }
  for(const [name,count] of active){
-  assert.ok(count>=20,name+' must deform actual body vertices: '+count);
+  assert.ok(count>=20,name+' must deform actual visible vertices: '+count);
+  const part=name.split('_twist_')[0];
+  const preferred={upperarm:'FooteraShirt',lowerarm:'FooteraBody',
+    thigh:'FooteraShorts',calf:'FooteraSocks'}[part];
+  assert.ok((surfaces.get(name).get(preferred)||0)>=8,
+   name+' must deform its anatomical surface '+preferred);
  }
  const ibm=accessor(dst,dst.j.skins[0].inverseBindMatrices);
  assert.equal(ibm.length,60*16);
