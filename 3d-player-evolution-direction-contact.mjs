@@ -18,6 +18,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {FOOTERA_DIRECTION_MOVES} from './3d-player-evolution-transitions.mjs';
 
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const smooth=(a,b,v)=>{const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t)};
 const HZ=90,END=3,MAX_ROOT_SPEED=7.5,MIN_HOLD=.12,SWITCH_HEIGHT=.018;
 function foot(state,side){
  const data=state?.feet?.[side];
