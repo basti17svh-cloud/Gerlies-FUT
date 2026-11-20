@@ -44,6 +44,7 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="cut-left-mocap">Mixamo: Linker Seitwärtsschritt</button>
 <button id="cut-right-mocap">Mixamo: Rechter Seitwärtsschritt</button>
 <button id="backpedal-mocap">Mixamo: Rückwärtslauf</button>
+<button id="direction-foot-contact" aria-pressed="true">Stützfuß-Root: an</button>
 <button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
 <button id="knee-axis" aria-pressed="true">Knieachse: stabil</button>
 <button id="kneeview">Knie nah</button>
@@ -57,7 +58,7 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 </div>
 <p id="status" role="status">Modelle werden geladen…</p>
 <div class="note"><b>Mixamo-Captures:</b> Die vier Testmodi spielen die echten bereits vorhandenen 30-FPS-Mixamo-Bewegungsdaten auf dem 52-/60-Knochen-Modell ab. Der Spieler erhält seine Vorwärtsbewegung aus dem aufgezeichneten Fußweg; die Kamera folgt dem Spieler. Die zuschaltbare Fuß-IK korrigiert verbleibende kleine Abweichungen. Das ist noch kein Nachweis für Fußkontakt auf bewegter Spielwelt-Route.</div>
-<div class="note"><b>Richtungswechsel (Labor):</b> Originale Mixamo-Aufnahmen für Lateral- und Rückwärtsbewegung werden über Quaternionen überblendet. Die Vorschau ist bewusst stationär; echte Welt-Fußkontakte, dynamischer Richtungswechsel-Root und Spielphysik sind noch offen.</div>
+<div class="note"><b>Richtungswechsel (Labor):</b> Originale Mixamo-Aufnahmen für Lateral- und Rückwärtsbewegung werden über Quaternionen überblendet. Der optionale Stützfuß-Root rekonstruiert die Fortbewegung aus realen Schuhtrajektorien. Die Kontakt-Erkennung ist eine Näherung ohne reale Boden-Kollision, vollständig dynamische Drehung, Live-Match-Root oder garantierten Fußhalt.</div>
 <div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
 </main>
 <script type="module">
@@ -72,6 +73,7 @@ import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
 import {createFooteraFootPlant} from './3d-player-evolution-foot-ik.mjs';
 import {createFooteraShoulderAlignment} from './3d-player-evolution-shoulders.mjs';
 import {createFooteraDirectionalTransitions} from './3d-player-evolution-transitions.mjs';
+import {createFooteraDirectionalContact} from './3d-player-evolution-direction-contact.mjs';
 
 const el=id=>document.getElementById(id),canvas=el('view'),status=el('status');
 const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
@@ -96,7 +98,7 @@ const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft'},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -129,13 +131,14 @@ function readyModel(gltf){
  const ik=createFooteraFootPlant(root,capture);
  const shoulders=createFooteraShoulderAlignment(root);
  const transitions=createFooteraDirectionalTransitions(root,capture);
+ const directionContact=createFooteraDirectionalContact(transitions);
  const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
  const twistReport=twist?inspectFooteraTwistRig(root):null;
  if(twistReport&&!twistReport.ok)
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,lastMocap:null};
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,lastMocap:null};
 }
 function jointPose(model,t){
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
@@ -206,6 +209,10 @@ function capturedDirectionalPose(model,t){
  // source Mixamo pose and report the outstanding world-foot limitation.
  const sequence=model.transitions.sampleSequence({
   time:Math.max(0,Math.min(3,t)),direction:states.direction});
+ const contact=model.directionContact.sample({time:Math.max(0,Math.min(3,t)),
+  direction:states.direction,enabled:states.directionContact});
+ model.root.position.copy(model.basePosition).add(
+  contact.rootTravel.clone().applyQuaternion(model.root.quaternion));
  model.poses.beginFrame();
  model.poses.submit('locomotion',sequence.pose);model.poses.commit();
  model.capture.applyTranslation(sequence.translation);
@@ -218,7 +225,14 @@ function capturedDirectionalPose(model,t){
    easedWeight:sequence.easedWeight,fromFrame:sequence.fromFrame,
    toFrame:sequence.toFrame,feet:sequence.feet,
    worldFootPlantGuaranteed:sequence.worldFootPlantGuaranteed,
-   liveRootMotion:sequence.liveRootMotion},shoulders:shoulders.arms};
+   liveRootMotion:sequence.liveRootMotion,
+   estimatedContactSide:contact.supportSide,
+   rootTravel:contact.rootTravel.toArray(),
+   supportSlipMetres:contact.footprintSlip,
+   speedLimited:contact.speedLimited,
+   contactInferred:contact.contactInferred,
+   rootContactEnabled:states.directionContact,
+   contactStats:contact.limits},shoulders:shoulders.arms};
  model.twist?.update();
 }
 function naturalWalkPose(model,t){
@@ -321,9 +335,9 @@ function renderAt(t=0){
  camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft'}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -379,6 +393,12 @@ for(const [id,direction] of [['cut-left-mocap','strafeLeft'],
    el(btn).setAttribute('aria-pressed',String(move===direction));
  });
 }
+control('direction-foot-contact',()=>{
+ states.directionContact=!states.directionContact;
+ el('direction-foot-contact').setAttribute('aria-pressed',String(states.directionContact));
+ el('direction-foot-contact').textContent=states.directionContact
+  ?'Stützfuß-Root: an':'Stützfuß-Root: aus';
+});
 control('root-travel',()=>{states.rootTravel=!states.rootTravel;
  el('root-travel').setAttribute('aria-pressed',String(states.rootTravel));
  el('root-travel').textContent=states.rootTravel?'Echte Schrittlänge: an':'Echte Schrittlänge: aus';
