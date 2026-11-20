@@ -11,7 +11,7 @@ function glb(name){
  assert.equal(bytes.readUInt32LE(8),bytes.length);
  const size=bytes.readUInt32LE(12);
  const json=JSON.parse(bytes.subarray(20,20+size).toString());
- const binary=bytes.subarray(20+size+8+8);
+ const binary=bytes.subarray(20+size+8);
  return{bytes,json,binary};
 }
 function access(g,i){
