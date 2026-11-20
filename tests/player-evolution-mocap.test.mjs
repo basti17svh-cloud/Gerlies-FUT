@@ -140,3 +140,55 @@ test('Captured root travel stabilizes stance feet without stretching knees',()=>
  }
  assert.throws(()=>cap.rootTravel('run',NaN),RangeError);
 });
+
+test('Anatomical knee pole is continuous, pose-preserving and heading-relative for four captured gaits',()=>{
+ const {root,bones}=rig({twist:true}),cap=createFooteraCapturedGait(root),
+  director=createFooteraPoseDirector(root),ik=createFooteraFootPlant(root,cap);
+ assert.equal(ik.maxLateralDegrees,14);
+ for(const clip of FOOTERA_MOCAP_GAITS){
+  for(const phase of [.12,.25,.63,.77]){
+   // Rotate player to test a heading change: anatomical pole must follow
+   // pelvis/world heading instead of snapping to global forward.
+   for(const yaw of [0,-.48,.48]){
+    root.rotation.y=Math.PI+yaw;
+    root.updateMatrixWorld(true);
+    const capture=cap.sample(clip,phase);
+    director.beginFrame();director.submit('locomotion',capture.pose);director.commit();
+    cap.applyTranslation(capture.translation);
+    const originals=['thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r']
+     .map(n=>bones.get(n).quaternion.clone());
+    const ankles=['l','r'].map(s=>bones.get('foot_'+s)
+     .getWorldPosition(new THREE.Vector3()));
+    const anklesQ=['l','r'].map(s=>bones.get('foot_'+s)
+     .getWorldQuaternion(new THREE.Quaternion()));
+    const off=ik.computePose({clip,phase,kneeAlignment:0});
+    const on=ik.computePose({clip,phase,kneeAlignment:1});
+    for(const side of ['l','r']){
+     const b=off.knees[side],a=on.knees[side];
+     assert.ok([b.deviationAfterDeg,a.deviationAfterDeg,
+      b.flexBeforeDeg,a.flexAfterDeg].every(Number.isFinite),clip+side);
+     if(Math.abs(b.deviationAfterDeg)>14.1)
+      assert.ok(Math.abs(a.deviationAfterDeg)<14.8,
+       clip+' '+phase+' '+side+' pole = '+a.deviationAfterDeg);
+     assert.ok(Math.abs(a.flexBeforeDeg-a.flexAfterDeg)<4.5,
+      clip+' '+phase+' '+side+' knee flexion should not change substantially');
+    }
+    originals.forEach((q,i)=>assert.ok(qDistance(
+     bones.get(['thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r'][i]).quaternion,
+     q)<1e-5,'IK sampler must restore source capture bone'));
+    director.submit('ik',on.pose);director.commit();
+    for(const [i,side] of ['l','r'].entries()){
+     const foot=bones.get('foot_'+side),w=foot.getWorldPosition(new THREE.Vector3());
+     assert.ok(w.distanceTo(ankles[i])<.21,
+      clip+side+' foot correction must be bounded');
+     const worldQ=foot.getWorldQuaternion(new THREE.Quaternion());
+     assert.ok(worldQ.angleTo(anklesQ[i])<.03,
+      clip+side+' original Mixamo shoe orientation should survive IK');
+    }
+    cap.reset();
+   }
+  }
+ }
+ assert.throws(()=>ik.computePose({kneeAlignment:-.1}),RangeError);
+ assert.throws(()=>ik.computePose({kneeAlignment:1.1}),RangeError);
+});
