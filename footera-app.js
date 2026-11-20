@@ -4762,8 +4762,8 @@ const LOCAL_LEAGUE_LOGOS={
  "nederland vrouwen liga":"./assets/leagues/nederland-vrouwen-liga.jpg",
  "scottish women s league":"./assets/leagues/scottish-women-s-league.png",
  "sverige liga":"./assets/leagues/sverige-liga.png",
- // Men's leagues whose API-Sports logo stays blank (Ligue 1) or tiny (Süper Lig) on the cards, or is missing.
- "ligue 1":"./assets/leagues/ligue-1-white.png",
+ // Ligue 1 without the McDonald's sponsor mark. Men's leagues whose API-Sports logo stays blank (Ligue 1) or tiny (Süper Lig) on the cards, or is missing.
+ "ligue 1":"./assets/leagues/ligue-1-logo.png",
  "trendyol super lig":"./assets/leagues/trendyol-super-lig-mark.png",
  "roshn saudi league":"./assets/leagues/roshn-saudi-league.png",
  "efl championship":"./assets/leagues/efl-championship.png",
@@ -5993,7 +5993,7 @@ function syncSquadDrawer(){
 function setSquadDrawer(mode,toggle=false){const next=(toggle&&squadDrawerMode===mode)?"":mode;squadDrawerMode=next;syncSquadDrawer()}
 function squadPresetTabsHTML(){return state.squadPresets.map((preset,i)=>{
  const active=i===state.activeSquadPreset,filled=(active?state.squad:preset?.squad||[]).slice(0,18).filter(Boolean).length,name=preset?.name||`Team ${i+1}`;
- return `<button type="button" class="squad-preset-tab ${active?'active':''} ${preset?'':'new'}" data-select-squad="${i}" aria-pressed="${active}" aria-label="${esc(name)} ${preset?active?'aktiv':'aktivieren':'aus aktuellem Team erstellen'}"><strong>${esc(name)}</strong><small>${preset?`${filled}/18 · ${esc(preset.formation)}`:'＋ Team kopieren'}</small></button>`
+ return `<button type="button" class="squad-preset-tab ${active?'active':''} ${preset?'':'new'}" data-select-squad="${i}" aria-pressed="${active}" aria-label="${esc(name)} ${preset?active?'aktiv':'aktivieren':'aus aktuellem Team erstellen'}"><strong>${esc(name)}</strong><small>${preset?`${filled}/18 · ${esc(preset.formation)}`:'＋ Kopieren'}</small></button>`
  }).join('')}
 function renderSquadPresetControls(){
  persistActiveSquadPreset(state);
@@ -10176,7 +10176,7 @@ function halloweenHeroSlide(at=Date.now()){
 const BLACKFRIDAY_TEASER_FROM="2026-11-20T19:00:00+01:00";
 // Cards revealed on social media are uncovered in the in-game teaser at the same moment (Basti 2026-11-19).
 // Add one row per reveal; only team players, never SBC/objective players.
-const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"}];
+const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"},{at:"2026-11-24T13:00:00+01:00",name:"Nuno Mendes"}];
 function blackFridayRevealedNames(at=Date.now()){return new Set(BLACKFRIDAY_TEASER_REVEALS.filter(r=>at>=Date.parse(r.at)).map(r=>r.name))}
 function blackFridayRevealText(at=Date.now()){const names=blackFridayRevealedNames(at);if(!names.size)return"";const shown=byEventRating(promoEventEntries(BLACKFRIDAY_EVENT)).filter(e=>names.has(e.player.name));return shown.length?` Schon enthüllt: ${shown.map(e=>`${e.player.name.split(" ").pop()} ${e.player.ovr}`).join(", ")}.`:""}
 function blackFridayLiveEvent(at=Date.now()){return [BLACKFRIDAY_TEAM2_EVENT,BLACKFRIDAY_EVENT].find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
@@ -10261,12 +10261,14 @@ function renderHomeRewards(){
  const claimable=homeClaimableTasks(),objectivesReady=availableRotatingObjectiveRewardsCount(),passReady=availablePassRewardsCount(),packs=homeOwnedPacks(),pending=competitionPending(),total=claimable.length+objectivesReady+passReady+pending.length+packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0);
  $("homeReadyCount").textContent=String(total);
  renderFounderUpgradeNotice();
- $("homeReadySummary").textContent=total?`Du hast ${total} Belohnung${total===1?"":"en"}, die abgeholt werden können.`:"Aktuell warten keine Belohnungen auf dich.";
+ {const packCount=packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0),rewardCount=total-packCount,parts=[rewardCount&&`${rewardCount} Belohnung${rewardCount===1?"":"en"}`,packCount&&`${packCount} ungeöffnete${packCount===1?"s Pack":" Packs"}`].filter(Boolean);
+ // QA 2026-11-20: the badge said 4 while the banner above said "3 Belohnungen" (packs were counted silently).
+ $("homeReadySummary").textContent=total?`Du hast ${parts.join(" und ")} zum Abholen.`:"Aktuell warten keine Belohnungen auf dich."}
  const cards=pending.map(row=>'<div class="home-reward-card"><div class="reward-gift">'+(row.mode==="champions"?"FC":row.mode==="squad"?"SB":"RV")+'</div><div class="home-reward-copy"><strong>'+esc(row.mode==="champions"?"Champions":row.mode==="squad"?"Squad-Battles":"Rivals")+'-Belohnung abholbereit</strong><small>'+esc(row.mode==="rivals"?(Number(row.division)===0?"Elite":"Division "+row.division)+' · '+row.milestone+' Punkte':row.rank)+'</small><p>'+esc(rewardLabel(row))+'</p><button class="primary" type="button" data-weekly-reward-open data-weekly-reward-mode="'+esc(row.mode)+'" data-weekly-reward-week="'+esc(row.week)+'">Rewards ansehen</button></div></div>')
  if(claimable.length){const first=claimable[0];cards.push(`<div class="home-reward-card"><div class="reward-gift"><svg viewBox="0 0 48 48"><path d="M8 20h32v22H8zM5 14h38v8H5zM24 14v28M14 14c-5-2-5-10 0-10 5 0 10 10 10 10M34 14c5-2 5-10 0-10-5 0-10 10-10 10"/></svg></div><div class="home-reward-copy"><strong>Aufgaben-Belohnungen</strong><small>${claimable.length} Aufgabe${claimable.length===1?"":"n"} abgeschlossen</small><p>${esc(first.title)} · ${esc(rewardText(first.reward))}</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`)}
  if(objectivesReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">SP</div><div class="home-reward-copy"><strong>Ziele</strong><small>${objectivesReady} Belohnung${objectivesReady===1?"":"en"} abholbereit</small><p>Tages-, Wochen- und Saisonziele warten auf dich.</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`);
  if(passReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">PASS</div><div class="home-reward-copy"><strong>Season Pass</strong><small>${passReady} Belohnung${passReady===1?"":"en"} abholbereit</small><p>Belohnungen aus dem kostenlosen oder Premium-Pfad warten auf dich.</p><button class="primary" data-go="seasonPassView">Jetzt abholen</button></div></div>`);
- for(const pack of packs.slice(0,Math.max(0,2-cards.length))){const qty=state.packs[pack.id]||0;cards.push(`<div class="home-reward-card"><img class="mini-pack" src="${packArtSrc(pack.id)}" alt="${esc(pack.name)}" loading="lazy"><div class="home-reward-copy"><strong>${esc(pack.name)}</strong><small>${qty} verfügbar · ${esc(pack.desc||"")}</small><p>Dein Reward-Pack liegt im Store bereit und kann direkt geöffnet werden.</p><button class="primary" data-go="storeView">Jetzt abholen</button></div></div>`)}
+ for(const pack of packs.slice(0,Math.max(1,2-cards.length))){const qty=state.packs[pack.id]||0;cards.push(`<div class="home-reward-card"><img class="mini-pack" src="${packArtSrc(pack.id)}" alt="${esc(pack.name)}" loading="lazy"><div class="home-reward-copy"><strong>${esc(pack.name)}</strong><small>${qty} verfügbar · ${esc(pack.desc||"")}</small><p>Dein Reward-Pack liegt im Store bereit und kann direkt geöffnet werden.</p><button class="primary" data-go="storeView">Jetzt abholen</button></div></div>`)}
  if(!cards.length)cards.push(`<div class="home-empty-note">Noch nichts abholbereit. Schließe Ziele, SBCs oder Season-Stufen ab – neue Rewards erscheinen hier automatisch ganz oben.</div>`);
  $("homeRewardGrid").innerHTML=cards.join("");
  $("homeReadyPanel")?.classList.toggle("home-ready-empty",!total);
@@ -11110,7 +11112,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.489";
+const GFUT_BUILD="V21.490";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11168,7 +11170,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21489",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21490",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
