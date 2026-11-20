@@ -78,6 +78,7 @@ const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(3.5,6,5);key
 key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-3;key.shadow.camera.right=3;
 key.shadow.camera.top=5;key.shadow.camera.bottom=-2;scene.add(key);
 const rim=new THREE.DirectionalLight(0x8af7d7,2.1);rim.position.set(-3,3,-4);scene.add(rim);
+scene.add(key.target,rim.target);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(42,96),
  new THREE.MeshStandardMaterial({color:0x17413d,roughness:.88}));
 floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=true;scene.add(floor);
@@ -270,6 +271,10 @@ function renderAt(t=0){
  const focus=states.zoom==='face'?1.57:states.zoom==='hips'?1.03:.95;
  const distance=states.zoom==='face'?1.12:states.zoom==='hips'?2.55:3.8;
  const center=m.root.position;
+ key.position.set(center.x+3.5,center.y+6,center.z+5);
+ key.target.position.copy(center);
+ rim.position.set(center.x-3,center.y+3,center.z-4);
+ rim.target.position.copy(center);
  camera.position.set(center.x,focus+.14+center.y,center.z+distance);
  camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
