@@ -41,7 +41,7 @@
 #socialView .friends-empty p{font-size:12px;line-height:1.6;color:#a3b9af;margin:0}
 #socialView .friends-tile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 #socialView .friends-tile{min-height:180px;padding:21px 18px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:10px;cursor:pointer}
-#socialView .friends-tile strong{font-size:20px;line-height:1.2;overflow-wrap:anywhere}
+#socialView .friends-tile strong{font-size:clamp(16px,4.6vw,20px);line-height:1.2;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 #socialView .friends-tile small{font-size:11px;line-height:1.5;color:#b5c1be}
 #socialView .friends-tile .friends-tile-arrow{color:#daff7d;font-size:24px;align-self:flex-end}
 #socialView .friends-tile-ranking{grid-column:1/-1;min-height:208px;border-color:#5d5075;background:radial-gradient(ellipse at 90% 5%,#71538955,transparent 65%),linear-gradient(145deg,#211a2c,#142631)}

@@ -7155,7 +7155,7 @@ $("resultGrid").addEventListener("click",e=>{
 $("resultAllClub").addEventListener("click",()=>{
  const dupMap=packDuplicateMap();let added=0;const boosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.collectAll(state):0;
  pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)&&!isFounderItem(i)){if(!state.club.some(x=>x.uid===i.uid))state.club.push(i);pendingResolved.add(k);added++}});
- if(!added&&!boosts)return;state.pendingResolved=[...pendingResolved];save();flushSave();toast(boosts?`${added} Spieler und ${boosts} Chemie-Boosts zum Verein hinzugefügt.`:added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
+ if(!added&&!boosts)return;state.pendingResolved=[...pendingResolved];save();flushSave();toast(boosts?`${added?`${added} Spieler und `:""}${boosts} Chemie-Boost${boosts===1?"":"s"} zum Verein hinzugefügt.`:added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
  packResultsRefresh()
 });
 $("resultQuickSellAll").addEventListener("click",()=>resolvePackSellBatch());
@@ -11112,7 +11112,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.490";
+const GFUT_BUILD="V21.491";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11170,7 +11170,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21490",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21491",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
