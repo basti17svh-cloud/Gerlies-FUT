@@ -63,7 +63,9 @@ Die separat analysierte 60-Bone-GLB hat auf dem Short-Mesh im Hüftbereich (Y zw
 - `tests/player-evolution-gait.test.mjs`: Grenzen, Periodizität, Gegenbewegungen, stabiler Reset sowie Argumentvalidierung.
 - `tests/player-evolution-twist.browser.cjs`: echte WebGL-A/B-Aufnahmen `hip-walk-stiff-before.png` und `hip-walk-natural-after.png` mit identischer 60-Bone-GLB, Pose-Unterschieden und Bewegungsmesswerten.
 - Erster Browser-AB-Lauf: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44807745121 (**erfolgreich**).
-- Letzter erweiterter CI-Lauf für die dedizierten Biomechanik-Tests: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44807772039 (Status im Actions-Dashboard einsehbar).
+- Letzter erweiterter CI-Lauf für die dedizierten Biomechanik-Tests: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44807772039 (**erfolgreich**, 16/16 Unit-/Rig-/Gait-Tests, WebGL-Render und MP4 bestanden). Testartefakt: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44807772039/artifacts/14663259920.
+
+Der A/B-Test auf **derselben 60-Bone-Geometrie** misst eine Änderung der Beckenposition von [0,0,0] auf ca. [15,996 mm seitlich, 11,994 mm vertikal, 0,176 mm vor/zurück] für die ausgewählte Laufphase. Eine geänderte Becken-Quaternion und tatsächliche Bildunterschiede wurden bestätigt. Aufnahmen: `hip-gait-before-after.jpg`, `hip-walk-stiff-before.png`, `hip-walk-natural-after.png`.
 
 ### Qualitätsfazit
 Die sichtbar animierte Hüfte ist **ein technischer Verbesserungsschritt, kein finaler fotorealistischer Laufstil**. In echten Bildern stehen die Arme weiterhin deutlich zu weit ab; Fußkontakt und natürliche Gewichtsübernahme benötigen die bereits vorhandenen **Footera-Mixamo-Gait-Clips**, Retarget auf 60 Bones und anschließende Fuß-IK. Das bestehende Live-Gameplay bleibt unverändert. Ein rein mathematischer Hüftschwung soll die authentischen Mocap-Daten ausdrücklich nicht dauerhaft ersetzen.
