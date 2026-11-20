@@ -371,6 +371,51 @@
    }
   }
  }
+ // A device whose storage failed can lack rewards the server already confirmed
+ // (Pick cards, cup rewards). Add exactly those deliveries instead of blocking
+ // every later backup and claim. Paid packs stay protected as before.
+ function importConfirmedCloudRewards(local,cloud){
+  if(!local||!cloud||local.profile?.saveId!==cloud.profile?.saveId)return local;
+  let out=null;const copy=()=>out||(out=JSON.parse(JSON.stringify(local)));
+  const ids=cloudInventoryIds(local);
+  for(const [pickId,option] of Object.entries(cloud.playerPickClaims||{})){
+   if(Object.prototype.hasOwnProperty.call(local.playerPickClaims||{},pickId))continue;
+   // Only a complete delivery (claim plus its card) is imported.
+   let field=null,card=null;
+   for(const f of ["club","sbcStorage"]){card=(Array.isArray(cloud[f])?cloud[f]:[]).find(c=>c?.uid===pickId)||null;if(card){field=f;break}}
+   if(!card&&!ids.has(pickId))continue;
+   const s=copy();s.playerPickClaims=s.playerPickClaims||{};s.playerPickClaims[pickId]=option;
+   if(card&&!ids.has(pickId)){s[field]=Array.isArray(s[field])?s[field]:[];s[field].push(JSON.parse(JSON.stringify(card)));ids.add(pickId)}
+  }
+  const tournaments=root.FooteraTournaments;
+  for(const key of Object.keys(cloud.challengeClaims||{})){
+   if(Object.prototype.hasOwnProperty.call(local.challengeClaims||{},key))continue;
+   const s=copy();s.challengeClaims=s.challengeClaims||{};
+   const t=/^tournament:(bronze|silver|open):(\d{4}-\d{2}-\d{2})$/.exec(key),h=/^halloween-team1:([1-3])$/.exec(key);
+   if(t&&tournaments?.applyDeliveryToSave){tournaments.applyDeliveryToSave(s,{cup_id:t[1],week:t[2],save_id:s.profile.saveId,claim_key:key});continue}
+   if(h){
+    const stage=Number(h[1]);
+    if(stage===1)s.coins=(s.coins||0)+15000;
+    if(stage===2){s.packs=s.packs||{};s.packs["reward-82-15"]=(s.packs["reward-82-15"]||0)+1;s.rewardPackQueue=s.rewardPackQueue||[];s.rewardPackQueue.push({id:"reward-82-15",tradeable:false,challengeClaim:key})}
+   }
+   s.challengeClaims[key]=true;
+  }
+  return out||local;
+ }
+ function applyImportedRewards(local,imported){
+  if(imported===local)return;
+  if(!structurallyEqual(localData(),local))
+   throw Error("Der Gerätestand wurde verändert. Online-Belohnungen werden beim nächsten Abgleich übernommen.");
+  const live=typeof state!=="undefined"&&state?.onboarded&&state?.profile?state:null;
+  if(!live){root.localStorage.setItem(KEY,JSON.stringify(imported));return}
+  if(live.profile.saveId!==local.profile?.saveId)throw Error("Der Verein wurde gewechselt.");
+  for(const field of ["playerPickClaims","challengeClaims","club","sbcStorage","coins","packs","rewardPackQueue"])
+   if(Object.prototype.hasOwnProperty.call(imported,field))live[field]=JSON.parse(JSON.stringify(imported[field]));
+  if(typeof save==="function")save();
+  if(typeof flushSave==="function"&&flushSave()===false)
+   throw Error("Online-Belohnungen konnten auf diesem Gerät noch nicht gespeichert werden.");
+  if(typeof renderAll==="function")try{renderAll()}catch(_){}
+ }
  // Keep gifted, unopened Icon Picks when the device is the chosen save.
  // Never import another club's items or resurrect a locally claimed ticket.
  function mergeUnclaimedIconPicks(local,cloud){
@@ -414,7 +459,7 @@
    autoStatus="Der Online-Spielstand gehört zu einem anderen Verein. Dieses Gerät bleibt aktiv.";
    return false;
   }
-  const upload=remote?.save_data?mergeUnclaimedIconPicks(local,remote.save_data):local;
+  let upload=remote?.save_data?mergeUnclaimedIconPicks(local,remote.save_data):local;
   const point=syncPoint(u);
   // A device without changes since its last backup has nothing new to save.
   // Never let it replace newer online progress written by another device.
@@ -428,8 +473,20 @@
    // Never overwrite a server-confirmed purchase or reward missing locally.
    try{checkProtectedCloudRewards(upload,remote.save_data)}
    catch(e){
-    autoStatus="Der Gerätestand bleibt aktiv. Eine bestätigte Online-Belohnung ist zusätzlich geschützt.";
-    return false;
+    const imported=importConfirmedCloudRewards(upload,remote.save_data);
+    let ok=imported!==upload;
+    if(ok)try{checkProtectedCloudRewards(imported,remote.save_data)}catch(_){ok=false}
+    if(!ok){
+     autoStatus="Der Gerätestand bleibt aktiv. Eine bestätigte Online-Belohnung ist zusätzlich geschützt.";
+     return false;
+    }
+    try{
+     if(upload!==local)applyMergedIconPicks(local,upload);
+     applyImportedRewards(upload===local?local:localData(),imported);
+    }catch(err){autoStatus=safeMessage(err);return false}
+    local=localData();
+    if(!structurallyEqual(local,imported))return false;
+    upload=local;
    }
    if(structurallyEqual(upload,remote.save_data)){
     applyMergedIconPicks(local,upload);

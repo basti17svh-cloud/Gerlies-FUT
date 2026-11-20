@@ -813,16 +813,47 @@ test('device backup is not sent when the online rollback cannot be kept',async()
 });
 test('device backup cannot destroy a previously committed cloud Player Pick',async()=>{
  const t=runtime('registered'),local=sampleGame();
- const remote={...local,playerPickClaims:{'pick-1':'option-a'},club:[{uid:'pick-1',pid:'123',playerPickId:'pick-1',acquisitionSource:'reward-pick'}]};
+ const card={uid:'pick-1',pid:'123',playerPickId:'pick-1',acquisitionSource:'reward-pick'};
+ const remote={...local,playerPickClaims:{'pick-1':'option-a'},club:[card]};
  t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
  t.setCloud({save_data:remote,revision:13,saved_at:'2026-10-13'});
  let downloaded=0;
  t.win.FooteraBackup.downloadSnapshot=async()=>{downloaded++};
  t.win.confirm=()=>true;
- assert.equal(await t.win.FooteraAccount.saveCloud(),false);
+ // V21.494: a device that missed the delivery (full storage) takes the confirmed card over.
+ assert.equal(await t.win.FooteraAccount.saveCloud(),true);
  assert.equal(downloaded,0);
- assert.equal(t.calls.length,0);
- assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,local.coins);
+ const saved=JSON.parse(t.store.get('gerliesFutV9'));
+ assert.equal(saved.coins,local.coins);assert.equal(saved.playerPickClaims['pick-1'],'option-a');
+ assert.equal(saved.club.filter(c=>c.uid==='pick-1').length,1);
+ // Device and cloud are now identical: nothing to upload, the device is in sync.
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,13);
+});
+test('a device missing a confirmed cup reward and its pick card imports both before uploading',async()=>{
+ const t=runtime('registered'),local=sampleGame();
+ const card={uid:'pick-open',pid:'233731',playerPickId:'pick-open',acquisitionSource:'reward-pick',tradeable:false};
+ const remote={...local,coins:(local.coins||0)+20000,challengeClaims:{'tournament:open:2026-11-19':true},playerPickClaims:{'pick-open':'base:233731'},club:[...(local.club||[]),card]};
+ t.win.FooteraTournaments={applyDeliveryToSave(s,d){s.challengeClaims??={};if(s.challengeClaims[d.claim_key])return s;s.coins=(s.coins||0)+20000;s.challengeClaims[d.claim_key]=true;return s}};
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
+ t.setCloud({save_data:remote,revision:1035,saved_at:'2026-11-19'});
+ assert.equal(await t.win.FooteraAccount.saveCloud(),true);
+ const saved=JSON.parse(t.store.get('gerliesFutV9'));
+ assert.equal(saved.coins,(local.coins||0)+20000);
+ assert.equal(saved.challengeClaims['tournament:open:2026-11-19'],true);
+ assert.equal(saved.club.filter(c=>c.uid==='pick-open').length,1);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1035);
+ // With own progress on the device, the merged save is uploaded on top of the online revision.
+ const t2=runtime('registered'),own={...local,points:(local.points||0)+777};
+ t2.win.FooteraTournaments=t.win.FooteraTournaments;
+ t2.store.set('footera-cloud-owner','existing-a');t2.store.set('gerliesFutV9',JSON.stringify(own));
+ t2.setCloud({save_data:remote,revision:1035,saved_at:'2026-11-19'});
+ assert.equal(await t2.win.FooteraAccount.saveCloud(),true);
+ const writes=t2.calls.filter(x=>x[0]==='cloud');
+ assert.equal(writes.length,1);assert.equal(writes[0][1].p_base_revision,1035);
+ assert.equal(writes[0][1].p_save.points,own.points);
+ assert.equal(writes[0][1].p_save.challengeClaims['tournament:open:2026-11-19'],true);
+ assert.ok(writes[0][1].p_save.club.some(c=>c.uid==='pick-open'));
 });
 test('device backup of another club never writes over the online club',async()=>{
  const t=runtime('registered'),local={...sampleGame(),coins:8100},other=sampleGame();
