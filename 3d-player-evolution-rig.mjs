@@ -84,7 +84,8 @@ export function auditFooteraRig(root,{checkSkin=true}={}) {
    checkedVertices++;
    let sum=0;
    for(let k=0;k<4;k++){
-    const w=weights.getComponent(i,k),joint=indices.getComponent(i,k);
+    const getter=['getX','getY','getZ','getW'][k];
+    const w=weights[getter](i),joint=indices[getter](i);
     if(!finite(w)||w<-.0001||w>1.0001) {errors.push('invalid-skin-weight:'+node.name);return}
     if(w>.00001&&(!Number.isInteger(joint)||joint<0||joint>=skin.bones.length)) {
      errors.push('invalid-skin-joint:'+node.name);return;
