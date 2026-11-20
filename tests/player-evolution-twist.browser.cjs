@@ -102,6 +102,34 @@ const server=http.createServer((req,res)=>{
    report.mixamo.clips.push({clip,source:b.mocap.source,frame:b.mocap.frame,
     hipTranslation:b.mocap.hipTranslation,rigs:[a.boneCount,b.boneCount]});
   }
+  // Quantify true world-foot stability with recovered captured root travel.
+  // Two instants INSIDE the same left-stance half cycle.
+  const stationaryA=await capture('mixamo-run-treadmill-early',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.15/1.7,
+    footPlant:false,rootTravel:false});
+  const stationaryB=await capture('mixamo-run-treadmill-late',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.35/1.7,
+    footPlant:false,rootTravel:false});
+  const movingA=await capture('mixamo-run-root-motion-early',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.15/1.7,
+    footPlant:false,rootTravel:true});
+  const movingB=await capture('mixamo-run-root-motion-late',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.35/1.7,
+    footPlant:false,rootTravel:true});
+  const slide=(a,b)=>Math.hypot(a.actualFeet.l[0]-b.actualFeet.l[0],
+   a.actualFeet.l[2]-b.actualFeet.l[2]);
+  const beforeSlip=slide(stationaryA,stationaryB),
+   afterSlip=slide(movingA,movingB);
+  assert.ok(beforeSlip>.07,'A treadmill must have measurable slip from the baked capture');
+  assert.ok(afterSlip<.025,'Real root travel must keep the support shoe world-fixed');
+  assert.ok(afterSlip<beforeSlip*.15,'Must remove at least 85% of stance shoe sliding');
+  report.mixamo.rootTravel={
+   capturedSource:'Mixamo shoe positions, not procedural sway',
+   stanceShoeSlipBeforeMetres:beforeSlip,
+   stanceShoeSlipAfterMetres:afterSlip,
+   rootPositionEarly:movingA.rootPosition,rootPositionLate:movingB.rootPosition,
+   caveat:'Preview root on static test floor; authoritative live gameplay root remains unchanged'
+  };
   const noIK=await capture('mixamo-run-60-no-foot-ik',
    {version:'master',mode:'mocap',mocapClip:'run',time:.25/1.7,footPlant:false});
   const yesIK=await capture('mixamo-run-60-with-foot-ik',
