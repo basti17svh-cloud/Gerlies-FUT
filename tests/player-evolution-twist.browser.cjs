@@ -85,15 +85,50 @@ const server=http.createServer((req,res)=>{
    hipQuaternionChanged:true,imageDifference:true,
    images:['hip-walk-stiff-before.png','hip-walk-natural-after.png']
   };
+  // Real baked Adobe Mixamo locomotion on BOTH GLBs. Compare captured hip,
+  // shoulder and foot motion, and quantify what the local preview IK changes.
+  report.mixamo={source:'FOOTERA_MIXAMO_GAIT and FOOTERA_MIXAMO baked captures',
+   clips:[],footContact:null};
+  for(const clip of ['walk','jog','run','sprint']){
+   const a=await capture('mixamo-'+clip+'-52',{version:'before',mode:'mocap',
+    mocapClip:clip,time:.31,footPlant:true});
+   const b=await capture('mixamo-'+clip+'-60',{version:'master',mode:'mocap',
+    mocapClip:clip,time:.31,footPlant:true});
+   assert.equal(b.mocap.clip,clip);
+   assert.ok(b.mocap.source.includes('Adobe Mixamo'),'Not an authentic baked clip');
+   assert.ok(b.mocap.frame>=0&&b.mocap.frame<=40,'Bad capture frame '+clip);
+   assert.ok(b.pelvisRotation.every(Number.isFinite));
+   assert.ok(b.actualFeet.l.every(Number.isFinite));
+   report.mixamo.clips.push({clip,source:b.mocap.source,frame:b.mocap.frame,
+    hipTranslation:b.mocap.hipTranslation,rigs:[a.boneCount,b.boneCount]});
+  }
+  const noIK=await capture('mixamo-run-60-no-foot-ik',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.25/1.7,footPlant:false});
+  const yesIK=await capture('mixamo-run-60-with-foot-ik',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.25/1.7,footPlant:true});
+  assert.ok(yesIK.mocap.feet?.l?.active,'Missing captured-foot IK during midstance');
+  const measured=yesIK.mocap.feet.l;
+  assert.ok(measured.errorAfter<=measured.errorBefore+.008,
+   'Foot IK should not increase in-place ankle slip');
+  report.mixamo.footContact={hipAndFootCaptureBefore:noIK.mocap.source,
+   clip:'run',stance:'left',anchorErrorBeforeMetres:measured.errorBefore,
+   anchorErrorAfterMetres:measured.errorAfter,
+   peakCorrectionMetres:measured.correction,footIKChangedPose:
+   yesIK.actualFeet.l.some((x,i)=>Math.abs(x-noIK.actualFeet.l[i])>.0001),
+   caveat:'In-place test-studio foot plant; no live moving-root game footage'};
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
   }
-  // 6 seconds of genuine skinned GLB animation: axial, walk, plant/cut, kick.
+  // 6-second MP4, 72 actual Chrome GLB frames. Most frames now sample the
+  // EXISTING baked Mixamo footwork rather than invented synthetic motion.
   for(let i=0;i<72;i++){
-   const mode=i<15?'axial':i<36?'walk':i<54?'cut':'kick';
-   const args={version:'master',mode,time:i/10,angle:.24,deg:(i%15)*6,
-    bone:'lowerarm_l'};
+   const mode=i<10?'axial':i<65?'mocap':'kick';
+   const mocapClip=i<24?'walk':i<39?'jog':i<54?'run':'sprint';
+   const segStart=i<24?10:i<39?24:i<54?39:54;
+   const args={version:'master',mode,mocapClip,footPlant:true,
+    time:mode==='mocap'?Math.max(0,i-segStart)/12:i/12,
+    angle:.18,deg:(i%10)*9,bone:'lowerarm_l'};
    await page.evaluate(v=>window.footeraQaRender(v),args);
    await page.locator('canvas').screenshot({path:path.join(frames,
     'frame-'+String(i).padStart(3,'0')+'.png')});
@@ -121,7 +156,8 @@ const server=http.createServer((req,res)=>{
    caveat:'Software-rendered mobile viewport; no actual smartphone FPS measured'};
   await mobile.close();
   assert.deepEqual(errors,[]);
-  report.video={frames:72,fps:12,modes:['axial','walk','cut','kick'],file:'footera-60-bone-engine-proof.mp4'};
+  report.video={frames:72,fps:12,modes:['axial','mixamo-walk','mixamo-jog',
+   'mixamo-run','mixamo-sprint','kick'],file:'footera-60-bone-engine-proof.mp4'};
   fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));
   console.log('PASS: physical GLB WebGL before/after screenshots and MP4',JSON.stringify(report));
  }finally{await browser.close();server.close()}
