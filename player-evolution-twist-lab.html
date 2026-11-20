@@ -46,6 +46,8 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="backpedal-mocap">Mixamo: Rückwärtslauf</button>
 <button id="direction-foot-contact" aria-pressed="true">Stützfuß-Root: an</button>
 <button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
+<button id="ground-ik" aria-pressed="true">Foot IK 2.0 / Sohle: an</button>
+<button id="fixed-cam" aria-pressed="false">Kamera: Spieler folgen</button>
 <button id="knee-axis" aria-pressed="true">Knieachse: stabil</button>
 <button id="kneeview">Knie nah</button>
 <button id="shoulders" aria-pressed="true">Schultern: anatomisch</button>
@@ -59,6 +61,7 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <p id="status" role="status">Modelle werden geladen…</p>
 <div class="note"><b>Mixamo-Captures:</b> Die vier Testmodi spielen die echten bereits vorhandenen 30-FPS-Mixamo-Bewegungsdaten auf dem 52-/60-Knochen-Modell ab. Der Spieler erhält seine Vorwärtsbewegung aus dem aufgezeichneten Fußweg; die Kamera folgt dem Spieler. Die zuschaltbare Fuß-IK korrigiert verbleibende kleine Abweichungen. Das ist noch kein Nachweis für Fußkontakt auf bewegter Spielwelt-Route.</div>
 <div class="note"><b>Richtungswechsel (Labor):</b> Originale Mixamo-Aufnahmen für Lateral- und Rückwärtsbewegung werden über Quaternionen überblendet. Der optionale Stützfuß-Root rekonstruiert die Fortbewegung aus realen Schuhtrajektorien. Die Kontakt-Erkennung ist eine Näherung ohne reale Boden-Kollision, vollständig dynamische Drehung, Live-Match-Root oder garantierten Fußhalt.</div>
+<div class="note"><b>Foot IK 2.0 – Step 8:</b> Die Bodenabstände werden aus der echten 3D-Schuhsohle (Mesh-Vertices, wenn vorhanden) und nicht allein vom Knöchel abgeleitet. In der Standphase korrigiert ein anatomisch begrenzter Pass Fersen-/Zehenhöhe und Fußneigung, die Mixamo-Quaternions bleiben Quelle. Die Bodenerkennung bei Richtungswechseln ist weiter aus Schuhhöhe abgeleitet – keine echte Terrain-Raycasts, keine Live-Match-Physik. Die feste Kamera zeigt die Route ohne Spieler-Nachführung.</div>
 <div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
 </main>
 <script type="module">
@@ -98,7 +101,7 @@ const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true,groundIK:true,cameraFixed:false},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -188,7 +191,8 @@ function captureWalkPose(model,t){
  if(states.footPlant||states.kneeAlign){
   planted=model.ik.computePose({clip:states.mocapClip,phase:sample.phase,
    strength:states.footPlant?1:0,kneeAlignment:states.kneeAlign?1:0,
-   anchorWorlds:states.rootTravel?anchorWorlds:null});
+   anchorWorlds:states.rootTravel?anchorWorlds:null,
+   groundContact:states.groundIK&&states.footPlant,groundY:0});
   if(planted.pose.size){
    model.poses.submit('ik',planted.pose);
    model.poses.commit();
@@ -199,6 +203,7 @@ function captureWalkPose(model,t){
   rootTravel:rootTravel.toArray(),
   worldFootAnchors:states.rootTravel?anchorWorlds:null,
   feet:planted?.feet||null,knees:planted?.knees||null,
+  groundContact:states.groundIK&&states.footPlant,soles:model.ik.soles,
   shoulders:upper.arms,shoulderSource:upper.source};
  model.twist?.update();
 }
@@ -220,6 +225,31 @@ function capturedDirectionalPose(model,t){
  if(shoulders.pose.size){
   model.poses.submit('contact',shoulders.pose);model.poses.commit();
  }
+ let ground=null;
+ if(states.groundIK&&states.footPlant&&states.directionContact){
+  // Step 7 supplies the stationary shoe footprint and actual root path.
+  // Only the CURRENT support foot is considered planted; swing remains
+  // the fully authored Mixamo foot animation.
+  model.root.updateMatrixWorld(true);
+  const anchorWorlds={};
+  for(const side of ['l','r'])
+   anchorWorlds[side]=model.bones.get('foot_'+side)
+    .getWorldPosition(new THREE.Vector3()).toArray();
+  const footprint=contact.estimatedFootprint.clone()
+   .applyQuaternion(model.root.quaternion).add(model.basePosition);
+  anchorWorlds[contact.supportSide][0]=footprint.x;
+  anchorWorlds[contact.supportSide][2]=footprint.z;
+  const contactWeights={l:0,r:0},contactPhases={l:0,r:0};
+  contactWeights[contact.supportSide]=contact.contactWeight;
+  contactPhases[contact.supportSide]=contact.supportProgress;
+  ground=model.ik.computePose({clip:'run',phase:sequence.phase,
+   strength:1,kneeAlignment:states.kneeAlign?1:0,
+   anchorWorlds,groundContact:true,groundY:0,
+   contactWeights,contactPhases});
+  if(ground.pose.size){
+   model.poses.submit('ik',ground.pose);model.poses.commit();
+  }
+ }
  model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
   direction:{from:sequence.from,to:sequence.to,weight:sequence.weight,
    easedWeight:sequence.easedWeight,fromFrame:sequence.fromFrame,
@@ -231,6 +261,9 @@ function capturedDirectionalPose(model,t){
    supportSlipMetres:contact.footprintSlip,
    speedLimited:contact.speedLimited,
    contactInferred:contact.contactInferred,
+   supportProgress:contact.supportProgress,contactWeight:contact.contactWeight,
+   groundIKEnabled:!!ground,groundFeet:ground?.feet??null,
+   groundKnees:ground?.knees??null,
    rootContactEnabled:states.directionContact,
    contactStats:contact.limits},shoulders:shoulders.arms};
  model.twist?.update();
@@ -325,8 +358,10 @@ function renderAt(t=0){
   else resetPose(x);
  }
  const focus=states.zoom==='face'?1.57:states.zoom==='chest'?1.41:states.zoom==='hips'?1.03:states.zoom==='knees'?.56:.95;
- const distance=states.zoom==='face'?1.12:states.zoom==='chest'?2.05:states.zoom==='hips'?2.55:states.zoom==='knees'?2.05:3.8;
- const center=m.root.position;
+ const distance=states.cameraFixed?7.4:
+  states.zoom==='face'?1.12:states.zoom==='chest'?2.05:
+  states.zoom==='hips'?2.55:states.zoom==='knees'?2.05:3.8;
+ const center=states.cameraFixed?new THREE.Vector3(0,0,0):m.root.position;
  key.position.set(center.x+3.5,center.y+6,center.z+5);
  key.target.position.copy(center);
  rim.position.set(center.x-3,center.y+3,center.z-4);
@@ -335,9 +370,9 @@ function renderAt(t=0){
  camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true,groundIK=false,cameraFixed=false}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact,groundIK,cameraFixed});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -407,6 +442,16 @@ control('foot-ik',()=>{states.footPlant=!states.footPlant;
  el('foot-ik').setAttribute('aria-pressed',String(states.footPlant));
  el('foot-ik').textContent=states.footPlant?'Fuß-IK: an':'Fuß-IK: aus';
 });
+control('ground-ik',()=>{
+ states.groundIK=!states.groundIK;
+ el('ground-ik').setAttribute('aria-pressed',String(states.groundIK));
+ el('ground-ik').textContent=states.groundIK?'Foot IK 2.0 / Sohle: an':'Foot IK 2.0 / Sohle: aus';
+});
+control('fixed-cam',()=>{
+ states.cameraFixed=!states.cameraFixed;states.rotate=false;
+ el('fixed-cam').setAttribute('aria-pressed',String(states.cameraFixed));
+ el('fixed-cam').textContent=states.cameraFixed?'Kamera: fest':'Kamera: Spieler folgen';
+});
 control('knee-axis',()=>{states.kneeAlign=!states.kneeAlign;
  el('knee-axis').setAttribute('aria-pressed',String(states.kneeAlign));
  el('knee-axis').textContent=states.kneeAlign?'Knieachse: stabil':'Knieachse: original';
@@ -432,7 +477,7 @@ fit();requestAnimationFrame(loop);
   const master=await loader.loadAsync('./assets/footera/models/footera-evolution-twist-prototype.glb');
   versions.master=readyModel(master);
   setVersions();renderAt(0);
-  status.textContent='Bereit – originale Mixamo-Captures, Schulter/Knie und echte seitliche bzw. rückwärtige Übergänge im isolierten 3D-Studio.';
+  status.textContent='Bereit – originale Mixamo-Captures, Step 7 Root und optionale Foot IK 2.0 mit echter Schuhsohlenmessung. Isoliertes 3D-Studio.';
   document.documentElement.dataset.ready='true';
  }catch(err){
   console.error(err);status.textContent='Lade-/Rigfehler: '+err.message;
