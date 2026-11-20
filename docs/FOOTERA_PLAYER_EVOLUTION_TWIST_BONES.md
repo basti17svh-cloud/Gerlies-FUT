@@ -24,6 +24,12 @@ Nur benannte Knochen ohne echte Vertex-Gewichte reichen **nicht** aus.
 - `tests/player-evolution-twist.test.mjs` kontrolliert Knochenhierarchie, Geometrie-Unverändertheit, echte Vertex-Gewichte, Rücksetzbarkeit, wiederholte Posen und einen 90°-Twist-Test.
 - CI erstellt Modell und Testbericht als herunterladbares GitHub-Artefakt und schreibt den Prototyp nach erfolgreichem Check nur auf den Twist-Branch.
 
+## Prüfung des ersten Prototyps (20.11.2026)
+
+**Blockiert – keine fertige 60-Bone-GLB veröffentlicht.** Der GitHub-Actions-Lauf ist absichtlich an der Bedingung gescheitert, dass jedes Twist-Gelenk mindestens 20 tatsächlich gewichtete Körpervertices haben muss. Im 52-Bone-Quellmodell hat der Oberarm links nach der ersten Diagnose lediglich 62 stark von `upperarm_l` beeinflusste Körpervertices, der linke Oberschenkel nur wenige. Die korrekte räumliche Auswahl für Twist-Influences ist damit noch nicht zuverlässig möglich.
+
+**Technische Konsequenz:** Nicht die Anzahl der Twist-Joints manipulieren und keine entfernten Körpervertices künstlich an diese Joints binden. Zuerst müssen die Limb-Skinning-Gewichte des Quell-Exports überprüft und gegebenenfalls neu von der MetaHuman-DNA auf den Footera-Rig übertragen werden. Dann die acht Twist-Joints mit korrekter Bindepose, Einflusszonen und Video-A/B-Test erneut erzeugen. Bis dahin **nicht mergen**.
+
 ## Wichtige Abnahmebedingungen
 
 Das neue 60-Knochen-Modell darf **nicht** wegen bloßer grüner Unit-Tests ins Live-Spiel gelangen. Zusätzlich erforderlich:
