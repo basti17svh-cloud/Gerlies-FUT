@@ -77,7 +77,7 @@ const server=http.createServer((req,res)=>{
    await page.locator('canvas').screenshot({path:path.join(frames,
     'frame-'+String(i).padStart(3,'0')+'.png')});
   }
-  cp.execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y',
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',['-hide_banner','-loglevel','error','-y',
    '-framerate','12','-i',path.join(frames,'frame-%03d.png'),
    '-vf','scale=720:-2','-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
    path.join(out,'footera-60-bone-engine-proof.mp4')]);
