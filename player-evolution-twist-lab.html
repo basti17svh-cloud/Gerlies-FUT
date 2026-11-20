@@ -35,6 +35,8 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="before" aria-pressed="false">52-Bone Master</button>
 <button id="rotate" aria-pressed="true">360°-Ansicht</button>
 <button id="pose" aria-pressed="false">Gelenk-Test</button>
+<button id="hips" aria-pressed="true">Hüfte: natürlich</button>
+<button id="hipview">Hüfte nah</button>
 <button id="front">Vorne</button>
 <button id="back">Hinten</button>
 <button id="face">Gesicht</button>
@@ -49,6 +51,7 @@ import {FOOTERA_EVOLUTION_BONES,auditFooteraRig,createFooteraPoseDirector} from 
 import {paintFooteraHumanKit} from './3d-player-human.mjs';
 import {FOOTERA_TWIST_SEGMENTS,inspectFooteraTwistRig,createFooteraTwistSolver}
  from './3d-player-evolution-twist.mjs';
+import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
 
 const el=id=>document.getElementById(id),canvas=el('view'),status=el('status');
 const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
@@ -72,7 +75,7 @@ const grid=new THREE.GridHelper(5,20,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -99,15 +102,17 @@ function readyModel(gltf){
  const report=auditFooteraRig(root);
  if(!report.ok)throw new Error('Rig validation: '+report.errors.slice(0,5).join(', '));
  const poses=createFooteraPoseDirector(root);
+ const gait=createFooteraGaitMotion(root);
  const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
  const twistReport=twist?inspectFooteraTwistRig(root):null;
  if(twistReport&&!twistReport.ok)
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,info,poses,originals,bones,report,twist,twistReport};
+ return{root,info,poses,originals,bones,report,twist,twistReport,gait};
 }
 function jointPose(model,t){
+ model.gait.reset();
  const rot=new Map(),walk=Math.sin(t*3),effort=.36;
  const add=(name,x=0,y=0,z=0)=>{
   const base=model.originals.get(name);if(!base)return;
@@ -127,7 +132,16 @@ function jointPose(model,t){
  model.poses.beginFrame();model.poses.submit('action',rot);model.poses.commit();
  model.twist?.update();
 }
-function resetPose(model){model.poses.beginFrame();model.poses.commit();model.twist?.reset();}
+function naturalWalkPose(model,t){
+ const gait=model.gait.sample(t,{cadence:1.45,strength:1});
+ model.poses.beginFrame();model.poses.submit('locomotion',gait.pose);model.poses.commit();
+ model.gait.applyTranslation(gait.translation);
+ model.twist?.update();
+}
+function resetPose(model){
+ model.poses.beginFrame();model.poses.commit();
+ model.gait.reset();model.twist?.reset();
+}
 function axialPose(model,bone,deg){
  resetPose(model);
  const def=FOOTERA_TWIST_SEGMENTS.find(x=>x.parent===bone);
@@ -161,6 +175,7 @@ function cutPose(model,t){
  rot('upperarm_l',-.16*a);
  rot('upperarm_r',.16*a);
  model.poses.beginFrame();model.poses.submit('action',pose);model.poses.commit();
+ model.gait.applyTranslation({x:.015*a,y:.008*(1-Math.cos(t*7.2))*.5,z:.005*a});
  model.twist?.update();
 }
 function kickPose(model,t){
@@ -173,8 +188,10 @@ function kickPose(model,t){
  rot('thigh_r',1.05*progress);rot('calf_r',-.95*progress);
  rot('foot_r',.24*progress);rot('thigh_l',-.30*progress);
  rot('upperarm_l',-.30*progress);rot('upperarm_r',.35*progress);
- rot('spine_01',.10*progress);
+ rot('pelvis',.055*progress);
+ rot('spine_01',-.035*progress);
  model.poses.beginFrame();model.poses.submit('action',pose);model.poses.commit();
+ model.gait.applyTranslation({x:-.012*progress,y:.004*progress,z:-.006*progress});
  model.twist?.update();
 }
 function setVersions(){
@@ -194,23 +211,26 @@ function renderAt(t=0){
   if(states.mode==='axial')axialPose(x,states.bone,states.deg);
   else if(states.mode==='kick')kickPose(x,t);
   else if(states.mode==='cut')cutPose(x,t);
-  else if(states.mode==='walk'||states.pose)jointPose(x,t);
+  else if(states.mode==='walk'||states.pose)(states.hipNatural?naturalWalkPose:jointPose)(x,t);
   else resetPose(x);
   x.root.rotation.y=Math.PI+(states.rotate?states.angle:states.angle);
  }
- const focus=states.zoom==='face'?1.57:.95;
- const distance=states.zoom==='face'?1.12:3.8;
+ const focus=states.zoom==='face'?1.57:states.zoom==='hips'?1.03:.95;
+ const distance=states.zoom==='face'?1.12:states.zoom==='hips'?2.55:3.8;
  camera.position.set(0,focus+.14,distance);camera.lookAt(0,focus,0);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
   triangles:renderer.info.render.triangles,drawCalls:renderer.info.render.calls,
   width:canvas.width,height:canvas.height,
+  hipNatural:states.hipNatural,pelvisOffset:m.gait.getOffset().toArray(),
+  pelvisRotation:m.bones.get('pelvis').quaternion.toArray(),
+  spineRotation:m.bones.get('spine_01').quaternion.toArray(),
   sampleNames:[...m.bones.keys()].slice(0,5)};
 };
 const timer={last:0};
@@ -229,6 +249,13 @@ control('master',()=>{states.version='master';setVersions()});
 control('before',()=>{states.version='before';setVersions()});
 control('rotate',()=>{states.rotate=!states.rotate;el('rotate').setAttribute('aria-pressed',String(states.rotate))});
 control('pose',()=>{states.pose=!states.pose;el('pose').setAttribute('aria-pressed',String(states.pose))});
+control('hips',()=>{
+ states.hipNatural=!states.hipNatural;states.pose=true;states.mode='walk';
+ el('hips').textContent=states.hipNatural?'Hüfte: natürlich':'Hüfte: bisherige';
+ el('hips').setAttribute('aria-pressed',String(states.hipNatural));
+ el('pose').setAttribute('aria-pressed','true');
+});
+control('hipview',()=>{states.zoom='hips';states.rotate=false;states.angle=0;});
 control('front',()=>{states.rotate=false;states.angle=0;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
 control('back',()=>{states.rotate=false;states.angle=Math.PI;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
 control('face',()=>{states.rotate=false;states.angle=0;states.zoom='face';el('rotate').setAttribute('aria-pressed','false')});
