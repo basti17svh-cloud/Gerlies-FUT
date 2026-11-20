@@ -9,6 +9,8 @@ import {FOOTERA_MOCAP_GAITS,createFooteraCapturedGait}
 import {createFooteraFootPlant,footeraStanceWeight}
  from '../3d-player-evolution-foot-ik.mjs';
 import {createFooteraShoulderAlignment} from '../3d-player-evolution-shoulders.mjs';
+import {createFooteraDirectionalTransitions,FOOTERA_DIRECTION_MOVES}
+ from '../3d-player-evolution-transitions.mjs';
 
 function rig({twist=false}={}){
  const root=new THREE.Group(),bones=new Map();
@@ -256,4 +258,63 @@ test('Captured shoulder abduction alignment keeps real Mixamo swing, source bone
  assert.ok(corrected.every(Number.isFinite));
  assert.throws(()=>shoulder.sample({strength:NaN}),RangeError);
  assert.throws(()=>createFooteraShoulderAlignment(root,{maxAbductionDeg:90}),RangeError);
+});
+
+test('Original Adobe Mixamo lateral/backpedal transitions are quaternion-only, reversible and bounded',()=>{
+ const {root,bones}=rig({twist:true}),capture=createFooteraCapturedGait(root);
+ const director=createFooteraPoseDirector(root),trans=createFooteraDirectionalTransitions(root,capture);
+ assert.deepEqual(FOOTERA_DIRECTION_MOVES,['strafeLeft','strafeRight','backpedal']);
+ for(const yaw of [0,-.46,.46]){
+  root.rotation.y=Math.PI+yaw;root.updateMatrixWorld(true);
+  for(const dir of FOOTERA_DIRECTION_MOVES){
+   const captured=trans.originalDirectionalClip(dir,.27);
+   assert.equal(captured.pose.size,52);
+   assert.ok(captured.source.includes('Adobe Mixamo'));
+   const forward=capture.sample('run',.28);
+   const originalQ=new Map(FOOTERA_EVOLUTION_BONES.map(x=>[
+    x.name,bones.get(x.name).quaternion.clone()]));
+   const zero=trans.blend({from:'run',to:dir,fromPhase:.28,
+    toPhase:.27,weight:0});
+   const full=trans.blend({from:'run',to:dir,fromPhase:.28,
+    toPhase:.27,weight:1});
+   for(const {name} of FOOTERA_EVOLUTION_BONES){
+    assert.ok(qDistance(zero.pose.get(name),forward.pose.get(name))<1e-6,
+     dir+' zero blend must equal recorded run');
+    assert.ok(qDistance(full.pose.get(name),captured.pose.get(name))<1e-6,
+     dir+' full blend must equal recorded directional capture');
+    assert.ok(qDistance(bones.get(name).quaternion,originalQ.get(name))<1e-6,
+     dir+' blend must not mutate source bones');
+   }
+   for(const time of [0,.64,.65,.66,.85,1.04,1.05,1.06,
+    1.54,1.55,1.56,1.75,1.94,1.95,1.96,2.30]){
+    const state=trans.sampleSequence({time,direction:dir});
+    assert.equal(state.pose.size,52);
+    assert.ok(state.source.includes('original baked Adobe Mixamo'));
+    assert.ok(state.worldFootPlantGuaranteed===false&&!state.liveRootMotion);
+    assert.ok(Object.values(state.feet).every(pos=>pos.every(Number.isFinite)));
+    assert.ok(state.weight>=0&&state.weight<=1);
+    director.beginFrame();director.submit('locomotion',state.pose);director.commit();
+    capture.applyTranslation(state.translation);
+    for(const side of ['l','r']){
+     const actual=root.worldToLocal(bones.get('foot_'+side).getWorldPosition(
+      new THREE.Vector3())).toArray();
+     assert.ok(Math.hypot(...actual.map((x,i)=>x-state.feet[side][i]))<.0001,
+      dir+' FK feet must match quaternion-blended 3D pose');
+    }
+   }
+   for(const t of [.65,1.05,1.55,1.95]){
+    const a=trans.sampleSequence({time:t-.0001,direction:dir}),
+     b=trans.sampleSequence({time:t+.0001,direction:dir});
+    for(const bone of ['pelvis','spine_03','thigh_l','thigh_r','upperarm_l']){
+     assert.ok(qDistance(a.pose.get(bone),b.pose.get(bone))<.22,
+      dir+' pose discontinuity at boundary '+t+' '+bone);
+    }
+   }
+   capture.reset();
+  }
+ }
+ assert.throws(()=>trans.sampleSequence({direction:'fake'}),RangeError);
+ assert.throws(()=>trans.sampleSequence({time:-1}),RangeError);
+ assert.throws(()=>trans.blend({to:'strafeLeft',weight:NaN}),RangeError);
+ assert.throws(()=>trans.blend({to:'strafeLeft',weight:1.1}),RangeError);
 });
