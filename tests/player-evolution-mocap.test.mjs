@@ -1,0 +1,104 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as THREE from '../vendor/three/three.module.min.js';
+import {FOOTERA_EVOLUTION_BONES,createFooteraPoseDirector}
+ from '../3d-player-evolution-rig.mjs';
+import {FOOTERA_TWIST_SEGMENTS} from '../3d-player-evolution-twist.mjs';
+import {FOOTERA_MOCAP_GAITS,createFooteraCapturedGait}
+ from '../3d-player-evolution-mocap.mjs';
+import {createFooteraFootPlant,footeraStanceWeight}
+ from '../3d-player-evolution-foot-ik.mjs';
+
+function rig({twist=false}={}){
+ const root=new THREE.Group(),bones=new Map();
+ root.rotation.y=Math.PI;
+ for(const {name,parent} of FOOTERA_EVOLUTION_BONES){
+  const bone=new THREE.Bone();bone.name=name;
+  if(name==='pelvis')bone.position.set(0,.94,0);
+  else if(name.startsWith('spine'))bone.position.set(0,.125,0);
+  else if(name==='neck_01')bone.position.set(0,.115,0);
+  else if(name==='Head')bone.position.set(0,.13,0);
+  else if(name.startsWith('clavicle'))bone.position.set(name.endsWith('_l')?.15:-.15,.02,0);
+  else if(name.startsWith('upperarm'))bone.position.set(name.endsWith('_l')?.09:-.09,-.025,0);
+  else if(name.startsWith('lowerarm'))bone.position.set(name.endsWith('_l')?.23:-.23,-.04,0);
+  else if(name.startsWith('hand'))bone.position.set(name.endsWith('_l')?.21:-.21,-.02,0);
+  else if(name.startsWith('thigh'))bone.position.set(name.endsWith('_l')?.12:-.12,-.10,0);
+  else if(name.startsWith('calf'))bone.position.set(0,-.37,0);
+  else if(name.startsWith('foot'))bone.position.set(0,-.38,0);
+  else if(name.startsWith('ball'))bone.position.set(0,-.03,.15);
+  else bone.position.set(0,.012,.01);
+  (parent?bones.get(parent):root).add(bone);bones.set(name,bone);
+ }
+ if(twist)for(const d of FOOTERA_TWIST_SEGMENTS){
+  const bone=new THREE.Bone();bone.name=d.name;
+  bones.get(d.parent).add(bone);bones.set(bone.name,bone);
+ }
+ root.updateMatrixWorld(true);return{root,bones};
+}
+const qDistance=(a,b)=>a.angleTo(b);
+
+test('All four genuine shipped Mixamo captures can be sampled as 52 local quaternions',()=>{
+ const {root,bones}=rig({twist:true}),capture=createFooteraCapturedGait(root);
+ assert.deepEqual(FOOTERA_MOCAP_GAITS,['walk','jog','run','sprint']);
+ assert.equal(capture.boneCount,52);
+ const before=FOOTERA_EVOLUTION_BONES.map(({name})=>bones.get(name).quaternion.clone());
+ for(const clip of FOOTERA_MOCAP_GAITS){
+  const a=capture.sample(clip,.11),b=capture.sample(clip,.32);
+  assert.equal(a.pose.size,52);
+  assert.ok(a.frame>=0);
+  assert.ok(a.source.includes('Mixamo'));
+  for(const q of a.pose.values()){
+   assert.ok(q.toArray().every(Number.isFinite),clip);
+   assert.ok(Math.abs(q.length()-1)<.005,clip);
+  }
+  assert.ok(qDistance(a.pose.get('pelvis'),b.pose.get('pelvis'))>.002,
+   clip+' should animate the hips');
+  assert.ok(qDistance(a.pose.get('upperarm_l'),b.pose.get('upperarm_l'))>.002,
+   clip+' should animate the left arm');
+  assert.ok(Math.abs(a.translation.y)<=.045);
+  assert.ok(a.feet.l.every(Number.isFinite)&&a.feet.r.every(Number.isFinite));
+  assert.ok(qDistance(a.pose.get('pelvis'),capture.sample(clip,.11).pose.get('pelvis'))<1e-6,
+   clip+' seek determinism');
+ }
+ FOOTERA_EVOLUTION_BONES.forEach(({name},i)=>{
+  assert.ok(qDistance(bones.get(name).quaternion,before[i])<1e-6,name+' not mutated');
+ });
+ assert.equal(bones.size,60,'Eight twist nodes remain part of the same rig');
+ assert.throws(()=>capture.sample('imaginary',0),RangeError);
+ assert.throws(()=>capture.sample('run',NaN),RangeError);
+});
+test('Local 2-bone IK returns an optional director layer and restores posed bones',()=>{
+ const {root,bones}=rig(),cap=createFooteraCapturedGait(root),director=createFooteraPoseDirector(root),
+  ik=createFooteraFootPlant(root,cap);
+ const clip='walk',phase=.25,a=cap.sample(clip,phase);
+ director.beginFrame();director.submit('locomotion',a.pose);director.commit();
+ cap.applyTranslation(a.translation);
+ const before=['thigh_l','calf_l','foot_l'].map(n=>bones.get(n).quaternion.clone());
+ const pose=ik.computePose({clip,phase});
+ assert.ok(pose.feet.l.weight>.95,'left leg is planted at midstance');
+ assert.ok(pose.pose.size>0,'the IK layer owns planted joints');
+ assert.ok(pose.feet.l.errorAfter<=pose.feet.l.errorBefore+.005,
+  'IK should not increase ankle sliding significantly');
+ before.forEach((q,i)=>assert.ok(qDistance(bones.get(['thigh_l','calf_l','foot_l'][i]).quaternion,q)<1e-6,
+  'IK must not mutate the 52-bone animation before director ownership'));
+ director.submit('ik',pose.pose);director.commit();
+ const ankle=bones.get('foot_l').getWorldPosition(new THREE.Vector3());
+ assert.ok(ankle.toArray().every(Number.isFinite));
+ assert.ok(Math.abs(bones.get('thigh_l').quaternion.length()-1)<.01);
+ cap.reset();
+ assert.ok(cap.hipRest.distanceTo(bones.get('pelvis').position)<1e-9);
+});
+test('Foot stance is phased, capped and deliberately disabled in swing',()=>{
+ assert.equal(footeraStanceWeight(.25,'l'),1);
+ assert.equal(footeraStanceWeight(.75,'l'),0);
+ assert.equal(footeraStanceWeight(.75,'r'),1);
+ assert.equal(footeraStanceWeight(.25,'r'),0);
+ const {root}=rig(),cap=createFooteraCapturedGait(root),ik=createFooteraFootPlant(root,cap);
+ const a=ik.computePose({clip:'run',phase:.25,strength:0});
+ assert.equal(a.pose.size,0);
+ assert.throws(()=>ik.computePose({phase:Infinity}),RangeError);
+ assert.throws(()=>ik.computePose({strength:-1}),RangeError);
+ assert.throws(()=>cap.anchor('run','x'),RangeError);
+ const at=cap.anchor('run','l');
+ assert.ok(at.distanceTo(cap.anchor('run','l'))<1e-8);
+});
