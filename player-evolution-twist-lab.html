@@ -42,13 +42,14 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="run-mocap">Mixamo: Laufen</button>
 <button id="sprint-mocap">Mixamo: Sprinten</button>
 <button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
+<button id="root-travel" aria-pressed="true">Echte Schrittlänge: an</button>
 <button id="side">Seitenansicht</button>
 <button id="front">Vorne</button>
 <button id="back">Hinten</button>
 <button id="face">Gesicht</button>
 </div>
 <p id="status" role="status">Modelle werden geladen…</p>
-<div class="note"><b>Mixamo-Captures:</b> Die vier Testmodi spielen die echten bereits vorhandenen 30-FPS-Mixamo-Bewegungsdaten auf dem 52-/60-Knochen-Modell ab. Der Fuß-IK-Schalter testet einen auf dem lokalen Standort fixierten Aufsetzpunkt. Das ist noch kein Nachweis für Fußkontakt auf bewegter Spielwelt-Route.</div>
+<div class="note"><b>Mixamo-Captures:</b> Die vier Testmodi spielen die echten bereits vorhandenen 30-FPS-Mixamo-Bewegungsdaten auf dem 52-/60-Knochen-Modell ab. Der Spieler erhält seine Vorwärtsbewegung aus dem aufgezeichneten Fußweg; die Kamera folgt dem Spieler. Die zuschaltbare Fuß-IK korrigiert verbleibende kleine Abweichungen. Das ist noch kein Nachweis für Fußkontakt auf bewegter Spielwelt-Route.</div>
 <div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
 </main>
 <script type="module">
@@ -77,14 +78,14 @@ const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(3.5,6,5);key
 key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-3;key.shadow.camera.right=3;
 key.shadow.camera.top=5;key.shadow.camera.bottom=-2;scene.add(key);
 const rim=new THREE.DirectionalLight(0x8af7d7,2.1);rim.position.set(-3,3,-4);scene.add(rim);
-const floor=new THREE.Mesh(new THREE.CircleGeometry(1.45,80),
+const floor=new THREE.Mesh(new THREE.CircleGeometry(42,96),
  new THREE.MeshStandardMaterial({color:0x17413d,roughness:.88}));
 floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=true;scene.add(floor);
-const grid=new THREE.GridHelper(5,20,0x246d67,0x1d4644);
+const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -95,6 +96,7 @@ function colorKit(info){
 function readyModel(gltf){
  const root=gltf.scene;
  root.rotation.y=Math.PI; // old GLBs face +Z; camera faces Footera -Z
+ const basePosition=root.position.clone();
  const info=gltf.parser.json.extras?.footera||{};
  const tex=colorKit(info);
  root.traverse(o=>{
@@ -120,10 +122,10 @@ function readyModel(gltf){
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,lastMocap:null};
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,lastMocap:null};
 }
 function jointPose(model,t){
- model.gait.reset();model.capture.reset();
+ model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
  const rot=new Map(),walk=Math.sin(t*3),effort=.36;
  const add=(name,x=0,y=0,z=0)=>{
   const base=model.originals.get(name);if(!base)return;
@@ -146,14 +148,25 @@ function jointPose(model,t){
 function captureWalkPose(model,t){
  model.gait.reset();
  const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[states.mocapClip];
- const sample=model.capture.sample(states.mocapClip,(t*rate)%1);
+ const cycles=t*rate;
+ const sample=model.capture.sample(states.mocapClip,cycles);
+ const rootTravel=states.rootTravel
+  ?model.capture.rootTravel(states.mocapClip,cycles,sample.feet)
+  :new THREE.Vector3();
+ model.root.position.copy(model.basePosition).add(
+  rootTravel.clone().applyQuaternion(model.root.quaternion));
  model.poses.beginFrame();
  model.poses.submit('locomotion',sample.pose);
  model.poses.commit();
  model.capture.applyTranslation(sample.translation);
+ const anchorWorlds={};
+ if(states.rootTravel)for(const side of ['l','r'])
+  anchorWorlds[side]=model.capture.worldFootAnchor(states.mocapClip,cycles,side,
+   model.basePosition,model.root.quaternion).toArray();
  let planted=null;
  if(states.footPlant){
-  planted=model.ik.computePose({clip:states.mocapClip,phase:sample.phase,strength:1});
+  planted=model.ik.computePose({clip:states.mocapClip,phase:sample.phase,
+   strength:1,anchorWorlds:states.rootTravel?anchorWorlds:null});
   if(planted.pose.size){
    model.poses.submit('ik',planted.pose);
    model.poses.commit();
@@ -161,10 +174,13 @@ function captureWalkPose(model,t){
  }
  model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
   source:sample.source,hipTranslation:sample.translation,
+  rootTravel:rootTravel.toArray(),
+  worldFootAnchors:states.rootTravel?anchorWorlds:null,
   feet:planted?.feet||null};
  model.twist?.update();
 }
 function naturalWalkPose(model,t){
+ model.root.position.copy(model.basePosition);
  const gait=model.gait.sample(t,{cadence:1.45,strength:1});
  model.poses.beginFrame();model.poses.submit('locomotion',gait.pose);model.poses.commit();
  model.gait.applyTranslation(gait.translation);
@@ -172,7 +188,8 @@ function naturalWalkPose(model,t){
 }
 function resetPose(model){
  model.poses.beginFrame();model.poses.commit();
- model.gait.reset();model.capture.reset();model.lastMocap=null;model.twist?.reset();
+ model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
+ model.lastMocap=null;model.twist?.reset();
 }
 function axialPose(model,bone,deg){
  resetPose(model);
@@ -187,6 +204,7 @@ function axialPose(model,bone,deg){
  model.root.updateMatrixWorld(true);
 }
 function cutPose(model,t){
+ model.root.position.copy(model.basePosition);
  // Technical side-step/cut stress pose: hip yaw, counter-rotating torso,
  // alternate planted and lifted knees. No gameplay speed/physics claim.
  const a=Math.sin(t*3.6),push=Math.max(0,a),plant=Math.max(0,-a);
@@ -211,6 +229,7 @@ function cutPose(model,t){
  model.twist?.update();
 }
 function kickPose(model,t){
+ model.root.position.copy(model.basePosition);
  const progress=(Math.sin(t*4)+1)*.5;
  const pose=new Map();
  const rot=(name,rx)=>{
@@ -240,22 +259,24 @@ function renderAt(t=0){
  const m=versions[states.version];if(!m)return;
  states.time=t;
  for(const x of Object.values(versions)){
+  x.root.rotation.y=Math.PI+states.angle;
   if(states.mode==='axial')axialPose(x,states.bone,states.deg);
   else if(states.mode==='kick')kickPose(x,t);
   else if(states.mode==='mocap')captureWalkPose(x,t);
   else if(states.mode==='cut')cutPose(x,t);
   else if(states.mode==='walk'||states.pose)(states.hipNatural?naturalWalkPose:jointPose)(x,t);
   else resetPose(x);
-  x.root.rotation.y=Math.PI+(states.rotate?states.angle:states.angle);
  }
  const focus=states.zoom==='face'?1.57:states.zoom==='hips'?1.03:.95;
  const distance=states.zoom==='face'?1.12:states.zoom==='hips'?2.55:3.8;
- camera.position.set(0,focus+.14,distance);camera.lookAt(0,focus,0);
+ const center=m.root.position;
+ camera.position.set(center.x,focus+.14+center.y,center.z+distance);
+ camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -264,7 +285,7 @@ window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',
   hipNatural:states.hipNatural,pelvisOffset:m.gait.getOffset().toArray(),
   pelvisRotation:m.bones.get('pelvis').quaternion.toArray(),
   spineRotation:m.bones.get('spine_01').quaternion.toArray(),
-  mocap:m.lastMocap,actualFeet:Object.fromEntries(['l','r'].map(side=>[side,
+  mocap:m.lastMocap,rootPosition:m.root.position.toArray(),actualFeet:Object.fromEntries(['l','r'].map(side=>[side,
    m.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()).toArray()])),
   sampleNames:[...m.bones.keys()].slice(0,5)};
 };
@@ -300,6 +321,10 @@ for(const [id,clip] of [['walk-mocap','walk'],['jog-mocap','jog'],
    el(cid).setAttribute('aria-pressed',String(c===clip));
  });
 }
+control('root-travel',()=>{states.rootTravel=!states.rootTravel;
+ el('root-travel').setAttribute('aria-pressed',String(states.rootTravel));
+ el('root-travel').textContent=states.rootTravel?'Echte Schrittlänge: an':'Echte Schrittlänge: aus';
+});
 control('foot-ik',()=>{states.footPlant=!states.footPlant;
  el('foot-ik').setAttribute('aria-pressed',String(states.footPlant));
  el('foot-ik').textContent=states.footPlant?'Fuß-IK: an':'Fuß-IK: aus';
