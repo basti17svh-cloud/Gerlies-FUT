@@ -45,13 +45,13 @@ jobs:
           node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
         run: |
-          npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0
+          npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
           command -v google-chrome
           google-chrome --version
           FFMPEG_BIN=$(node -p "require('/tmp/footera-twist-qa/node_modules/@ffmpeg-installer/ffmpeg').path")
           test -x "$FFMPEG_BIN"
           echo "FOOTERA_FFMPEG=$FFMPEG_BIN" >> "$GITHUB_ENV"
-      - name: Render 0 45 90 and minus 90 axial poses plus run kick comparison and MP4
+      - name: Render authentic Mixamo knee-alignment A/B, axial poses and synchronized MP4
         env:
           NODE_PATH: /tmp/footera-twist-qa/node_modules
           FOOTERA_CHROME_PATH: /usr/bin/google-chrome
@@ -112,6 +112,15 @@ jobs:
                   ImageDraw.Draw(walking).text((col*660+12,row*525+6),
                       ('Treadmill (slide)' if row==0 else 'Captured root travel (plant)')+' / '+when,fill='white')
           walking.save(p/'mixamo-root-travel-foot-contact.jpg',quality=91)
+          knee=Image.new('RGB',(1320,1040),'#06131d')
+          for row,view in enumerate(['front','side']):
+              for col,condition in enumerate(['before','after']):
+                  source=Image.open(p/f'knee-axis-{view}-{condition}.png').convert('RGB')
+                  source.thumbnail((635,485))
+                  knee.paste(source,(col*660+(660-source.width)//2,row*520+27))
+                  ImageDraw.Draw(knee).text((col*660+12,row*520+7),
+                      f'Mixamo {view} / Knee alignment {condition}',fill='white')
+          knee.save(p/'knee-axis-real-3d-before-after.jpg',quality=92)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
