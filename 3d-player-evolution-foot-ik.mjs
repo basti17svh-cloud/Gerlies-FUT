@@ -55,28 +55,30 @@ function measureSoleMarkers(root,foot,ball){
     if(b===foot||b===ball)influence+=weights[read](i);
    }
    if(influence<.28)continue;
-   const point=new THREE.Vector3().fromBufferAttribute(pos,i);
-   mesh.localToWorld(point);foot.worldToLocal(point);
-   vertices.push({point,progress:point.dot(forward)});
+   const worldPoint=new THREE.Vector3().fromBufferAttribute(pos,i);
+   mesh.localToWorld(worldPoint);
+   const worldHeight=worldPoint.y;
+   const point=foot.worldToLocal(worldPoint);
+   vertices.push({point,worldHeight,progress:point.dot(forward)});
   }
  });
- if(vertices.length<24){
-  return{heel:ballLocal.clone().multiplyScalar(-.33)
-    .add(new THREE.Vector3(0,-.012,0)),
-   toe:ballLocal.clone(),meshCalibrated:false,vertexCount:vertices.length};
- }
- const byHeight=[...vertices].sort((a,b)=>a.point.y-b.point.y);
- const cutoff=byHeight[Math.min(byHeight.length-1,Math.floor(byHeight.length*.17))].point.y+.008;
- const outsole=vertices.filter(v=>v.point.y<=cutoff).sort((a,b)=>a.progress-b.progress);
- if(outsole.length<12)
-  return{heel:ballLocal.clone().multiplyScalar(-.33),toe:ballLocal.clone(),
-   meshCalibrated:false,vertexCount:vertices.length};
- const band=Math.max(3,Math.floor(outsole.length*.16));
+ // Imported foot-bone LOCAL Y can point towards the toes rather than UP.
+ // Never select outsole candidates by the local foot y coordinate.
+ const fallback=()=>({heel:ballLocal.clone().multiplyScalar(-.33),
+  toe:ballLocal.clone(),meshCalibrated:false,vertexCount:vertices.length});
+ if(vertices.length<24)return fallback();
+ const byProgress=[...vertices].sort((a,b)=>a.progress-b.progress);
+ const band=Math.max(8,Math.floor(byProgress.length*.24));
  const centroid=arr=>arr.reduce((v,p)=>v.add(p.point),new THREE.Vector3())
   .multiplyScalar(1/arr.length);
- const heel=centroid(outsole.slice(0,band));
- const toe=centroid(outsole.slice(-band));
- if(heel.distanceTo(toe)<.07)throw new Error('Degenerate real boot sole');
+ // Separate anatomical heel/toe portions first, THEN pick their lowest
+ // genuine skinned boot surface samples in world +Y.
+ const soleBand=arr=>arr.sort((a,b)=>a.worldHeight-b.worldHeight)
+  .slice(0,Math.max(4,Math.floor(arr.length*.24)));
+ const heel=centroid(soleBand(byProgress.slice(0,band)));
+ const toe=centroid(soleBand(byProgress.slice(-band)));
+ if(![heel.x,heel.y,heel.z,toe.x,toe.y,toe.z].every(Number.isFinite)||
+    heel.distanceTo(toe)<.07)return fallback();
  return{heel,toe,meshCalibrated:true,vertexCount:vertices.length};
 }
 function soleWorld(limb){
