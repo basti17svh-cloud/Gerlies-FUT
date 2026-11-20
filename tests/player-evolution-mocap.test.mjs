@@ -170,8 +170,12 @@ test('Anatomical knee pole is continuous, pose-preserving and heading-relative f
      if(Math.abs(b.deviationAfterDeg)>14.1)
       assert.ok(Math.abs(a.deviationAfterDeg)<14.8,
        clip+' '+phase+' '+side+' pole = '+a.deviationAfterDeg);
-     assert.ok(Math.abs(a.flexBeforeDeg-a.flexAfterDeg)<4.5,
-      clip+' '+phase+' '+side+' knee flexion should not change substantially');
+     // Compare identical foot-contact goals: alignment may redirect the
+     // knee pole, but must not significantly change the captured knee flex.
+     // Comparing to the pre-IK source would incorrectly reject legitimate
+     // flexion required by a corrected world-space foot contact.
+     assert.ok(Math.abs(b.flexAfterDeg-a.flexAfterDeg)<2.5,
+      clip+' '+phase+' '+side+' knee alignment must preserve foot-IK flexion');
     }
     originals.forEach((q,i)=>assert.ok(qDistance(
      bones.get(['thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r'][i]).quaternion,
