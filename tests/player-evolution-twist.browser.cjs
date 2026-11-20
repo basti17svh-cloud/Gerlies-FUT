@@ -348,6 +348,79 @@ const server=http.createServer((req,res)=>{
     path.join(out,'footera-original-mixamo-directional-cuts.mp4')]);
   report.mixamo.directional.video='footera-original-mixamo-directional-cuts.mp4';
   assert.ok(fs.statSync(path.join(out,report.mixamo.directional.video)).size>20000);
+  // Step 7 - same original directional Mixamo keyframes, original 60-bone
+  // geometry and camera; contact-derived root OFF vs ON. A root controller
+  // is NOT an IK solver: no fake boot-to-floor contact claim.
+  report.mixamo.directional.contactRoot={
+   derivedFrom:'Original Mixamo FK shoes at 90Hz, lowest-foot hysteresis',
+   sourceBonesUnchanged:true,usesRealMatchRoot:false,usesCollisionFootIK:false,
+   modes:[],video:'footera-direction-foot-contact-3d-before-after.mp4'};
+  for(const direction of ['strafeLeft','strafeRight','backpedal']){
+   const timePoints=[.18,.45,.85,1.08,1.35,1.61,1.86,2.20];
+   const measurements=[];
+   for(const time of timePoints){
+    const args={version:'master',mode:'directional',direction,time,
+     angle:0,zoom:'full',shoulderAlign:true};
+    const off=await page.evaluate(x=>window.footeraQaRender(x),
+     {...args,directionContact:false});
+    const on=await page.evaluate(x=>window.footeraQaRender(x),
+     {...args,directionContact:true});
+    const d=on.mocap.direction;
+    assert.equal(d.rootContactEnabled,true);
+    assert.equal(d.contactInferred,true);
+    assert.ok(['l','r'].includes(d.estimatedContactSide));
+    assert.ok(d.rootTravel.every(Number.isFinite));
+    assert.ok(d.contactStats.maxRootSpeed<=7.51,'Unphysical root jerk');
+    assert.ok(d.contactStats.maxStepMetres<=7.5/90+.001);
+    assert.ok(d.contactStats.switches>=1,'No alternate support foot');
+    const shift=on.rootPosition.map((v,i)=>v-off.rootPosition[i]);
+    const movement=Math.hypot(...shift);
+    assert.ok(Math.abs(movement-Math.hypot(...d.rootTravel))<.0004,
+     'Only authoritative preview root may move, no shoe or bone offsets');
+    for(const side of ['l','r']){
+     const shoeShift=on.actualFeet[side].map((v,i)=>v-off.actualFeet[side][i]);
+     assert.ok(Math.hypot(...shoeShift.map((v,i)=>v-shift[i]))<.002,
+      'Skeletal FK shoes must travel with captured root, not be stretched');
+    }
+    measurements.push({time,side:d.estimatedContactSide,
+     rootMetres:d.rootTravel,contactErrorMetres:d.supportSlipMetres,
+     speedLimited:d.speedLimited});
+    if(Math.abs(time-1.35)<1e-6){
+     await capture('direction-root-'+direction+'-before',
+      {...args,directionContact:false,angle:Math.PI/2});
+     await capture('direction-root-'+direction+'-after',
+      {...args,directionContact:true,angle:Math.PI/2});
+    }
+   }
+   report.mixamo.directional.contactRoot.modes.push({direction,measurements,
+    trackStats:measurements.length?(
+     await page.evaluate(x=>window.footeraQaRender(x),{
+      version:'master',mode:'directional',direction,time:1.35
+     })).mocap.direction.contactStats:null});
+  }
+  const contactFrames=path.join(out,'direction-foot-contact-pairs');
+  fs.mkdirSync(contactFrames,{recursive:true});
+  for(let i=0;i<36;i++){
+   const direction=i<12?'strafeLeft':i<24?'strafeRight':'backpedal';
+   const time=(i%12)*2.45/11;
+   const args={version:'master',mode:'directional',direction,time,angle:0,
+    zoom:'full',shoulderAlign:true};
+   const imgs=[];
+   for(const directionContact of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),{...args,directionContact});
+    imgs.push(PNG.sync.read(await page.locator('canvas').screenshot()));
+   }
+   const pair=new PNG({width:imgs[0].width*2,height:imgs[0].height});
+   imgs.forEach((p,j)=>PNG.bitblt(p,pair,0,0,p.width,p.height,p.width*j,0));
+   fs.writeFileSync(path.join(contactFrames,
+    'frame-'+String(i).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(contactFrames,'frame-%03d.png'),'-vf','scale=1440:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,report.mixamo.directional.contactRoot.video)]);
+  assert.ok(fs.statSync(path.join(out,report.mixamo.directional.contactRoot.video)).size>25000);
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
