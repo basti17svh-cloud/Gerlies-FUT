@@ -421,6 +421,102 @@ const server=http.createServer((req,res)=>{
     '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
     path.join(out,report.mixamo.directional.contactRoot.video)]);
   assert.ok(fs.statSync(path.join(out,report.mixamo.directional.contactRoot.video)).size>25000);
+  // Step 8: SHOE OUTSOLE before/after, identical unmodified Mixamo capture,
+  // fixed WORLD camera, identical root travel, identical lights and frame.
+  report.groundIK2={source:'Original Adobe Mixamo + real 60-bone GLB boot outsole',
+   camera:'fixed world-space',mobileGame:false,terrainRaycasts:false,
+   gait:[],directional:[],frames:60,
+   video:'footera-ground-ik2-fixed-camera-before-after.mp4'};
+  const gaitRates={walk:1.05,jog:1.4,run:1.7,sprint:2.1};
+  let visibleDifferences=0;
+  for(const clip of ['walk','jog','run','sprint']){
+   const args={version:'master',mode:'mocap',mocapClip:clip,
+    time:.27/gaitRates[clip],angle:Math.PI/2,zoom:'full',cameraFixed:true,
+    footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true};
+   const a=await capture('foot-ik2-'+clip+'-before',{...args,groundIK:false});
+   const b=await capture('foot-ik2-'+clip+'-after',{...args,groundIK:true});
+   assert.ok(!a.mocap.groundContact&&b.mocap.groundContact,'Ground A/B mode invalid');
+   assert.ok(Math.hypot(...a.rootPosition.map((x,i)=>x-b.rootPosition[i]))<.000001,
+    'Ground IK must not alter the original captured root track');
+   const active=Object.values(b.mocap.feet).filter(f=>f.active);
+   assert.ok(active.length>=1,clip+' no ground-contact foot');
+   for(const foot of active){
+    assert.ok(foot.floorPenetration>=0&&Number.isFinite(foot.floorPenetration));
+    assert.ok(Math.abs(foot.soleLift)<=.07001&&Math.abs(foot.rollDeg)<11.6);
+   }
+   report.groundIK2.gait.push({clip,active,soles:b.mocap.soles,
+    rootMeters:b.rootPosition});
+  }
+  for(const direction of ['strafeLeft','strafeRight','backpedal']){
+   const args={version:'master',mode:'directional',direction,time:1.35,
+    angle:direction==='backpedal'?Math.PI/2:0,
+    cameraFixed:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
+    directionContact:true};
+   const off=await capture('foot-ik2-'+direction+'-before',{...args,groundIK:false});
+   const on=await capture('foot-ik2-'+direction+'-after',{...args,groundIK:true});
+   assert.equal(on.mocap.direction.groundIKEnabled,true);
+   assert.equal(off.mocap.direction.groundIKEnabled,false);
+   assert.ok(Math.hypot(...off.rootPosition.map((x,i)=>x-on.rootPosition[i]))<.000001,
+    direction+' ground correction must not move the preview root');
+   const feet=on.mocap.direction.groundFeet;
+   assert.ok(feet?.l&&feet?.r,direction+' missing shoe diagnostics');
+   const active=Object.values(feet).filter(f=>f.active);
+   for(const foot of active)
+    assert.ok(Math.abs(foot.soleLift)<=.07001&&Math.abs(foot.rollDeg)<=11.6);
+   report.groundIK2.directional.push({direction,
+    source:on.mocap.source,active,rootMeters:on.rootPosition,
+    support:on.mocap.direction.estimatedContactSide});
+  }
+  // Compare actual THREE canvas pixels; diagnostic, not human visual approval.
+  for(const clip of ['walk','run','strafeLeft']){
+   const off=PNG.sync.read(fs.readFileSync(path.join(out,'foot-ik2-'+clip+'-before.png')));
+   const on=PNG.sync.read(fs.readFileSync(path.join(out,'foot-ik2-'+clip+'-after.png')));
+   let count=0;
+   for(let i=0;i<off.data.length;i+=4)
+    if(Math.abs(off.data[i]-on.data[i])+
+       Math.abs(off.data[i+1]-on.data[i+1])+
+       Math.abs(off.data[i+2]-on.data[i+2])>30)count++;
+   visibleDifferences+=count;
+   report.groundIK2[clip+'PixelDelta']=count;
+  }
+  // 60 matching pairs, fixed camera across each actual gait/cut trajectory.
+  const soleFrames=path.join(out,'ground-ik2-fixed-frames');
+  fs.mkdirSync(soleFrames,{recursive:true});
+  for(let i=0;i<60;i++){
+   let shot;
+   if(i<36){
+    const clip=['walk','jog','run','sprint'][Math.floor(i/9)];
+    const phase=(i%9)/9;
+    shot={version:'master',mode:'mocap',mocapClip:clip,
+     time:phase/gaitRates[clip],angle:Math.PI/2,
+     rootTravel:true,footPlant:true,kneeAlign:true,shoulderAlign:true};
+   }else{
+    const direction=['strafeLeft','strafeRight','backpedal'][Math.floor((i-36)/8)];
+    shot={version:'master',mode:'directional',direction,
+     time:2.35*((i-36)%8)/7,
+     angle:direction==='backpedal'?Math.PI/2:0,
+     directionContact:true,footPlant:true,kneeAlign:true,shoulderAlign:true};
+   }
+   const imgs=[];
+   for(const groundIK of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),
+     {...shot,groundIK,cameraFixed:true,zoom:'full'});
+    imgs.push(PNG.sync.read(await page.locator('canvas').screenshot()));
+   }
+   const pair=new PNG({width:imgs[0].width*2,height:imgs[0].height});
+   imgs.forEach((p,j)=>PNG.bitblt(p,pair,0,0,p.width,p.height,p.width*j,0));
+   fs.writeFileSync(path.join(soleFrames,
+    'frame-'+String(i).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(soleFrames,'frame-%03d.png'),'-vf','scale=1440:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,report.groundIK2.video)]);
+  assert.ok(fs.statSync(path.join(out,report.groundIK2.video)).size>25000,
+   'Missing actual GLB WebGL fixed-camera before/after MP4');
+  report.groundIK2.measuredPixelDifferences=visibleDifferences;
+  report.groundIK2.caveat='Not terrain collision, not actual match physics, no visual premium approval';
   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
