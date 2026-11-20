@@ -65,6 +65,12 @@ test('retarget: target bind pose retained with rotated roots and differently ori
  const rest=new Map();
  for(const {name} of FOOTERA_EVOLUTION_BONES)
   rest.set(name,target.bones.get(name).quaternion.clone());
+ const sourceRootInv=source.root.getWorldQuaternion(new THREE.Quaternion()).invert();
+ const targetRootWorld=target.root.getWorldQuaternion(new THREE.Quaternion());
+ const sourceShoulderRest=sourceRootInv.clone().multiply(
+  source.bones.get('upperarm_l').getWorldQuaternion(new THREE.Quaternion()));
+ const targetShoulderRest=targetRootWorld.clone().invert().multiply(
+  target.bones.get('upperarm_l').getWorldQuaternion(new THREE.Quaternion()));
  const retarget=createFooteraEvolutionRetargeter(source.root,target.root);
  const director=createFooteraPoseDirector(target.root);
  director.beginFrame();director.submit('base',retarget.sample());director.commit();
@@ -73,21 +79,9 @@ test('retarget: target bind pose retained with rotated roots and differently ori
  source.bones.get('upperarm_l').rotateX(.4);
  source.bones.get('spine_02').rotateZ(-.18);
  source.root.updateMatrixWorld(true);
- const srcRootInv=source.root.getWorldQuaternion(new THREE.Quaternion()).invert();
- const targetRootWorld=target.root.getWorldQuaternion(new THREE.Quaternion());
- const sourceShoulderRest=new THREE.Quaternion();
- // Reconstruct the source's original bind rotation without disturbing its parent.
- const oldShoulder=source.bones.get('upperarm_l').quaternion.clone();
- source.bones.get('upperarm_l').rotateX(-.4);
- source.root.updateMatrixWorld(true);
- sourceShoulderRest.copy(srcRootInv).multiply(
-  source.bones.get('upperarm_l').getWorldQuaternion(new THREE.Quaternion()));
- source.bones.get('upperarm_l').quaternion.copy(oldShoulder);source.root.updateMatrixWorld(true);
- const delta=srcRootInv.clone().multiply(
+ const delta=sourceRootInv.clone().multiply(
   source.bones.get('upperarm_l').getWorldQuaternion(new THREE.Quaternion()))
-  .multiply(sourceShoulderRest.invert());
- const targetShoulderRest=targetRootWorld.clone().invert().multiply(
-  target.bones.get('upperarm_l').getWorldQuaternion(new THREE.Quaternion()));
+  .multiply(sourceShoulderRest.clone().invert());
  const expected=targetRootWorld.clone().multiply(delta).multiply(targetShoulderRest);
  director.beginFrame();director.submit('base',retarget.sample());director.commit();
  const actual=target.bones.get('upperarm_l').getWorldQuaternion(new THREE.Quaternion());
