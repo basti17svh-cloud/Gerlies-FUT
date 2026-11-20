@@ -20,7 +20,8 @@ const server=http.createServer((req,res)=>{
 });
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const browser=await chromium.launch({headless:true,args:[
+ const browser=await chromium.launch({headless:true,
+  ...(process.env.FOOTERA_CHROME_PATH?{executablePath:process.env.FOOTERA_CHROME_PATH}:{}),args:[
   '--enable-unsafe-swiftshader','--use-angle=swiftshader','--disable-dev-shm-usage']});
  try{
   const page=await browser.newPage({viewport:{width:940,height:840},deviceScaleFactor:1});
