@@ -57,10 +57,13 @@ test('separate mesh sculpt, subtle cloth geometry and safe skin weights',()=>{
   assert.ok(deltas.length>100,name+' must genuinely change mesh geometry: '+deltas.length);
  }
  for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks','FooteraBoots']){
-  const weights=access(newOne,mesh(newOne,name).attributes.WEIGHTS_0);
+  const accessorIndex=mesh(newOne,name).attributes.WEIGHTS_0;
+  const weights=access(newOne,accessorIndex);
+  const isByte=newOne.json.accessors[accessorIndex].componentType===5121;
   for(let i=0;i<weights.length;i+=4){
    const sum=weights[i]+weights[i+1]+weights[i+2]+weights[i+3];
-   assert.equal(sum,255,name+' normalized weights at vertex '+(i/4));
+   assert.ok(Math.abs(sum-(isByte?255:1))<1e-4,
+    name+' normalized weights at vertex '+(i/4)+': '+sum);
   }
  }
 });
