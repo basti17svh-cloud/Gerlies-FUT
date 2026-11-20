@@ -221,6 +221,12 @@ function capturedDirectionalPose(model,t){
  model.poses.beginFrame();
  model.poses.submit('locomotion',sequence.pose);model.poses.commit();
  model.capture.applyTranslation(sequence.translation);
+ if(states.groundIK&&states.directionContact){
+  // Preview-only physical COM lag from captured-root acceleration. Unlike an
+  // authored walk cycle, no new leg, knee or ankle animation is generated.
+  model.bones.get('pelvis').position.add(contact.inertiaShift);
+  model.root.updateMatrixWorld(true);
+ }
  const shoulders=model.shoulders.sample({enabled:states.shoulderAlign});
  if(shoulders.pose.size){
   model.poses.submit('contact',shoulders.pose);model.poses.commit();
