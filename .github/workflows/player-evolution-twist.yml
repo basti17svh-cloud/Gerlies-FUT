@@ -166,6 +166,15 @@ jobs:
                   ImageDraw.Draw(ground).text((col*660+12,row*520+8),
                       f'{name} / Foot IK 2.0 {kind.upper()} / FIXED CAMERA',fill='white')
           ground.save(p/'foot-ik2-fixed-camera-real-3d-before-after.jpg',quality=91)
+          close=Image.new('RGB',(1320,520*4),'#06131d')
+          for row,name in enumerate(['walk','jog','run','sprint']):
+              for col,kind in enumerate(['before','after']):
+                  shot=Image.open(p/f'foot-ik2-close-{name}-{kind}.png').convert('RGB')
+                  shot.thumbnail((635,485))
+                  close.paste(shot,(col*660+(660-shot.width)//2,row*520+28))
+                  ImageDraw.Draw(close).text((col*660+12,row*520+8),
+                      f'{name} / GENUINE 3D SOLE CLOSE-UP / {kind}',fill='white')
+          close.save(p/'foot-ik2-fixed-camera-close-up.jpg',quality=93)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
