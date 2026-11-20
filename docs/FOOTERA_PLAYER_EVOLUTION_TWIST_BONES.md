@@ -51,6 +51,23 @@ Die generierten PNGs, das Kontaktblatt und mehrere Frames des MP4 wurden nach de
 
 **Urteil zur Optik:** technisch funktionsfähiger 60-Bone-Kandidat, **visuelle Premium-Abnahme nicht bestanden / weiter offen**. Nicht mit «realistische Bewegungen fertig» gleichsetzen.
 
+## Folgeanalyse: steife Hüfte im echten Testvideo (20.11.2026)
+
+Das hochgeladene 4,6-Sekunden-Video mit dem 60-Bone-Studio zeigt nur einen **synthetischen Lab-Laufzyklus**, nicht die tatsächlichen Mixamo-Locomotion-Clips des Spiels. Die bisherige Funktion `jointPose()` bewegt ausschließlich Extremitäten und winzige Wirbelsäulenwinkel; `pelvis` fehlt vollständig im Laufzyklus. Die Hüfte bleibt daher fast starr, obwohl Beine und Knie schwingen. Das ist eine **Animation-/Pose-Steuerungsursache**, nicht automatisch ein defekter Hüft-Skin-Exporter.
+
+Die separat analysierte 60-Bone-GLB hat auf dem Short-Mesh im Hüftbereich (Y zwischen .78 m und 1.02 m) **503 von 605 Vertices**, die bereits einen gemischten Anteil von Becken und Oberschenkeln von jeweils über .1 besitzen. Eine willkürliche pauschale Hautgewichtsänderung am Becken ist darum nicht gerechtfertigt.
+
+### Isolierter Hip-Gait-Test (nicht live)
+- `3d-player-evolution-gait.mjs`: vorhersagbares Phasen-Sampling für Becken-Yaw/Roll/Pitch, seitliche Gewichtsverlagerung (max. 16 mm), kleine vertikale Beckenbewegung (max. 12 mm), gegenläufige Wirbelsäule, Knie-/Arm-Schwung. Absolutwerte aus der Bind-Pose, keine additive Drift.
+- `player-evolution-twist-lab.html`: Schalter „Hüfte: natürlich/bisherige“ plus Hüft-Nahansicht; nur im Entwicklungsstudio.
+- `tests/player-evolution-gait.test.mjs`: Grenzen, Periodizität, Gegenbewegungen, stabiler Reset sowie Argumentvalidierung.
+- `tests/player-evolution-twist.browser.cjs`: echte WebGL-A/B-Aufnahmen `hip-walk-stiff-before.png` und `hip-walk-natural-after.png` mit identischer 60-Bone-GLB, Pose-Unterschieden und Bewegungsmesswerten.
+- Erster Browser-AB-Lauf: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44807745121 (**erfolgreich**).
+- Letzter erweiterter CI-Lauf für die dedizierten Biomechanik-Tests: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44807772039 (Status im Actions-Dashboard einsehbar).
+
+### Qualitätsfazit
+Die sichtbar animierte Hüfte ist **ein technischer Verbesserungsschritt, kein finaler fotorealistischer Laufstil**. In echten Bildern stehen die Arme weiterhin deutlich zu weit ab; Fußkontakt und natürliche Gewichtsübernahme benötigen die bereits vorhandenen **Footera-Mixamo-Gait-Clips**, Retarget auf 60 Bones und anschließende Fuß-IK. Das bestehende Live-Gameplay bleibt unverändert. Ein rein mathematischer Hüftschwung soll die authentischen Mocap-Daten ausdrücklich nicht dauerhaft ersetzen.
+
 ## Offene Abnahmepunkte
 
 1. **Optische Sichtprüfung echter Deformationen**: Schulter, Ellbogen, Hüfte, Knie, Trikot-/Hosen-/Stutzen-Säume bei Belastung. Der automatisierte Pixelvergleich erkennt Unterschiede, nicht deren ästhetische Qualität.
