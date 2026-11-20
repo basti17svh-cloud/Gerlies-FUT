@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Footera Player Evolution – Twist-Bone 60-Bone WebGL-Teststudio</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#08121b;color:#eef9f9;font:15px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:1140px;margin:auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font-size:clamp(22px,4vw,36px);margin:4px 0}small,.muted{color:#a7b9c0}
+.pill{font-size:12px;padding:5px 12px;border:1px solid #427d77;border-radius:999px;color:#a9f0d7}
+.stage{position:relative;border:1px solid #31565e;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 60% 20%,#1e4b4a,#071421 70%)}
+canvas{display:block;width:100%;height:clamp(400px,65vh,690px);touch-action:pan-y}
+.overlay{position:absolute;inset:18px 18px auto;pointer-events:none}
+.overlay strong{display:block;font-size:clamp(18px,4vw,30px)}
+.overlay span{color:#b7dddb;font-size:13px}
+.footnote{position:absolute;inset:auto 14px 12px;font-size:12px;color:#b0c3c3;pointer-events:none}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+button{border:1px solid #4e787c;border-radius:9px;padding:11px 15px;background:#15333c;color:white;cursor:pointer;font:inherit}
+button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
+#status{font-size:13px;color:#b7d5d9}
+.note{background:#101f2b;border:1px solid #24414c;border-radius:12px;padding:15px;margin:16px 0}
+</style>
+</head>
+<body><main>
+<header><div><small>FOOTERA – BUILD YOUR ERA · 3D LAB</small><h1>Player Evolution 2.0</h1></div><span class="pill">Schritt 3 · 60-Bone Skinning · nur Testbranch</span></header>
+<section class="stage">
+<canvas id="view" aria-label="Echte interaktive 3D-Ansicht des Fußballspielers"></canvas>
+<div class="overlay"><strong id="model-title">Lade 3D-Spieler…</strong><span id="model-subtitle">WebGL · Originale GLB-Dateien</span></div>
+<div class="footnote">Entwicklungsmodell · Nicht in der Live-Version aktiviert</div>
+</section>
+<div class="controls">
+<button id="master" aria-pressed="true">60-Bone Twist-Modell</button>
+<button id="before" aria-pressed="false">52-Bone Master</button>
+<button id="rotate" aria-pressed="true">360°-Ansicht</button>
+<button id="pose" aria-pressed="false">Gelenk-Test</button>
+<button id="front">Vorne</button>
+<button id="back">Hinten</button>
+<button id="face">Gesicht</button>
+</div>
+<p id="status" role="status">Modelle werden geladen…</p>
+<div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
+</main>
+<script type="module">
+import * as THREE from './vendor/three/three.module.min.js';
+import {GLTFLoader} from './vendor/three/GLTFLoader.mjs';
+import {FOOTERA_EVOLUTION_BONES,auditFooteraRig,createFooteraPoseDirector} from './3d-player-evolution-rig.mjs';
+import {paintFooteraHumanKit} from './3d-player-human.mjs';
+import {FOOTERA_TWIST_SEGMENTS,inspectFooteraTwistRig,createFooteraTwistSolver}
+ from './3d-player-evolution-twist.mjs';
+
+const el=id=>document.getElementById(id),canvas=el('view'),status=el('status');
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.17;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(35,1,.01,30);
+const hemi=new THREE.HemisphereLight(0xd5f6ff,0x1a2631,2.1);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(3.5,6,5);key.castShadow=true;
+key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-3;key.shadow.camera.right=3;
+key.shadow.camera.top=5;key.shadow.camera.bottom=-2;scene.add(key);
+const rim=new THREE.DirectionalLight(0x8af7d7,2.1);rim.position.set(-3,3,-4);scene.add(rim);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(1.45,80),
+ new THREE.MeshStandardMaterial({color:0x17413d,roughness:.88}));
+floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=true;scene.add(floor);
+const grid=new THREE.GridHelper(5,20,0x246d67,0x1d4644);
+grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
+
+const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0},loader=new GLTFLoader();
+function colorKit(info){
+ const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
+ paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
+ const map=new THREE.CanvasTexture(cloth);map.flipY=false;map.colorSpace=THREE.SRGBColorSpace;
+ map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ return map;
+}
+function readyModel(gltf){
+ const root=gltf.scene;
+ root.rotation.y=Math.PI; // old GLBs face +Z; camera faces Footera -Z
+ const info=gltf.parser.json.extras?.footera||{};
+ const tex=colorKit(info);
+ root.traverse(o=>{
+  if(!o.isSkinnedMesh)return;
+  if(o.name.startsWith('FooteraHair-'))o.visible=o.name==='FooteraHair-short02';
+  if(o.name.startsWith('FooteraBrows-'))o.visible=o.name==='FooteraBrows-eyebrow001';
+  if(o.name.startsWith('FooteraFacial-'))o.visible=false;
+  if(['FooteraShirt','FooteraShorts','FooteraSocks'].includes(o.name)){
+   o.material=new THREE.MeshStandardMaterial({name:'FooteraEvolutionKit',map:tex,roughness:o.name==='FooteraShirt'?.76:.86,metalness:0,side:THREE.DoubleSide});
+  }
+  o.frustumCulled=false;o.castShadow=true;o.receiveShadow=true;
+ });
+ scene.add(root);
+ const report=auditFooteraRig(root);
+ if(!report.ok)throw new Error('Rig validation: '+report.errors.slice(0,5).join(', '));
+ const poses=createFooteraPoseDirector(root);
+ const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
+ const twistReport=twist?inspectFooteraTwistRig(root):null;
+ if(twistReport&&!twistReport.ok)
+  throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
+ const originals=new Map(),bones=new Map();
+ root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
+ return{root,info,poses,originals,bones,report,twist,twistReport};
+}
+function jointPose(model,t){
+ const rot=new Map(),walk=Math.sin(t*3),effort=.36;
+ const add=(name,x=0,y=0,z=0)=>{
+  const base=model.originals.get(name);if(!base)return;
+  rot.set(name,base.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(x,y,z,'XYZ'))));
+ };
+ add('spine_01',.06*Math.sin(t*1.4));
+ add('spine_03',-.04*Math.sin(t*1.4));
+ add('neck_01',.03*Math.sin(t));
+ for(const [i,side] of ['l','r'].entries()){
+  const s=i?1:-1;
+  add('upperarm_'+side,s*.08*walk,0,s*.035);
+  add('lowerarm_'+side,-.10+Math.max(0,s*walk)*-.19);
+  add('thigh_'+side,s*effort*walk);
+  add('calf_'+side,-Math.max(0,-s*walk)*.58);
+  add('foot_'+side,.08*s*walk);
+ }
+ model.poses.beginFrame();model.poses.submit('action',rot);model.poses.commit();
+ model.twist?.update();
+}
+function resetPose(model){model.poses.beginFrame();model.poses.commit();model.twist?.reset();}
+function axialPose(model,bone,deg){
+ resetPose(model);
+ const def=FOOTERA_TWIST_SEGMENTS.find(x=>x.parent===bone);
+ if(!def)throw new Error('Unknown axial limb '+bone);
+ const parent=model.bones.get(bone),end=model.bones.get(def.end);
+ const axis=end.position.clone().normalize();
+ if(axis.lengthSq()<.9)throw new Error('Degenerate anatomical axis '+bone);
+ parent.quaternion.copy(model.originals.get(bone)).multiply(
+  new THREE.Quaternion().setFromAxisAngle(axis,THREE.MathUtils.degToRad(deg)));
+ model.twist?.update();
+ model.root.updateMatrixWorld(true);
+}
+function kickPose(model,t){
+ const progress=(Math.sin(t*4)+1)*.5;
+ const pose=new Map();
+ const rot=(name,rx)=>{
+  pose.set(name,model.originals.get(name).clone().multiply(
+   new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),rx)));
+ };
+ rot('thigh_r',1.05*progress);rot('calf_r',-.95*progress);
+ rot('foot_r',.24*progress);rot('thigh_l',-.30*progress);
+ rot('upperarm_l',-.30*progress);rot('upperarm_r',.35*progress);
+ rot('spine_01',.10*progress);
+ model.poses.beginFrame();model.poses.submit('action',pose);model.poses.commit();
+ model.twist?.update();
+}
+function setVersions(){
+ for(const [key,m] of Object.entries(versions))m.root.visible=key===states.version;
+ for(const id of ['master','before'])el(id).setAttribute('aria-pressed',String(id===states.version));
+ el('model-title').textContent=states.version==='master'?'60-BONE EVOLUTION':'52-BONE REFERENZ';
+ el('model-subtitle').textContent=states.version==='master'?'Reale acht Twist-Bones · eigene Skinning-Gewichte':'Step-2-Master ohne Twist-Bones · gleiche Geometrie';
+}
+function fit(){
+ const w=canvas.clientWidth||600,h=canvas.clientHeight||520;
+ renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+function renderAt(t=0){
+ const m=versions[states.version];if(!m)return;
+ states.time=t;
+ for(const x of Object.values(versions)){
+  if(states.mode==='axial')axialPose(x,states.bone,states.deg);
+  else if(states.mode==='kick')kickPose(x,t);
+  else if(states.mode==='walk'||states.pose)jointPose(x,t);
+  else resetPose(x);
+  x.root.rotation.y=Math.PI+(states.rotate?states.angle:states.angle);
+ }
+ const focus=states.zoom==='face'?1.57:.95;
+ const distance=states.zoom==='face'?1.12:3.8;
+ camera.position.set(0,focus+.14,distance);camera.lookAt(0,focus,0);
+ renderer.render(scene,camera);
+}
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0}={})=>{
+ if(!versions[version])throw Error('Model not ready');
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg});
+ setVersions();renderAt(time);
+ const m=versions[version];
+ return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
+  triangles:renderer.info.render.triangles,drawCalls:renderer.info.render.calls,
+  width:canvas.width,height:canvas.height,
+  sampleNames:[...m.bones.keys()].slice(0,5)};
+};
+const timer={last:0};
+function loop(timestamp){
+ if(versions.master&&versions.before){
+  if(!timer.last)timer.last=timestamp;
+  const dt=Math.min((timestamp-timer.last)/1000,.04);timer.last=timestamp;
+  if(states.rotate)states.angle=(states.angle+dt*.42)%(Math.PI*2);
+  if(states.pose)states.time+=dt;
+  renderAt(states.time);
+ }
+ requestAnimationFrame(loop);
+}
+function control(id,fn){el(id).addEventListener('click',fn)}
+control('master',()=>{states.version='master';setVersions()});
+control('before',()=>{states.version='before';setVersions()});
+control('rotate',()=>{states.rotate=!states.rotate;el('rotate').setAttribute('aria-pressed',String(states.rotate))});
+control('pose',()=>{states.pose=!states.pose;el('pose').setAttribute('aria-pressed',String(states.pose))});
+control('front',()=>{states.rotate=false;states.angle=0;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
+control('back',()=>{states.rotate=false;states.angle=Math.PI;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
+control('face',()=>{states.rotate=false;states.angle=0;states.zoom='face';el('rotate').setAttribute('aria-pressed','false')});
+window.addEventListener('resize',fit);
+fit();requestAnimationFrame(loop);
+(async()=>{
+ try{
+  // Sequential loading avoids two decompressed MetaHuman bodies in mobile RAM.
+  const old=await loader.loadAsync('./assets/footera/models/footera-evolution-master.glb');
+  versions.before=readyModel(old);versions.before.root.visible=false;
+  const master=await loader.loadAsync('./assets/footera/models/footera-evolution-twist-prototype.glb');
+  versions.master=readyModel(master);
+  setVersions();renderAt(0);
+  status.textContent='Bereit – 52- und 60-Bone-GLB geladen; das 60-Bone-Rig ist nur ein Entwicklungstest.';
+  document.documentElement.dataset.ready='true';
+ }catch(err){
+  console.error(err);status.textContent='Lade-/Rigfehler: '+err.message;
+  document.documentElement.dataset.ready='error';
+ }
+})();
+</script></body></html>
