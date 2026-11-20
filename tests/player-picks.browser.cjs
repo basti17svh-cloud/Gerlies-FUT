@@ -21,7 +21,7 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
     auth:{getSession:async()=>({data:{session:{user}}}),getUser:async()=>({data:{user}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
     from:()=>({select:fields=>{
      window.pickTransportCalls.push(fields);
-     return{maybeSingle:async()=>({data:{revision:1,save_data:structuredClone(state)},error:null})};
+     return{maybeSingle:async()=>({data:{revision:claimed?2:1,save_data:structuredClone(state)},error:null})};
     }}),
     rpc:async(name,args)=>{
      if(name==='footera_open_player_pick'){
