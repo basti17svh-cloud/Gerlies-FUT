@@ -124,3 +124,20 @@ Der Erfolg ist nur dann belegt, wenn die Node- und WebGL-Regressionssuite besteh
 - World-Foot-Regression im flachen isolierten Studio: ursprüngliches In-place-Fußgleiten in der gemessenen Phase ~0,646 m, mit Capture-Root-Travel <0,00001 m. Gilt nicht als Nachweis für ein echtes Match.
 - Manuelle Sichtprüfung der echten PNGs und Videoframes: keine erkennbar abgelösten Körperteile; Knieachse in einigen Phasen subtil besser, aber nicht in allen Frames auffällig. Arme, Gesamtbewegung und Fußkontakt wirken teils weiterhin künstlich. Keine visuelle Premium-Abnahme und keine Livespiel-Freigabe.
 - PR #240 weiterhin Draft. Hauptbranch und laufendes Spiel unverändert; kein Merge ohne Nutzerfreigabe.
+
+## Schritt 5 – Schulter-/Oberkörper-Ausrichtung: geprüft (20.11.2026)
+
+- Neues optionales, nicht-destruktives `3d-player-evolution-shoulders.mjs`: misst die tatsächlich nach außen zeigende Oberarmrichtung relativ zu Schultergürtel und Torso, senkt nur Abduktionsausreißer auf ca. 34°. Originale Adobe-Mixamo-Laufcaptures und die gemessenen vorwärts/rückwärts gerichteten Armschwunganteile bleiben Quellmaterial.
+- Korrekturdaten als `contact`-PoseDirector-Layer nach `locomotion` und vor Fuß-`ik`, ausschließlich `upperarm_l/r`, keinerlei Eingriff in Hauptmodell, Root, Hände, Unterarme, Hüfte, Schuhe oder Skin-Gewichte.
+- Verifizierter CI-Lauf: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44818337937 – **erfolgreich**. 40 echte Messpunkte (walk/jog/run/sprint, je 5 Phasen und 2 Arme): Maximum 58,50° vorher / 34,13° nachher; 5 deutliche Ausreißer korrigiert. Echte 3D-Screenshots Front/Seite, synchroner Original-Mixamo-Vorher/Nachher-Film und vollständiger WebGL-Bericht im Artefakt 14672065632.
+- Optischer Befund: weniger abgespreizter Oberarm beim Sprint; allerdings liegt die Hand nach dem Eingriff in der extremsten Pose zeitweise zu nahe am Rücken/Gesäß. Damit **noch keine natürliche Premium-Armführung** nachgewiesen. Automatischer Winkeltest ist kein visuelles Gütesiegel.
+
+## Schritt 6 – Echte aufgezeichnete Richtungswechsel: Laborprototyp (20.11.2026)
+
+- Neue eigenständige Kapselung `3d-player-evolution-transitions.mjs` nutzt tatsächlich im Repository vorhandene Adobe-Mixamo-Captures `strafe_left`, `strafe_right` und `jog_back`. Die Quellen werden im identischen 52-Hauptknochen-Retarget (60-Knochen-Modell mit echten Twist-Bones) verarbeitet, nicht durch synthetische Cut-Pose ersetzt.
+- Quaternion-Slerp mit glatter Gewichtskurve: echter Laufclip → echte laterale/rückwärtige Aufzeichnung → Laufclip. Ausgangs- und Endposes lassen sich mit den jeweiligen 100%-Originalcaptures vergleichen; die vorhandene Walk/Jog/Run/Sprint-API bleibt unverändert.
+- Eigenständige interaktive Labor-Modi für linke/rechte Seitwärtsbewegung und Backpedal; Original-Skinning, Original-Mixamo-Armbewegungen und optionaler Schulter-Pass bleiben erhalten. Keine Zweit-Writer der Knochen, keine Manipulation des Originaldatensatzes.
+- Tests prüfen verschiedene Bewegungsrichtungen, 52 Quaternions inklusive Rücksetzen nach dem Sampling, Übergangspunkte, originale Quellposen und FK-Konsistenz der rekonstruierten Fußpositionen. CI rendert eine echte MP4 mit den drei Bewegungsarten sowie Standbilder und ein Kontaktblatt.
+- **Offene Einschränkungen:** Diese Vorschau zeigt noch keine physikalisch korrekt berechnete seitliche Root-Trajektorie, Fußfixierung beim echten Cut, Pivot-/Drehimpuls und Mobil-Gerätebenchmark. Sie ist bewusst ein in-place-Skelett-/Skinning-Bewegungstest; nicht als produktionsfertige Match-Cut-Animation deklarieren.
+- Erster Prüflauf https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44820410126 scheiterte an einer überstrengen Quaternion-Vergleichsassertion zwischen normalisierten Resultaten und nicht explizit normierten Source-Quat. Der Vergleich wurde auf beide normierten Quaternions korrigiert. Folgelauf: https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44820600653 – bei Erstellung dieser Notiz noch nicht abgenommen.
+- PR #240 bleibt Draft; kein Merge und keine Änderung am Livespiel.
