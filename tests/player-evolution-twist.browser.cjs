@@ -64,13 +64,13 @@ const server=http.createServer((req,res)=>{
     }
    }
   }
-  for(const mode of ['walk','kick']){
+  for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
   }
-  // 5 seconds of genuine pose animation: axial, walking and a kick.
-  for(let i=0;i<60;i++){
-   const mode=i<15?'axial':i<40?'walk':'kick';
+  // 6 seconds of genuine skinned GLB animation: axial, walk, plant/cut, kick.
+  for(let i=0;i<72;i++){
+   const mode=i<15?'axial':i<36?'walk':i<54?'cut':'kick';
    const args={version:'master',mode,time:i/10,angle:.24,deg:(i%15)*6,
     bone:'lowerarm_l'};
    await page.evaluate(v=>window.footeraQaRender(v),args);
@@ -82,8 +82,25 @@ const server=http.createServer((req,res)=>{
    '-vf','scale=720:-2','-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
    path.join(out,'footera-60-bone-engine-proof.mp4')]);
   assert.ok(fs.statSync(path.join(out,'footera-60-bone-engine-proof.mp4')).size>30000);
+  // Mobile viewport/GLB load smoke check (NOT a real phone GPU benchmark).
+  const mobile=await browser.newPage({viewport:{width:412,height:915},
+   deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  await mobile.goto('http://127.0.0.1:'+server.address().port+'/player-evolution-twist-lab.html',
+   {waitUntil:'domcontentloaded'});
+  await mobile.waitForFunction(()=>['true','error'].includes(document.documentElement.dataset.ready),
+   null,{timeout:180000});
+  assert.equal(await mobile.locator('html').getAttribute('data-ready'),'true',
+   await mobile.locator('#status').textContent());
+  const mobileResult=await mobile.evaluate(()=>window.footeraQaRender(
+   {version:'master',mode:'cut',time:1.5,angle:.4}));
+  assert.equal(mobileResult.boneCount,60);
+  assert.ok(mobileResult.twistReport?.ok);
+  await mobile.locator('canvas').screenshot({path:path.join(out,'mobile-viewport-60bone.png')});
+  report.mobileViewport={width:412,height:915,load:true,skinning:true,
+   caveat:'Software-rendered mobile viewport; no actual smartphone FPS measured'};
+  await mobile.close();
   assert.deepEqual(errors,[]);
-  report.video={frames:60,fps:12,modes:['axial','walk','kick'],file:'footera-60-bone-engine-proof.mp4'};
+  report.video={frames:72,fps:12,modes:['axial','walk','cut','kick'],file:'footera-60-bone-engine-proof.mp4'};
   fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));
   console.log('PASS: physical GLB WebGL before/after screenshots and MP4',JSON.stringify(report));
  }finally{await browser.close();server.close()}
