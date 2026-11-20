@@ -34,8 +34,11 @@ const MAX_SOLE_LIFT=.07,MAX_SOLE_ROLL=.20;
 function measureSoleMarkers(root,foot,ball){
  root.updateMatrixWorld(true);
  const ballLocal=foot.worldToLocal(getPoint(ball));
- const forward=ballLocal.clone().setY(0);
- if(forward.lengthSq()<1e-6)throw new Error('Invalid shoe forward axis');
+ // Bone-local Y is not necessarily world-up in imported MetaHuman rigs.
+ // Keep the full anatomical local toe axis; only floor measurements project
+ // to world horizontal after the bone transforms are applied.
+ const forward=ballLocal.clone();
+ if(forward.lengthSq()<1e-6)throw new Error('Invalid toe marker: zero foot-to-ball length');
  forward.normalize();
  const vertices=[];
  root.traverse(mesh=>{
