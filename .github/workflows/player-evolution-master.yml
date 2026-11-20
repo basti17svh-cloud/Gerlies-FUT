@@ -35,6 +35,10 @@ jobs:
         run: |
           npm install --prefix /tmp/footera-evolution-ci playwright@1.51.1
           /tmp/footera-evolution-ci/node_modules/.bin/playwright install --with-deps chromium
+      - name: Install FFmpeg for real MP4 encode
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
       - name: Render WebGL stills and MP4 proof
         env: {NODE_PATH: /tmp/footera-evolution-ci/node_modules}
         run: |
