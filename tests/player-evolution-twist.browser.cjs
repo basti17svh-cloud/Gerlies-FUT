@@ -104,6 +104,10 @@ const server=http.createServer((req,res)=>{
   }
   // Quantify true world-foot stability with recovered captured root travel.
   // Two instants INSIDE the same left-stance half cycle.
+  await capture('mixamo-run-60-front',{version:'master',mode:'mocap',
+   mocapClip:'run',time:.15/1.7,angle:Math.PI,footPlant:true,rootTravel:true});
+  await capture('mixamo-sprint-60-side',{version:'master',mode:'mocap',
+   mocapClip:'sprint',time:.22/2.1,angle:Math.PI/2,footPlant:true,rootTravel:true});
   const stationaryA=await capture('mixamo-run-treadmill-early',
    {version:'master',mode:'mocap',mocapClip:'run',time:.15/1.7,
     footPlant:false,rootTravel:false});
@@ -156,7 +160,8 @@ const server=http.createServer((req,res)=>{
    const segStart=i<24?10:i<39?24:i<54?39:54;
    const args={version:'master',mode,mocapClip,footPlant:true,
     time:mode==='mocap'?Math.max(0,i-segStart)/12:i/12,
-    angle:.18,deg:(i%10)*9,bone:'lowerarm_l'};
+    angle:i>=54?Math.PI/2:i>=39?Math.PI/4:.18,
+    deg:(i%10)*9,bone:'lowerarm_l'};
    await page.evaluate(v=>window.footeraQaRender(v),args);
    await page.locator('canvas').screenshot({path:path.join(frames,
     'frame-'+String(i).padStart(3,'0')+'.png')});
