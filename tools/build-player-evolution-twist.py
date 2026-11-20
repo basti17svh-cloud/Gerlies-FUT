@@ -125,8 +125,23 @@ def modify_weights(pos, weights, joints, descriptors):
         distance=np.linalg.norm((pos-a)-((pos-a)@direction)[:,None]*direction,axis=1)
         fade=np.clip((progress-.18)/.65,0,1)
         fade=fade*fade*(3-2*fade)
-        candidate=np.where((progress>.18)&(progress<1.05)&(distance<d['radius'])&
-            (np.any(idx==d['parent_skin_index'],axis=1)))[0]
+        parent_slots=np.where(idx==d['parent_skin_index'],w,0.)
+        primary=parent_slots.max(axis=1)>.12
+        # MetaHuman's authored pivot axes are not centered in the fitted
+        # garment volume. Prefer vertices ACTUALLY weighted to this bone over
+        # an unrealistically tight fixed-radius heuristic.
+        local=primary&(progress>.08)&(progress<1.18)
+        if np.any(local):
+            adaptive=max(d['radius'],float(np.percentile(distance[local],85))*1.08)
+        else:
+            adaptive=d['radius']
+        candidate=np.where(local&(distance<adaptive))[0]
+        if len(candidate)==0:
+            print('Twist diagnostic',d['name'],'parent-vertices',int(primary.sum()),
+                  'projected',int(local.sum()),'length',round(length,4),
+                  'progress-range',[round(float(np.min(progress[primary])),2),
+                                    round(float(np.max(progress[primary])),2)] if np.any(primary) else None,
+                  file=sys.stderr)
         for vi in candidate:
             slots=np.where(idx[vi]==d['parent_skin_index'])[0]
             if len(slots)==0: continue
