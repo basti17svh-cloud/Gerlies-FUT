@@ -95,6 +95,27 @@ export function footeraStanceWeight(phase,side){
  return smooth(0,.08,p)*(1-smooth(.43,.55,p));
 }
 
+/**
+ * Optional FLAT LAB WORLD contact-root vertical resolver. The 2-bone IK must
+ * not stretch a knee to force a badly pitched boot onto the ground. Translate
+ * the entire preview player by at most 10 cm after the captured-leg solve.
+ * No change to the 52 original quaternions, 60-bone rest pose, or horizontal
+ * authoritative root trajectory. Never use as live-game terrain collision.
+ */
+export function footeraGroundRootOffset(feet,{groundY=0,maxOffset=.10}={}){
+ if(!Number.isFinite(groundY)||!Number.isFinite(maxOffset)||
+    maxOffset<=0||maxOffset>.15)throw new RangeError('Invalid root-ground limits');
+ const support=Object.values(feet||{}).filter(f=>f?.active&&
+  Number.isFinite(f.weight)&&f.weight>.35&&
+  Number.isFinite(f.heelHeight)&&Number.isFinite(f.toeHeight));
+ if(!support.length)return 0;
+ const nearest=support.reduce((a,b)=>Math.min(a.heelHeight,a.toeHeight)<
+  Math.min(b.heelHeight,b.toeHeight)?a:b);
+ const min=Math.min(nearest.heelHeight,nearest.toeHeight);
+ return clamp(groundY+.003-min,-maxOffset,maxOffset)*
+  smooth(.25,.8,nearest.weight);
+}
+
 export function createFooteraFootPlant(root,mocap){
  if(!mocap?.anchor)throw new TypeError('Missing captured-gait ankle anchors');
  const bones=collectFooteraBones(root).bones,pelvis=bones.get('pelvis');
