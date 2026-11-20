@@ -1,42 +1,53 @@
-# FOOTERA PLAYER EVOLUTION – verpflichtende Twist-Bone-Prüfung
+# Footera Player Evolution 2.0 – Twist-Bones, Skinning und echtes WebGL-QA
 
-**Sicherheitsstatus:** experimentell, ausschließlich Branch `feature/player-evolution-twist-bones` (basiert auf Schritt 2). Keine Änderung am laufenden Spiel oder `main`.
+**Status (20.11.2026): 60-Bone-Entwicklungsmodell erstellt und automatisierte 3D-Testserie erfolgreich.** Nur `feature/player-evolution-twist-bones`, PR #240 (**Entwurf**); kein Merge, keine Änderung von `main`, keine Aktivierung im Livespiel.
 
-## Bestätigter Befund
+## Nachgewiesene Ursache
 
-Der aktuelle Footera-MetaHuman-Build (`tools/build-footera-metahuman.py`) fasst zahlreiche ursprüngliche MetaHuman-Joints auf das gemeinsame **52-Bone-Rig** zusammen. Insbesondere Twist-/Corrective-Joints werden ihren nächsten Standard-Gelenken zugeordnet. Die feinere Drehdeformation entlang der Arme und Beine geht damit verloren. Das ist eine plausible, noch nicht als alleinige Ursache bewiesene Erklärung für den Eindruck von sich verdrehenden Gummigliedmaßen.
+`tools/build-footera-metahuman.py` führt ursprüngliche MetaHuman-Twist-/Corrective-Joints dem 52-Knochen-Footera-Rig zu. Die axialen Verformungsinformationen sind damit nicht mehr separat steuerbar.
 
-**Neue Pflichtanforderung:** Vor jeder Veröffentlichung des überarbeiteten Spielermodells müssen acht zusätzliche skinningfähige Twist-Joints existieren und richtig animiert werden:
+Im ersten experimentellen Exporter war darüber hinaus die Argumentreihenfolge beim Aufruf von `modify_weights` **vertauscht**: `modify_weights(pos, joints, weights, ...)` statt `modify_weights(pos, weights, joints, ...)`. Da beide glTF-Attribute in Uint8 vorliegen können, blieb die Verwechslung unerkannt. Die semantische Prüfung lehnt solche Verwechslungen nun ausdrücklich ab.
 
-- `upperarm_twist_l/r` – linker und rechter Oberarm.
-- `lowerarm_twist_l/r` – linker und rechter Unterarm.
-- `thigh_twist_l/r` – linker und rechter Oberschenkel.
-- `calf_twist_l/r` – linke und rechte Wade.
+## Implementierung
 
-Nur benannte Knochen ohne echte Vertex-Gewichte reichen **nicht** aus.
+- Neue echte Twist-Joints `upperarm_twist_l/r`, `lowerarm_twist_l/r`, `thigh_twist_l/r`, `calf_twist_l/r` — zusammen 60 Knochen.
+- Zusätzliche Bind-Matrizen, lokale Gelenkpivots und anatomisch begrenzte, nach Elternknochen und Segmentfortschritt ausgewählte Gewichte auf Körper und tatsächlich sichtbarer Kleidung.
+- Keine künstliche Gewichtung entfernter Mesh-Bereiche. Ursprüngliche 52 Bones und deren Hierarchie, Positionsgeometrie, Morphs, Materialien und Bilder bleiben erhalten.
+- Vier Skinning-Influences pro Vertex, normierte Gewichte und gültige Skin-Indizes.
+- Der nicht-live `3d-player-evolution-twist.mjs`-Solver verteilt axiale Drehung als eigene Korrekturstufe **nach** dem 52-Bone-Pose-Commit.
+- Experimentelle GLB: `assets/footera/models/footera-evolution-twist-prototype.glb`.
+- Echtes Vergleichsstudio: `player-evolution-twist-lab.html` (52-Bone Master vs. 60-Bone Twist GLB).
 
-## Isolierter 60-Knochen-Prototyp
+## Tatsächlich gewichtete Vertices
 
-- `tools/build-player-evolution-twist.py` baut die separate Datei `footera-evolution-twist-prototype.glb` **aus dem bestehenden** `footera-evolution-master.glb`, ohne diesen zu überschreiben.
-- Die acht Twist-Joints werden als zusätzliche Kinder der jeweiligen primären Extremitätenknochen angelegt. Die ursprüngliche Eltern-Kind-Hierarchie der 52 Animationsjoints bleibt unverändert.
-- Für jeden Twist-Joint werden eigene Bind-Positionen und inverse Bind-Matrizen erzeugt. Die Gewichtung wird bei geeigneten Körper-, Trikot-, Hosen- und Stutzenvertices neu verteilt. Pro Vertex bleiben maximal vier Skinning-Influences und ihre Summe ist weiterhin 1.
-- `3d-player-evolution-twist.mjs` prüft Bindung und Vertex-Einfluss. Die experimentelle Korrektur zerlegt lokale Quaternionen in Swing/Twist und verteilt die axiale Verdrehung graduell. **Der Bewegungs-Driver für die vorhandenen 52 Knochen wird nicht überschrieben.**
-- `tests/player-evolution-twist.test.mjs` kontrolliert Knochenhierarchie, Geometrie-Unverändertheit, echte Vertex-Gewichte, Rücksetzbarkeit, wiederholte Posen und einen 90°-Twist-Test.
-- CI erstellt Modell und Testbericht als herunterladbares GitHub-Artefakt und schreibt den Prototyp nach erfolgreichem Check nur auf den Twist-Branch.
+Zahl pro Twist über Körper, Trikot, Hose und Stutzen. Das ist ein Einflussnachweis und **kein** Beweis für schon perfekte Bewegung.
 
-## Prüfung des ersten Prototyps (20.11.2026)
+| Segment | Links | Rechts |
+|---|---:|---:|
+| Oberarm | 318 | 316 |
+| Unterarm | 361 | 359 |
+| Oberschenkel | 419 | 407 |
+| Wade | 368 | 369 |
 
-**Blockiert – keine fertige 60-Bone-GLB veröffentlicht.** Der GitHub-Actions-Lauf ist absichtlich an der Bedingung gescheitert, dass jedes Twist-Gelenk mindestens 20 tatsächlich gewichtete Körpervertices haben muss. Im 52-Bone-Quellmodell hat der Oberarm links nach der ersten Diagnose lediglich 62 stark von `upperarm_l` beeinflusste Körpervertices, der linke Oberschenkel nur wenige. Die korrekte räumliche Auswahl für Twist-Influences ist damit noch nicht zuverlässig möglich.
+## Tests und echte Bilder/Video
 
-**Technische Konsequenz:** Nicht die Anzahl der Twist-Joints manipulieren und keine entfernten Körpervertices künstlich an diese Joints binden. Zuerst müssen die Limb-Skinning-Gewichte des Quell-Exports überprüft und gegebenenfalls neu von der MetaHuman-DNA auf den Footera-Rig übertragen werden. Dann die acht Twist-Joints mit korrekter Bindepose, Einflusszonen und Video-A/B-Test erneut erzeugen. Bis dahin **nicht mergen**.
+**GitHub Actions: erfolgreicher Lauf** [44805902555](https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44805902555).
 
-## Wichtige Abnahmebedingungen
+- 13/13 Unit-, Rig-, Skinning- und Quaternion-Tests bestanden.
+- Reale Three.js/WebGL/GLTFLoader-Renderbilder von jedem Twist-Bone bei 0°, +45°, +90° und −90°.
+- 52/60-Bone-A/B-Bildvergleich bei +90° für alle acht Bones, sichtbare Pixelunterschiede nachgewiesen.
+- Technische Lauf-, Schuss- und Richtungswechselposen gerendert; diese sind **keine vollständige Original-Mixamo-Matchanimation**.
+- FFmpeg-MP4 aus **72 echten Renderframes**, 12 FPS, 6 Sekunden, Modi axial/walk/cut/kick.
+- Mobiler Browser-Smoke-Test bei 412×915: GLB geladen, Skinning-Audit bestanden. **Keine Messung echter Smartphone-GPU-FPS.**
+- Playwright ohne Page-Skriptfehler beendet; alle genannten Checks bestanden.
+- Testartefakt: [A/B-Screenshots, Vergleichsblatt, MP4, GLB und Prüfbericht (ZIP)](https://github.com/basti17svh-cloud/Gerlies-FUT/actions/runs/44805902555/artifacts/14662757858) (GitHub-Artefakte 30 Tage gespeichert).
+- Dateinamen im ZIP: `real-3d-before-after-contact-sheet.jpg`, `footera-60-bone-engine-proof.mp4`, `report.json`, `skin-report.json`, Gelenk- und Bewegungs-`.png` sowie die experimentelle `.glb`.
 
-Das neue 60-Knochen-Modell darf **nicht** wegen bloßer grüner Unit-Tests ins Live-Spiel gelangen. Zusätzlich erforderlich:
+## Offene Abnahmepunkte
 
-1. Tatsächliche 3D-A/B-Aufnahmen mit **reinen axialen Verdrehungen** der Ober-/Unterarme und Ober-/Unterschenkel (±90°), einschließlich 0°, 45° und 90°, ohne Nahtöffnung oder Texturzerreißen.
-2. Realistische Lauf-, Schuss-, Arm- und Richtungswechselanimationen, ohne Verdopplung der Twist-Rotation. Kritisch: Schulter-zu-Oberarm, Handgelenk und Hüfte/Knie.
-3. Test der 60-Bone GLB-Datei in Three.js auf PC und Smartphone einschließlich Performance und WebGL-Kontextverlust.
-4. Ein explizites Freigabesignal, **bevor** alte GLBs ersetzt oder neue Bewegungen in den Liveszenen aktiviert werden.
+1. **Optische Sichtprüfung echter Deformationen**: Schulter, Ellbogen, Hüfte, Knie, Trikot-/Hosen-/Stutzen-Säume bei Belastung. Der automatisierte Pixelvergleich erkennt Unterschiede, nicht deren ästhetische Qualität.
+2. Reale Footera-Animationen einschließlich Mixamo-Sprints, Richtungswechsel, Schüssen und Kontakt/IK im vollständig integrierten Gameplay; keine Überlagerung konkurrierender Bone-Writer.
+3. Echte Smartphone-Messung: FPS, RAM, GPU/Shader-Grenzen, thermisches Verhalten und WebGL-Kontextverlust an repräsentativen Geräten.
+4. Benutzerfreigabe vor Merge oder irgendeiner Produktionsaktivierung. `main` und das Livespiel bleiben unverändert.
 
-**Nicht behaupten:** Die zusätzliche Gelenkstruktur alleine garantiere anatomisch perfekte Körperverformung. Gewichte, Posen, Gelenklimits und der gesamte Animationsstapel müssen gemeinsam geprüft werden.
+**Abnahmezustand:** Die technische 60-Bone-Implementierung einschließlich Engine-Testnachweis ist erfüllt; optische und mobile Endabnahme steht noch aus. Nicht als fertig für Produktionsspiel veröffentlichen.
