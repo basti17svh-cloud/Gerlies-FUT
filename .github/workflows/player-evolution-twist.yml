@@ -5,9 +5,12 @@ on:
     paths:
       - '3d-player-evolution-twist.mjs'
       - '3d-player-evolution-gait.mjs'
+      - '3d-player-evolution-mocap.mjs'
+      - '3d-player-evolution-foot-ik.mjs'
       - 'tools/build-player-evolution-twist.py'
       - 'tests/player-evolution-twist.test.mjs'
       - 'tests/player-evolution-gait.test.mjs'
+      - 'tests/player-evolution-mocap.test.mjs'
       - 'tests/player-evolution-twist.browser.cjs'
       - 'player-evolution-twist-lab.html'
       - '.github/workflows/player-evolution-twist.yml'
@@ -34,7 +37,9 @@ jobs:
         run: |
           node --check 3d-player-evolution-twist.mjs
           node --check 3d-player-evolution-gait.mjs
-          node --test tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
+          node --check 3d-player-evolution-mocap.mjs
+          node --check 3d-player-evolution-foot-ik.mjs
+          node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
         run: |
           npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0
@@ -76,6 +81,24 @@ jobs:
               ImageDraw.Draw(hip).text((18+i*550,13),
                   'VORHER - Fixierte Huefte' if i==0 else 'NACHHER - Gewichtsverlagerung',fill='white')
           hip.save(p/'hip-gait-before-after.jpg',quality=91)
+          mocap=Image.new('RGB',(1320,2080),'#06131d')
+          for i,clip in enumerate(['walk','jog','run','sprint']):
+              for c,rig in enumerate(['52','60']):
+                  source=Image.open(p/f'mixamo-{clip}-{rig}.png').convert('RGB')
+                  source.thumbnail((630,485))
+                  base=Image.new('RGB',(660,520),'#10232d')
+                  base.paste(source,((660-source.width)//2,28))
+                  ImageDraw.Draw(base).text((12,8),f'Mixamo {clip.upper()} - {rig} bone',fill='white')
+                  mocap.paste(base,(660*c,520*i))
+          mocap.save(p/'mixamo-4-captures-52-vs-60.jpg',quality=91)
+          feet=Image.new('RGB',(1320,540),'#06131d')
+          for i,mode in enumerate(['no-foot-ik','with-foot-ik']):
+              source=Image.open(p/f'mixamo-run-60-{mode}.png').convert('RGB')
+              source.thumbnail((640,510))
+              feet.paste(source,(660*i+(660-source.width)//2,28))
+              ImageDraw.Draw(feet).text((660*i+12,8),
+                  'Mixamo Run / Foot IK OFF' if i==0 else 'Mixamo Run / Foot IK ON',fill='white')
+          feet.save(p/'mixamo-foot-ik-comparison.jpg',quality=91)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
