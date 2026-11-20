@@ -152,3 +152,24 @@ Der Erfolg ist nur dann belegt, wenn die Node- und WebGL-Regressionssuite besteh
 - Die berechnete Root-Spur folgt der gemessenen Schuhbahn: linker Seitwärtsschritt bewegt sich während der aktiven Phase nach links, rechter nach rechts, Rückwärtsclip reduziert während der aktiven Phase die Vorwärts-Z-Komponente; die Animation ist weiter eine Überblendung zwischen Original-Mixamo-Clips.
 - **Kritische Grenzen:** Stützfuß wird aus Schuhhöhe **heuristisch** erkannt; echte Bodenberührung und Foot-IK/Schuhsohlenrotation bei Richtungswechseln noch nicht realisiert, kein Welt-Collision-Test, keine Laufgeschwindigkeit/Trägheit mit Match-Root, kein Nachweis für Touchscreen-Hardware-FPS. Die Hände/Arme und der Trikotkörper wirken beim Sprint noch stellenweise steif, die frontal/seitlichen Vergleichsscreenshots machen Wegstrecken optisch nicht erkennbar. **Keine visuelle Premium- oder Live-Gameplay-Freigabe**.
 - Nächster fachlich sinnvoller Schritt ist Ground-Contact und IK für die tatsächliche Spielwelt mit Fußabrollung, sauberem Kontaktphase-/Übergangstracking, kontrollierten Hüft-/Kniepositionen, sowie fixed-camera Root-Trajektorie-A/B. Main und Live-Spiel weiterhin unverändert, PR #240 Draft ohne Merge.
+
+## Schritt 8 – Ground Contact & Foot IK 2.0 (20.11.2026, isolierte Implementierung)
+
+**Status:** Änderungen im isolierten Branch umgesetzt; Premium-Sichtabnahme bleibt bis zur Sichtung der neuen echten WebGL-Bilder/MP4 offen. Die GitHub-Actions-Ergebnisse des Step-8-Commits sind separat zu prüfen, bevor ein Test-Erfolg behauptet wird.
+
+### Technische Änderungen
+- `3d-player-evolution-foot-ik.mjs`: Im GLB-Standmodell werden Schuhsohlen-Markierungen für Ferse und Zehen aus den niedrigsten **tatsächlich vorhandenen, je Fuß gewichteten Boot-Mesh-Vertices** bestimmt. Falls eine Geometrie keine hinreichenden Foot-Skin-Gewichte hat, ist der **Bone-Fallback explizit diagnostiziert** und darf nicht als gemessene Schuhsohle bezeichnet werden.
+- Auf den echten originalen Walk-/Jog-/Run-/Sprint-Mixamo-Clips wird nur im Stützfuß-Intervall ein begrenztes vertikales Knöchelziel (höchstens 7 cm) aus der tatsächlichen Sohle gebildet. Eine gemessene Fersen-/Zehen-Steilheit wird in der Fußrotationsachse gedämpft (höchstens 0,2 rad), primär in der mittleren Standphase. Fersenaufsatz und Zehenabdruck der Capture-Vorlage werden **nicht** durch einen erfundenen Zyklus ersetzt.
+- `3d-player-evolution-direction-contact.mjs`: Die bereits bestehende rein Mixamo-basierte Footprint-/Root-Spur liefert außerdem Standalter, geglättetes Stützgewicht und Standphasenanteil. Richtungswechsel-Foot-IK nutzt **nur** den inferierten Stützfuß, die Schwungphase bleibt Mixamo; die Spielerroutenquelle ist unverändert.
+- Fuß-IK 2.0 liegt ausschließlich hinter neuen Teststudio-Schaltern und dem bisherigen PoseDirector-`ik`-Layer. Keine Änderungen an 60-/52-Bone-Hierarchien, Originalcapturedaten, Build-Exporter, `main` oder Livespiel. Die schon vorhandene Knee-Alignment-Korrektur bleibt vorgeschaltet.
+- Das Studio hat einen eigenen Weltkamera-Schalter. In `window.footeraQaRender` bleibt der neue Ground-Pass standardmäßig ausgeschaltet, um ursprüngliche Step-7-Regressionen A/B identisch fortführen zu können. Über das interaktive Studio ist die Option separat zuschaltbar.
+
+### Automatisierte Qualitätsprüfungen
+- Neue `tests/player-evolution-ground-contact.test.mjs` prüfen alle vier echten Gangarten, Foot-Swing/Contact, obere Winkel-/Höhen-Grenzen, Rücksetzbarkeit der IK-Quaternions und alle drei realen Richtungs-Captures.
+- Der Browser rendert für alle vier Gangarten plus Links-/Rechts-Strafe und Rückwärtsbewegung echte Bilder mit identischem 60-Bone-Modell, gleicher Szene, gleicher Zeit und **fester Weltkamera**. Ein 60-Frame-FFmpeg-Video legt Foot-IK vorher/nachher synchron nebeneinander: `footera-ground-ik2-fixed-camera-before-after.mp4`.
+- Kontaktblatt `foot-ik2-fixed-camera-real-3d-before-after.jpg`, 14 einzelne `foot-ik2-*-before/after.png` und `report.json` werden in den offiziellen GitHub-Actions-Artefakten bereitgestellt, sofern die vollständige CI-Pipeline erfolgreich ausgeführt wird.
+
+### Nicht als gelöst behaupten
+- Kontakt ist weiter eine flache Testfläche ohne World-Terrain-Raycasts, echte Sohlendruckmessung oder physische Kollision. Bind-Pose-Markierungen sind eine geometrische Annäherung.
+- Realer Match-Root, Ballinteraktion, belastbare Beschleunigungs-/Bremskinetik, Höhenunterschiede und Smartphone-Hardware-Performance sind nicht validiert.
+- Automatisierte Quaternion-Grenzen und Bilder sind keine menschliche biomechanische Premium-Abnahme. Schleifende oder schwebende Sohlen können trotz bestandener Unit-Tests auftreten; hierfür sind das Kontaktblatt und die MP4 gezielt zu prüfen.
