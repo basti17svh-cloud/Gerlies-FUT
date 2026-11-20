@@ -10176,7 +10176,7 @@ function halloweenHeroSlide(at=Date.now()){
 const BLACKFRIDAY_TEASER_FROM="2026-11-20T19:00:00+01:00";
 // Cards revealed on social media are uncovered in the in-game teaser at the same moment (Basti 2026-11-19).
 // Add one row per reveal; only team players, never SBC/objective players.
-const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"},{at:"2026-11-24T13:00:00+01:00",name:"Nuno Mendes"}];
+const BLACKFRIDAY_TEASER_REVEALS=[{at:"2026-11-22T13:00:00+01:00",name:"Gianluigi Donnarumma"},{at:"2026-11-24T13:00:00+01:00",name:"Matheus Cunha"},{at:"2026-11-24T13:00:00+01:00",name:"Victor Osimhen"}];
 function blackFridayRevealedNames(at=Date.now()){return new Set(BLACKFRIDAY_TEASER_REVEALS.filter(r=>at>=Date.parse(r.at)).map(r=>r.name))}
 function blackFridayRevealText(at=Date.now()){const names=blackFridayRevealedNames(at);if(!names.size)return"";const shown=byEventRating(promoEventEntries(BLACKFRIDAY_EVENT)).filter(e=>names.has(e.player.name));return shown.length?` Schon enthüllt: ${shown.map(e=>`${e.player.name.split(" ").pop()} ${e.player.ovr}`).join(", ")}.`:""}
 function blackFridayLiveEvent(at=Date.now()){return [BLACKFRIDAY_TEAM2_EVENT,BLACKFRIDAY_EVENT].find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
@@ -11112,7 +11112,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.490";
+const GFUT_BUILD="V21.492";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11170,7 +11170,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21490",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21492",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
