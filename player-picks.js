@@ -1,7 +1,7 @@
 /* Server-owned Player Picks: fixed offers, one choice, atomic cloud delivery. */
 (()=>{
  'use strict';
- let rows=[],owner='',listedSaveId='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
+ let selectedMany=[],rows=[],owner='',listedSaveId='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
  const $=id=>document.getElementById(id);
  const title=p=>p.local?'Icon Player Pick':p.source==='tournament'?'Turnier-Siegerpick':p.source==='halloween-cup'?'Halloween Team 1 Player Pick':p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
@@ -18,6 +18,55 @@
   const copy=[...pool];
   for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}
   return copy.slice(0,pick.choices).map(b=>b.id);
+ }
+ // Gift Player Picks (e.g. "2 aus 6 · 90+") are also local; they choose `count` gold players.
+ const giftPicks=()=>Array.isArray(state.giftPicks)?state.giftPicks:[];
+ const goldBase=pid=>(typeof P_BY_ID!=='undefined'?P_BY_ID.get(String(pid)):null)||null;
+ function giftPool(pick){
+  const list=typeof PLAYERS!=='undefined'&&Array.isArray(PLAYERS)?PLAYERS:[];
+  const seen=new Set(),pool=[];
+  for(const b of list){
+   if(!b||Number(b.ovr||0)<Number(pick.minRating||0)||seen.has(String(b.id)))continue;
+   if(typeof isExclusiveFounderBase==='function'&&isExclusiveFounderBase(b))continue;
+   seen.add(String(b.id));pool.push(b);
+  }
+  return pool;
+ }
+ function rollGiftOptions(pick){
+  const copy=giftPool(pick);
+  for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}
+  return copy.slice(0,pick.choices).map(b=>String(b.id));
+ }
+ function giftPreview(base,pick){
+  const item=makeItem(base,pick.tradeable===true,{});
+  return {...item,uid:'preview-'+pick.id+'-'+base.id,baseSnapshot:base,acquisitionSource:'gift-pick'};
+ }
+ function openGiftPick(id){
+  if(busy||offer)return;
+  const pick=giftPicks().find(p=>p.id===id);if(!pick)return;
+  if(!Array.isArray(pick.options)||pick.options.length!==pick.choices||!pick.options.every(goldBase)){
+   const options=rollGiftOptions(pick);
+   if(options.length!==pick.choices){toast('Die Spieler werden noch geladen. Bitte gleich noch einmal öffnen – dein Pick bleibt erhalten.');return}
+   pick.options=options;save();if(typeof flushSave==='function')flushSave();
+  }
+  offer={local:true,gift:true,id:pick.id,choices:pick.choices,count:pick.count,title:pick.title,tradeable:pick.tradeable===true,min_rating:pick.minRating||0,options:pick.options.map(pid=>({id:pid,item:giftPreview(goldBase(pid),pick)}))};
+  selected='';selectedMany=[];revealed=new Set();needsCloudRestore=false;
+  modal();renderOffer();$('playerPickFeedback').textContent='';
+  showUiLayer('playerPickModal','player-pick');
+  document.querySelector('[data-pick-close]').focus();
+ }
+ function chooseGiftPick(){
+  const pick=giftPicks().find(p=>p.id===offer?.id);
+  if(!pick||selectedMany.length!==pick.count||!selectedMany.every(id=>pick.options?.includes(id)))return;
+  const bases=selectedMany.map(goldBase);if(bases.some(b=>!b))return;
+  const items=bases.map(base=>{const item=makeItem(base,pick.tradeable===true,{});item.acquisitionSource='gift-pick';item.giftPickId=pick.id;return item});
+  state.club.push(...items);
+  state.giftPickClaims=state.giftPickClaims||{};
+  state.giftPickClaims[pick.id]={selectedIds:bases.map(b=>String(b.id)),claimedAt:Date.now()};
+  state.giftPicks=giftPicks().filter(p=>p.id!==pick.id);
+  save();if(typeof flushSave==='function')flushSave();
+  closeUiLayer('playerPickModal','player-pick');offer=null;selected='';selectedMany=[];
+  renderAll();toast(bases.map(b=>b.name).join(' und ')+(bases.length>1?' sind':' ist')+' jetzt in deinem Verein.');
  }
  function openIconPick(id){
   if(busy||offer)return;
@@ -89,7 +138,7 @@
   const box=$('homePlayerPickNotice');if(!box)return;
   // Historical reward receipts and sync messages are not outstanding Picks.
   // Only a successful server listing for this account and club can show a count.
-  const count=availablePicks().length+iconPicks().length;
+  const count=availablePicks().length+iconPicks().length+giftPicks().length;
   box.hidden=count===0;
   const qty=$('homePlayerPickCount');if(qty)qty.textContent=String(count);
   const copy=$('homePlayerPickCopy');if(copy)copy.textContent=count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
@@ -102,6 +151,7 @@
   const available=availablePicks();
   host.innerHTML='<div class="pick-heading"><div><small>DEINE AUSWAHL</small><h3>Meine Player Picks</h3></div><button type="button" data-picks-refresh '+(loading||busy?'disabled':'')+'>Aktualisieren</button></div>'+
    (retry?'<p class="pick-notice">Eine Einlösung wartet auf Bestätigung. Deine Auswahl bleibt gespeichert.</p><button type="button" class="primary" data-pick-recover '+(busy?'disabled':'')+'>Einlösung abschließen</button>':'')+
+   giftPicks().map(p=>'<article class="pick-ticket pick-gift"><span class="pick-ticket-rating">'+esc(p.minRating)+'+</span><div><strong>'+esc(p.title||'Player Pick')+'</strong><small>'+esc(p.count)+' aus '+esc(p.choices)+' · Goldspieler '+esc(p.minRating)+'+ · '+(p.tradeable?'tauschbar':'untauschbar')+'</small></div><button type="button" class="primary" data-pick-gift-open="'+esc(p.id)+'" '+(busy?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('')+
    iconPicks().map(p=>'<article class="pick-ticket pick-icon"><span class="pick-ticket-rating">ICON</span><div><strong>Icon Player Pick</strong><small>1 aus '+p.choices+' · Zufällige Icons · untauschbar</small></div><button type="button" class="primary" data-pick-icon-open="'+esc(p.id)+'" '+(busy?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('')+
    '<p class="pick-status" role="status">'+esc(message||(loading?'Picks werden geladen …':available.length?'Wähle pro Pick einen Spieler. Alle Picks sind untauschbar.':'Noch keine offenen Player Picks.'))+'</p>'+
    available.map(p=>'<article class="pick-ticket '+(p.type==='champions-red'?'pick-red':'')+'"><span class="pick-ticket-rating">'+p.min_rating+'+</span><div><strong>'+title(p)+'</strong><small>1 aus '+p.choices+' · '+(p.source==='halloween-cup'?'Garantiert aus allen 18 Spielern von Team 1':p.type==='champions-red'?'Aktive TOTW- und Eventkarten':'Goldspieler')+'</small></div><button type="button" class="primary" data-pick-open="'+esc(p.id)+'" '+(busy||retry?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('');
@@ -141,16 +191,17 @@
  }
  function renderOffer(){
   if(!offer)return;
-  modal();$('playerPickTitle').textContent=title(offer)+ratingSuffix(offer);
-  $('playerPickDescription').textContent='1 aus '+offer.choices+' · Tippe eine Karte zum Aufdecken an. Auswahl bleibt gespeichert.';
+  const multi=offer.gift?Number(offer.count||1):1,isPicked=id=>offer.gift?selectedMany.includes(id):selected===id;
+  modal();$('playerPickTitle').textContent=offer.gift?(offer.title||'Player Pick')+' · '+offer.min_rating+'+':title(offer)+ratingSuffix(offer);
+  $('playerPickDescription').textContent=offer.gift?multi+' aus '+offer.choices+' · Decke die Karten auf und wähle '+multi+' Spieler. '+(offer.tradeable?'Tauschbar.':'Untauschbar.'):'1 aus '+offer.choices+' · Tippe eine Karte zum Aufdecken an. Auswahl bleibt gespeichert.';
   $('playerPickOptions').classList.toggle('icon-pick-options',!!offer.local);
   $('playerPickOptions').innerHTML=offer.options.map((o,i)=>{
    const item=pickIconItem({...o.item,uid:'preview-'+o.id,acquisitionSource:'reward-pick'}),base=item.baseSnapshot,shown=revealed.has(o.id);
    const label=base?.name||'Spieler',duplicate=pickDuplicateLocation(item),ownedLabel=duplicate==='club'?'Bereits im Verein':'Bereits im SBC-Speicher';
-   const selectionLabel=selected===o.id?'✓ Ausgewählt':shown?(duplicate?'Duplikat · Auswählen':'Auswählen'):'Aufdecken';
-   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(selected===o.id?'selected':'')+(duplicate?' duplicate':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+(duplicate?' · '+ownedLabel:'')+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">'+(offer.local?'ICON PICK':'PLAYER PICK')+'</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+(duplicate?'<span class="pick-duplicate-badge" aria-hidden="true">DUPLIKAT</span>':'')+'</span></span><span class="pick-select-label">'+selectionLabel+'</span></button>';
+   const selectionLabel=isPicked(o.id)?'✓ Ausgewählt':shown?(duplicate?'Duplikat · Auswählen':'Auswählen'):'Aufdecken';
+   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(isPicked(o.id)?'selected':'')+(duplicate?' duplicate':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+isPicked(o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+(duplicate?' · '+ownedLabel:'')+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">'+(offer.local&&!offer.gift?'ICON PICK':'PLAYER PICK')+'</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+(duplicate?'<span class="pick-duplicate-badge" aria-hidden="true">DUPLIKAT</span>':'')+'</span></span><span class="pick-select-label">'+selectionLabel+'</span></button>';
   }).join('');
-  const b=document.querySelector('[data-pick-confirm]');b.disabled=!selected||busy;b.textContent=busy?'Wird eingelöst …':'Auswahl bestätigen';
+  const b=document.querySelector('[data-pick-confirm]');b.disabled=(offer.gift?selectedMany.length!==multi:!selected)||busy;b.textContent=busy?'Wird eingelöst …':offer.gift&&selectedMany.length!==multi?'Noch '+(multi-selectedMany.length)+' Spieler wählen':'Auswahl bestätigen';
   document.querySelector('[data-pick-close]').disabled=busy;
   const recovery=document.querySelector('[data-pick-cloud-restore]');recovery.hidden=!needsCloudRestore;recovery.disabled=busy;
   document.querySelector('[data-pick-reopen]').hidden=true;
@@ -219,6 +270,7 @@
  }
  async function choose(recover=false){
   if(busy)return;
+  if(!recover&&offer?.gift){chooseGiftPick();return}
   if(!recover&&offer?.local){chooseIconPick();return}
   const pending=window.FooteraAccount.pendingPlayerPick();
   const id=recover?pending?.pickId:offer?.id,option=recover?pending?.optionId:selected;
@@ -240,6 +292,7 @@
   const original=renderStore;renderStore=function(){original();render();refresh()};
   document.addEventListener('click',e=>{
    if(e.target.closest('[data-picks-refresh]')){refresh(true);return}
+   const giftOpen=e.target.closest('[data-pick-gift-open]');if(giftOpen){openGiftPick(giftOpen.dataset.pickGiftOpen);return}
    const iconOpen=e.target.closest('[data-pick-icon-open]');if(iconOpen){openIconPick(iconOpen.dataset.pickIconOpen);return}
    const retryOpen=e.target.closest('[data-pick-reopen]');if(retryOpen&&!busy){open(retryOpen.dataset.pickReopen);return}
    const openButton=e.target.closest('[data-pick-open]');if(openButton){open(openButton.dataset.pickOpen);return}
@@ -249,6 +302,12 @@
      revealed.add(id);option.classList.add('revealed');
      option.setAttribute('aria-label',(offer?.options.find(o=>o.id===id)?.item?.baseSnapshot?.name||'Spieler')+' auswählen');
      option.querySelector('.pick-select-label').textContent=pickDuplicateLocation(offer?.options.find(o=>o.id===id)?.item)?'Duplikat · Auswählen':'Auswählen';
+    }else if(offer?.gift){
+     const max=Number(offer.count||1);
+     if(selectedMany.includes(id))selectedMany=selectedMany.filter(x=>x!==id);
+     else if(selectedMany.length<max)selectedMany=[...selectedMany,id];
+     else selectedMany=[...selectedMany.slice(1),id];
+     renderOffer()
     }else{selected=id;renderOffer()}
     return;
    }
@@ -277,7 +336,7 @@
   setTimeout(refresh,3500);
   setInterval(()=>{if(!document.hidden&&['storeView','homeView'].includes(currentViewId()))refresh()},30000);
  }
- window.FooteraPlayerPicks={refresh,openIconPick,applyDelivery,isBusy:()=>busy,onClose:()=>{
+ window.FooteraPlayerPicks={refresh,openIconPick,openGiftPick,applyDelivery,isBusy:()=>busy,onClose:()=>{
   offer=null;selected='';revealed=new Set();needsCloudRestore=false;refresh(true);
  },isActive:()=>busy||!!offer||!!$('playerPickModal')?.classList.contains('active')};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();

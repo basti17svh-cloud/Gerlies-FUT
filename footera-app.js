@@ -504,6 +504,7 @@ const PACKS=[
 PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
 // One-time "Tippspiel" pack for Max (Basti 2026-11-14): contains no players, only 100,000 Footera Points.
 PACKS.push({id:"tippspiel-max-20261114",name:"Tippspiel-Pack",coins:null,points:null,type:"points",count:0,min:0,max:0,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,iconChance:0,recipientSaveId:"GF-35FADCCBA5AD4E15",pointsReward:100000,desc:"Einmaliges Tippspiel-Pack · 100.000 Footera Points"});
+PACKS.push({id:"geburtstag-max-20261120",name:"Geburtstags-Pack",coins:null,points:null,type:"points",count:0,min:0,max:0,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,iconChance:0,recipientSaveId:"GF-35FADCCBA5AD4E15",pointsReward:200000,desc:"Alles Gute zum Geburtstag, Max! · 200.000 Footera Points"});
 // Thank-you gift for the tester clubs: shown and described exactly like the ordinary Jumbo pack.
 PACKS.push({...PACKS.find(p=>p.id==="jumbo-rare"),id:"jumbo-rare-20261020",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,surpriseGift:{base:"jumbo-rare",icons:["Ruud Gullit"],players:["231747"]}});
 const TOTW_WEEK_1={id:1,name:"Team of the Week 1",releaseDate:"2026-09-16",activeUntil:"23.09.2026 18:59",players:[
@@ -4107,8 +4108,14 @@ function flushSave(){
  if(!saveDirty&&!saveQueued)return !saveFailed;
  clearTimeout(saveTimer);saveTimer=0;saveQueued=false;
  persistActiveSquadPreset(state);
- try{localStorage.setItem("gerliesFutV9",JSON.stringify(state))}
+ let raw="";
+ try{raw=JSON.stringify(state);localStorage.setItem("gerliesFutV9",raw)}
  catch(e){
+  // The portrait URL caches are only a speed-up. When Safari's 5 MB limit is reached,
+  // give their space to the save before reporting the device storage as full.
+  let retried=false;
+  if(raw){try{localStorage.removeItem("gfutImageSourceCacheV9");localStorage.removeItem("gfutImageFailureCacheV9");localStorage.setItem("gerliesFutV9",raw);retried=true}catch(_){}}
+  if(retried){saveDirty=false;saveFailed=false;window.dispatchEvent?.(new Event("footera:save"));return true}
   // Keep the current game dirty so focus/pagehide or the next action retries it.
   // Also let cloud synchronization preserve the running game when disk quota is full.
   if(!saveFailed){
@@ -4647,7 +4654,7 @@ function inlineMetaHTML(p){p=resolvedAffiliation(p);return `<div class="quickcar
 const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV9")||"{}")))}catch(e){return new Map()}})();
 const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV9")||"{}")))}catch(e){return new Map()}})();
 let IMAGE_CACHE_SAVE_TIMER=0;
-function persistImageCaches(){clearTimeout(IMAGE_CACHE_SAVE_TIMER);IMAGE_CACHE_SAVE_TIMER=setTimeout(()=>{try{localStorage.setItem("gfutImageSourceCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}},600)}
+function persistImageCaches(){clearTimeout(IMAGE_CACHE_SAVE_TIMER);IMAGE_CACHE_SAVE_TIMER=setTimeout(()=>{if(typeof saveFailed!=="undefined"&&saveFailed)return;try{localStorage.setItem("gfutImageSourceCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-800))));localStorage.setItem("gfutImageFailureCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-800))))}catch(e){}},600)}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<120000}
 function prioritizeCached(arr,key){const available=arr.filter(u=>!imageFailedRecently(u));arr=available.length?available:arr.slice();const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;const own=isOwnFaceUrl(arr[0])&&hit!==arr[0]?[arr[0]]:[];return [...own,hit,...arr.filter(x=>x!==hit&&!own.includes(x))]}
@@ -6532,7 +6539,7 @@ function activePromoPacks(now=new Date()){
 }
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation).map(p=>storeDealPack(p)),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg","tippspiel-max-20261114":"./assets/footera/tippspiel-pack.svg"};
+const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg","tippspiel-max-20261114":"./assets/footera/tippspiel-pack.svg","geburtstag-max-20261120":"./assets/footera/geburtstag-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -8119,6 +8126,16 @@ function grantIconPick(spec,source="sbc"){
   added++;
  }
  return added;
+}
+// Gift Player Picks ("2 aus 6 · 90+") are local like Icon Picks, so they can be tradeable.
+function grantGiftPick(spec){
+ const id=typeof spec?.ticketId==="string"&&/^giftpick-[a-z0-9-]{4,100}$/.test(spec.ticketId)?spec.ticketId:null;
+ if(!id)return 0;
+ state.giftPicks=Array.isArray(state.giftPicks)?state.giftPicks:[];
+ if(Object.prototype.hasOwnProperty.call(state.giftPickClaims||{},id)||state.giftPicks.some(p=>p?.id===id))return 0;
+ const choices=Math.max(2,Math.min(8,Number(spec.choices||6))),count=Math.max(1,Math.min(choices-1,Number(spec.count||1)));
+ state.giftPicks.push({id,choices,count,minRating:Math.max(0,Number(spec.minRating||0)),tradeable:spec.tradeable===true,title:String(spec.title||"Player Pick"),createdAt:Date.now(),options:null});
+ return 1;
 }
 function iconPickLabel(spec){return `Icon Player Pick (1 aus ${Number(spec?.choices||4)})`}
 function claimSeasonRewards(){for(const lvl of SEASON_REWARDS){if((state.sp||0)>=lvl.sp&&!state.seasonClaims[lvl.level]){state.seasonClaims[lvl.level]=true;if(lvl.level>1)grantSeasonOnly(lvl.reward)}}}
@@ -10822,7 +10839,7 @@ $("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.clos
 
 const DIRECT_REWARDS=Object.freeze({
  "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_iconpicks_20261109",iconPick:{choices:4,count:3},label:"3× Icon Player Pick (1 aus 4)"},{id:"basti_iconpicks_restore_20261110",iconPick:{choices:4,count:5},label:"5× Icon Player Pick (1 aus 4)"}],
- "GF-35FADCCBA5AD4E15":[{id:"max_tippspiel_points_20261114",pack:"tippspiel-max-20261114",qty:1,label:"Tippspiel-Pack"},{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"}],
+ "GF-35FADCCBA5AD4E15":[{id:"max_tippspiel_points_20261114",pack:"tippspiel-max-20261114",qty:1,label:"Tippspiel-Pack"},{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"},{id:"max_birthday_points_20261120",pack:"geburtstag-max-20261120",qty:1,label:"Geburtstags-Pack"},{id:"max_birthday_pick_20261120",giftPick:{ticketId:"giftpick-max-geburtstag-20261120",choices:6,count:2,minRating:90,tradeable:true,title:"Geburtstags-Pick"},label:"Geburtstags-Pick (2 aus 6 · 90+)"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 // Thank-you gifts for the tester clubs (Marco and Niklas), identified like their Founder cards.
@@ -10845,6 +10862,11 @@ function grantDirectRewards(){
    state.packs[reward.pack]=(state.packs[reward.pack]||0)+qty;
    state.directClaims[reward.id]={claimedAt:Date.now(),reward:{pack:reward.pack,qty}};
    granted.push(reward)
+  }else if(reward.giftPick){
+   const count=grantGiftPick(reward.giftPick);
+   state.directClaims[reward.id]={claimedAt:Date.now(),reward:{giftPick:{ticketId:reward.giftPick.ticketId,choices:reward.giftPick.choices,count:reward.giftPick.count}}};
+   if(count>0)granted.push(reward);
+   else{save();flushSave()}
   }else if(reward.iconPick){
    const count=grantIconPick(reward.iconPick,"gift");
    state.directClaims[reward.id]={claimedAt:Date.now(),reward:{iconPick:{choices:reward.iconPick.choices,count,ticketId:reward.iconPick.ticketId||null}}};
@@ -11112,7 +11134,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.492";
+const GFUT_BUILD="V21.493";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -11170,7 +11192,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21492",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21493",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

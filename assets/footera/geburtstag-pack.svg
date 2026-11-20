@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 580" role="img" aria-label="Footera Geburtstags-Pack">
+ <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#6b1240"/><stop offset=".52" stop-color="#1a0312"/><stop offset="1" stop-color="#8a1b56"/></linearGradient><linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fff2c1"/><stop offset=".45" stop-color="#bb8240"/><stop offset=".75" stop-color="#ffeaa8"/><stop offset="1" stop-color="#8f6937"/></linearGradient><radialGradient id="glow" cx=".5" cy=".55" r=".5"><stop stop-color="#ff7ac4" stop-opacity=".45"/><stop offset="1" stop-color="#ff7ac4" stop-opacity="0"/></radialGradient></defs>
+ <path d="M42 35 130 19 220 39 310 19 398 35 425 114 405 481 220 565 35 481 15 114Z" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+ <path d="M56 58 138 46 220 68 302 46 384 58 400 126 382 462 220 532 58 462 40 126Z" fill="none" stroke="#ff8fd0" stroke-width="2"/>
+ <circle cx="220" cy="330" r="190" fill="url(#glow)"/>
+ <g fill="#ffe08a" opacity=".85"><circle cx="92" cy="262" r="6"/><circle cx="352" cy="250" r="5"/><circle cx="118" cy="398" r="4"/><circle cx="330" cy="404" r="6"/><rect x="300" y="300" width="10" height="5" transform="rotate(30 305 302)"/><rect x="128" y="310" width="10" height="5" transform="rotate(-25 133 312)"/><rect x="360" y="352" width="9" height="5" transform="rotate(60 364 354)"/><rect x="80" y="350" width="9" height="5" transform="rotate(-50 84 352)"/></g>
+ <text x="220" y="128" text-anchor="middle" fill="#f7e3ac" font-family="Arial,sans-serif" font-size="27" font-weight="bold" letter-spacing="7">FOOTERA</text>
+ <text x="220" y="194" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="42" font-weight="bold" letter-spacing="2">GEBURTSTAG</text>
+ <path d="M90 222h260" stroke="url(#gold)" stroke-width="4"/>
+ <g transform="translate(220 330)"><circle r="58" fill="#2a0619" stroke="url(#gold)" stroke-width="6"/><text y="20" text-anchor="middle" fill="url(#gold)" font-family="Arial,sans-serif" font-size="58" font-weight="bold">P</text></g>
+ <text x="220" y="438" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="46" font-weight="bold">200.000</text>
+ <text x="220" y="476" text-anchor="middle" fill="#ffb3dc" font-family="Arial,sans-serif" font-size="20" font-weight="bold" letter-spacing="5">FOOTERA POINTS</text>
+</svg>
