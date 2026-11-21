@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install --prefix /tmp/footera-step12-webgl playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
           command -v google-chrome
-          echo "FOOTERA_FFMPEG=$(node -p \"require('/tmp/footera-step12-webgl/node_modules/@ffmpeg-installer/ffmpeg').path\")" >> "$GITHUB_ENV"
+          echo "FOOTERA_FFMPEG=/tmp/footera-step12-webgl/node_modules/@ffmpeg-installer/linux-x64/ffmpeg" >> "$GITHUB_ENV"
       - name: Render 17 seconds of original 60-bone Mixamo with actual foot metrics
         env:
           NODE_PATH: /tmp/footera-step12-webgl/node_modules
