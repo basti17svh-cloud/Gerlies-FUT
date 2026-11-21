@@ -765,6 +765,122 @@ const server=http.createServer((req,res)=>{
     '-pix_fmt','yuv420p',path.join(out,report.collisionSafe10.video)]);
    assert.ok(fs.statSync(path.join(out,report.collisionSafe10.video)).size>25000,
     'STEP10: Missing actual 60-bone WebGL close-up MP4');
+   // Step 11: WebGL A/B uses identical original 60-bone Mixamo timestamps
+   // and the SAME Step-10 mesh collision protection on BOTH sides.
+   // This evaluates shoe-flight cleanup, not changed geometry or camera.
+   report.shoeFlight11={source:'real skinned GLB shoes + genuine captured Mixamo',
+    isolatedFromLive:true,modes:[],video:'footera-step11-shoe-flight-before-after.mp4',
+    passCriteria:{maximumPenetrationMetres:.003,minimumRaisedShoeFrames:1},
+    premiumApproved:false};
+   const step11Names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal'];
+   let raisedShoeFrames=0,maxPen11=0;
+   for(const name of step11Names){
+    const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
+    const samples=gait?25:46;
+    const variants=[];
+    for(const footMotion11 of [false,true]){
+     let raised=0,maxLift=0,maxPitch=0,penetration=0,
+      maxHover=0,overRate=0,rootEmergencies=0;
+     const soles=[];
+     for(let i=0;i<samples;i++){
+      const time=span*i/(samples-1);
+      const q=await page.evaluate(v=>window.footeraQaRender(v),{
+       version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,
+       footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe:true,footMotion11});
+      const d=gait?q.mocap:q.mocap.direction,c=d.collisionSoles;
+      assert.ok(c?.before?.feet?.l?.meshCalibrated&&c.before.feet.r.meshCalibrated,
+       'Step 11 requires real skinned boot vertex measurements');
+      assert.equal(q.boneCount,60);
+      penetration=Math.max(penetration,c.maxPenetration);
+      overRate=Math.max(overRate,d.collisionRootOverRate);
+      if(d.collisionSafetyOverride)rootEmergencies++;
+      for(const side of ['l','r']){
+       const f=(gait?d.feet:d.groundFeet)?.[side];
+       if(f?.swingLift>.002){raised++;maxLift=Math.max(maxLift,f.swingLift);}
+       maxPitch=Math.max(maxPitch,Math.abs(f?.flightPitchDeg??0));
+       if(f?.active&&f.weight>.65)
+        maxHover=Math.max(maxHover,c.after.feet[side].lowest);
+      }
+      if(!gait&&footMotion11&&d.shoeMotion){
+       assert.equal(d.shoeMotion[d.estimatedContactSide].swing,0,
+        'Step 11 must never lift the planted directional support shoe');
+      }
+      soles.push({l:c.before.feet.l.lowest,r:c.before.feet.r.lowest});
+     }
+     variants.push({enabled:footMotion11,samples,raised,maximumSwingLiftMetres:maxLift,
+      maxCorrectiveToePitchDegrees:maxPitch,maxPenetrationMetres:penetration,
+      maxSupportHoverMetres:maxHover,maxRootOverRateMetresPerSecond:overRate,
+      emergencyRootLifts:rootEmergencies,soles});
+     if(footMotion11){raisedShoeFrames+=raised;maxPen11=Math.max(maxPen11,penetration);}
+    }
+    // Compare measured shoe heights at matching timestamps BEFORE whole-root
+    // collision height is changed. This tests actual boot-mesh response.
+    let maxSoleGain=0,shoeGainFrames=0;
+    for(let i=0;i<samples;i++)for(const side of ['l','r']){
+     const gain=variants[1].soles[i][side]-variants[0].soles[i][side];
+     maxSoleGain=Math.max(maxSoleGain,gain);
+     if(gain>.003)shoeGainFrames++;
+    }
+    report.shoeFlight11.modes.push({name,samples,
+     before:Object.fromEntries(Object.entries(variants[0]).filter(([k])=>k!=='soles')),
+     after:Object.fromEntries(Object.entries(variants[1]).filter(([k])=>k!=='soles')),
+     maxMeasuredSoleGainMetres:maxSoleGain,measuredSoleGainFrames:shoeGainFrames});
+   }
+   report.shoeFlight11.totalShoeLiftSamples=raisedShoeFrames;
+   report.shoeFlight11.maxPenetrationMetres=maxPen11;
+   assert.ok(maxPen11<=.003,'STEP11: live skinned outsole crossed the pitch');
+   assert.ok(raisedShoeFrames>0,'STEP11: shoe cleanup never actually activated');
+   // Keep a visual report of *consecutive* full gait and directional samples,
+   // including the end-of-video backpedal where toe-drag was reported.
+   const step11Frames=path.join(out,'step11-flight-pair-frames');
+   fs.mkdirSync(step11Frames,{recursive:true});
+   let step11Index=0;
+   for(const name of step11Names){
+    const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
+    const chronological={before:[],after:[]};
+    for(const footMotion11 of [false,true]){
+     const kind=footMotion11?'after':'before';
+     for(let i=0;i<12;i++){
+      const time=span*i/11;
+      const args={version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,
+       rootTravel:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe:true,footMotion11};
+      await page.evaluate(v=>window.footeraQaRender(v),args);
+      const png=await page.locator('canvas').screenshot();
+      chronological[kind].push(PNG.sync.read(png));
+      if(i===9){
+       fs.writeFileSync(path.join(out,'step11-'+name+'-'+kind+'.png'),png);
+      }
+     }
+    }
+    for(let i=0;i<12;i++){
+     const before=chronological.before[i],after=chronological.after[i];
+     const pair=new PNG({width:before.width+after.width,height:before.height});
+     PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
+     PNG.bitblt(after,pair,0,0,after.width,after.height,before.width,0);
+     fs.writeFileSync(path.join(step11Frames,
+      'frame-'+String(step11Index++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+    }
+   }
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',[
+    '-hide_banner','-loglevel','error','-y','-framerate','12',
+    '-i',path.join(step11Frames,'frame-%03d.png'),
+    '-vf','scale=1440:-2','-c:v','libx264','-crf','23',
+    '-pix_fmt','yuv420p',path.join(out,report.shoeFlight11.video)]);
+   assert.ok(fs.statSync(path.join(out,report.shoeFlight11.video)).size>25000,
+    'Step 11 missing real WebGL after/before MP4');
+   report.shoeFlight11.premiumBlockers=[
+    'No terrain/contact events in original directional Mixamo captures',
+    'Root emergency lifts, support hover and horizontal plant drift need further acceptance',
+    'No phone-hardware frame rate or actual live stadium locomotion verification'
+   ];
    for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
