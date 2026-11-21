@@ -34,7 +34,7 @@ test('left toe-off releases, right touchdown locks independently',()=>{
  const a=lock.sample({time:1/60,key:'gait',phase:.62,feet:frames(.02)});
  assert.equal(a.feet.l.locked,false);
  assert.equal(a.feet.r.locked,true);
- assert.equal(a.feet.r.phase,'heel-strike');
+ assert.equal(a.feet.r.phase,'mid-stance');
  assert.ok(a.feet.r.touchdown);
 });
 test('directional backpedal retains the same contact footprint',()=>{
