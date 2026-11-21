@@ -21,7 +21,7 @@ export function footeraSwingClearance({lowest,groundY=0,swing=0,peak=.036,maxLif
  const deficit=Math.max(0,desired-lowest);
  return Math.min(maxLift,deficit)*swing;
 }
-export function createFooteraShoePhaseTracker({start=.22,full=.80,smoothing=.085,resetGap=.22}={}){
+export function createFooteraShoePhaseTracker({start=.22,full=.80,smoothing=.085,resetGap=.34}={}){
  if(![start,full,smoothing,resetGap].every(Number.isFinite)||
   start<0||full<=start||smoothing<=0||resetGap<=0)
   throw new RangeError('Invalid shoe phase tracker bounds');
