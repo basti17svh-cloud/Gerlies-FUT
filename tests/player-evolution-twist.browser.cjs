@@ -632,6 +632,115 @@ const server=http.createServer((req,res)=>{
    report.groundContinuity9.images=[
     'step9-run-before.png','step9-run-after.png',
     'step9-sprint-before.png','step9-sprint-after.png'];
+
+   // Step 10: FULL-CYCLE real GLB / WebGL collision test; both original skinned
+   // boots are sampled every frame, INCLUDING heel/toe switches and swing.
+   report.collisionSafe10={
+    source:'actual GLB boot outsole vertices / Three.js applyBoneTransform',
+    flatFloor:true,terrainCollision:false,liveMatchRoot:false,
+    modes:[],stills:[],video:'footera-step10-collision-safe-before-after.mp4',
+    passCriteria:{penetrationMetres:.003,rootLimitExcess:0}
+   };
+   const step10Rates={walk:1.05,jog:1.4,run:1.7,sprint:2.1};
+   const step10Names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal'];
+   let step10Total=0,maxGlobalPen=0,maxGlobalOverRate=0,unresolved=0;
+   for(const name of step10Names){
+    const gait=Object.hasOwn(step10Rates,name);
+    const span=gait?1/step10Rates[name]:3;
+    const samples=gait?49:91; // full recorded cycle / full 3s transition
+    let maxPen=0,maxFootClearance=0,maxYStep=0,maxOverRate=0,
+     limitExceeded=0,emergencies=0,maxPlanarSlip=0,previous=null;
+    for(let i=0;i<samples;i++){
+     const time=span*i/(samples-1);
+     const q=await page.evaluate(v=>window.footeraQaRender(v),{
+      version:'master',mode:gait?'mocap':'directional',
+      mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+      time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,
+      footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true,
+      directionContact:true,groundIK:true,groundContinuity:true,
+      collisionSafe:true});
+     const data=gait?q.mocap:q.mocap.direction;
+     const c=data.collisionSoles;
+     assert.ok(c?.before?.feet?.l?.meshCalibrated&&
+      c?.before?.feet?.r?.meshCalibrated,name+' lacks authentic boot vertices');
+     assert.ok(c.before.feet.l.vertices>=24&&c.before.feet.r.vertices>=24,
+      name+' lacks skinned outsole samples');
+     assert.ok(c.after.feet.l.lowPoint.every(Number.isFinite)&&
+      c.after.feet.r.lowPoint.every(Number.isFinite),'Invalid skinned shoe contact');
+     assert.ok(q.boneCount===60,'Shoe collision must use 60 bone rig');
+     maxPen=Math.max(maxPen,c.maxPenetration);
+     const soleMin=Math.min(c.after.feet.l.lowest,c.after.feet.r.lowest);
+     // Minimum (not mean!) contact clearance across BOTH actual outsole surfaces.
+     maxFootClearance=Math.max(maxFootClearance,soleMin);
+     if(data.collisionSafetyOverride)emergencies++;
+     if(data.collisionRootLimitExceeded)limitExceeded++;
+     maxOverRate=Math.max(maxOverRate,data.collisionRootOverRate);
+     if(previous){
+      const step=Math.abs(data.rootGroundOffsetY-previous.y);
+      maxYStep=Math.max(maxYStep,step);
+     }
+     const slip=gait
+      ?Math.min(...Object.values(data.feet||{}).filter(f=>f.active)
+       .map(f=>f.errorAfter).filter(Number.isFinite).concat([0]))
+      :(data.supportSlipMetres??0);
+     maxPlanarSlip=Math.max(maxPlanarSlip,slip);
+     previous={time,y:data.rootGroundOffsetY};
+     step10Total++;
+    }
+    maxGlobalPen=Math.max(maxGlobalPen,maxPen);
+    maxGlobalOverRate=Math.max(maxGlobalOverRate,maxOverRate);
+    unresolved+=limitExceeded;
+    report.collisionSafe10.modes.push({name,samples,maxPenetrationMetres:maxPen,
+     maxMinimumOutsoleClearanceMetres:maxFootClearance,
+     maxRootStepMetres:maxYStep,maxRootOverRateMetresPerSecond:maxOverRate,
+     supportSlipMetres:maxPlanarSlip,safetyOverrides:emergencies,
+     rootLimitExceededFrames:limitExceeded});
+   }
+   report.collisionSafe10.totalRealWebGLFrames=step10Total;
+   report.collisionSafe10.maxPenetrationMetres=maxGlobalPen;
+   report.collisionSafe10.maxRootOverRateMetresPerSecond=maxGlobalOverRate;
+   report.collisionSafe10.rootLimitExceededFrames=unresolved;
+   assert.ok(maxGlobalPen<=.003,'STEP10 COLLISION FAIL: real outsole entered flat pitch '+maxGlobalPen);
+   assert.equal(unresolved,0,'STEP10 COLLISION FAIL: required offset exceeded root safety cap');
+   // A/B uses identical ORIGINAL Mixamo timestamps, same full-size 60-bone GLB.
+   // No generated replacement animation or artificial camera zoom/crop.
+   const step10Frames=path.join(out,'step10-contact-pair-frames');
+   fs.mkdirSync(step10Frames,{recursive:true});
+   let frameIndex=0;
+   for(const name of step10Names){
+    const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
+    for(let i=0;i<12;i++){
+     const time=span*i/11,imgs=[];
+     for(const collisionSafe of [false,true]){
+      const args={version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,rootTravel:true,
+       footPlant:true,kneeAlign:true,shoulderAlign:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe};
+      await page.evaluate(v=>window.footeraQaRender(v),args);
+      const png=await page.locator('canvas').screenshot();
+      imgs.push(PNG.sync.read(png));
+      if(i===5){
+       const shot='step10-'+name+'-'+(collisionSafe?'after':'before')+'.png';
+       fs.writeFileSync(path.join(out,shot),png);
+       report.collisionSafe10.stills.push(shot);
+      }
+     }
+     const pair=new PNG({width:imgs[0].width+imgs[1].width,height:imgs[0].height});
+     PNG.bitblt(imgs[0],pair,0,0,imgs[0].width,imgs[0].height,0,0);
+     PNG.bitblt(imgs[1],pair,0,0,imgs[1].width,imgs[1].height,imgs[0].width,0);
+     fs.writeFileSync(path.join(step10Frames,
+      'frame-'+String(frameIndex++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+    }
+   }
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',[
+    '-hide_banner','-loglevel','error','-y','-framerate','12',
+    '-i',path.join(step10Frames,'frame-%03d.png'),
+    '-vf','scale=1440:-2','-c:v','libx264','-crf','23',
+    '-pix_fmt','yuv420p',path.join(out,report.collisionSafe10.video)]);
+   assert.ok(fs.statSync(path.join(out,report.collisionSafe10.video)).size>25000,
+    'STEP10: Missing actual 60-bone WebGL close-up MP4');
    for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
