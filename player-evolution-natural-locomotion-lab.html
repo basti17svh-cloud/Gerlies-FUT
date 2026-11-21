@@ -530,7 +530,9 @@ function fit(){
 function renderAt(t=0){
  const m=versions[states.version];if(!m)return;
  states.time=t;
- for(const x of Object.values(versions)){
+ // Only the visible rig is sampled: hidden 52-bone comparison actors
+ // cannot affect temporal plant/IK state or waste 60-bone WebGL QA time.
+ for(const x of [m]){
   x.root.rotation.y=Math.PI+states.angle;
   if(states.mode==='axial')axialPose(x,states.bone,states.deg);
   else if(states.mode==='kick')kickPose(x,t);
