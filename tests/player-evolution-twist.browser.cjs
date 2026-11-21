@@ -840,15 +840,18 @@ const server=http.createServer((req,res)=>{
    fs.mkdirSync(step11Frames,{recursive:true});
    let step11Index=0;
    for(const name of step11Names){
-    const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
+    const gait=Object.hasOwn(step10Rates,name);
+    // True-time MP4: 1 second per gait, 3 seconds per directional
+    // transition; the Step-10 7s movie compressed these 3s moves 3x.
+    const frames=gait?12:36;
     const chronological={before:[],after:[]};
     for(const footMotion11 of [false,true]){
      const kind=footMotion11?'after':'before';
-     for(let i=0;i<12;i++){
-      const time=span*i/11;
+     for(let i=0;i<frames;i++){
+      const time=i/12;
       const args={version:'master',mode:gait?'mocap':'directional',
        mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
-       time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:gait,
        rootTravel:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
        directionContact:true,groundIK:true,groundContinuity:true,
        collisionSafe:true,footMotion11};
@@ -860,7 +863,7 @@ const server=http.createServer((req,res)=>{
       }
      }
     }
-    for(let i=0;i<12;i++){
+    for(let i=0;i<frames;i++){
      const before=chronological.before[i],after=chronological.after[i];
      const pair=new PNG({width:before.width+after.width,height:before.height});
      PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
