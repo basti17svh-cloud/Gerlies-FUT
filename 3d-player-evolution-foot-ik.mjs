@@ -15,6 +15,7 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {collectFooteraBones} from './3d-player-evolution-rig.mjs';
+import {footeraSwingClearance} from './3d-player-evolution-shoe-phases.mjs';
 
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
 const smooth=(a,b,v)=>{const t=clamp((v-a)/(b-a));return t*t*(3-2*t)};
@@ -209,7 +210,7 @@ export function createFooteraFootPlant(root,mocap){
  }
  function computePose({clip='run',phase=0,strength=1,kneeAlignment=strength,
                       anchorWorlds=null,groundContact=false,groundY=0,
-                      contactWeights=null,contactPhases=null}={}){
+                      contactWeights=null,contactPhases=null,footMotion=null}={}){
   if(![phase,strength,kneeAlignment,groundY].every(Number.isFinite)||
    strength<0||strength>1||kneeAlignment<0||kneeAlignment>1||
    groundY<-.2||groundY>.3||
@@ -228,6 +229,8 @@ export function createFooteraFootPlant(root,mocap){
     :root.localToWorld(mocap.anchor(clip,side));
    const sourceWeight=contactWeights?.[side]??footeraStanceWeight(phase,side);
    const weight=sourceWeight*strength;
+   // Only the measured travelling swing shoe receives clearance/pitch help.
+   const swing=clamp(footMotion?.[side]?.swing??0);
    const soleBefore=groundContact?soleWorld(limb):null;
    const shift=anchor.clone().sub(current);
    const stats={weight,active:false,errorBefore:Math.hypot(shift.x,shift.z),
@@ -242,8 +245,12 @@ export function createFooteraFootPlant(root,mocap){
    const soleLift=soleBefore&&weight>.01
     ?clamp(groundY+.004-soleBefore.lowest,-MAX_SOLE_LIFT,MAX_SOLE_LIFT)*weight
     :0;
-   goal.y+=soleLift;
+   const swingLift=soleBefore&&swing>.001
+    ?footeraSwingClearance({lowest:soleBefore.lowest,groundY,swing}):0;
+   goal.y+=soleLift+swingLift;
    stats.soleLift=soleLift;
+   stats.swingLift=swingLift;
+   stats.swingWeight=swing;
    stats.meshCalibrated=limb.sole.meshCalibrated;
    const plane=kneePlane(limb,goal);
    const deviationBefore=plane?.angle*DEG||0;
@@ -253,7 +260,7 @@ export function createFooteraFootPlant(root,mocap){
    const kneeStats={deviationBeforeDeg:deviationBefore,deviationAfterDeg:deviationBefore,
     flexBeforeDeg:beforeFlex,flexAfterDeg:beforeFlex,aligned:false};
    knees[side]=kneeStats;
-   if(weight<.01&&!needsKnee)continue;
+   if(weight<.01&&!needsKnee&&swingLift<.0002)continue;
    const prior=[upper,mid,end].map(b=>b.quaternion.clone());
    const footQ=end.getWorldQuaternion(new THREE.Quaternion());
    try{
@@ -278,7 +285,12 @@ export function createFooteraFootPlant(root,mocap){
          measured.span),-MAX_SOLE_ROLL,MAX_SOLE_ROLL);
        const flatten=smooth(.12,.30,progress)*
         (1-smooth(.73,.94,progress))*weight;
-       const roll=desired*flatten;
+       // Prevent visibly pointed-down toes skimming the pitch in swing.
+       // Do not rotate a shoe with sufficient original airborne clearance.
+       const nearPitch=1-smooth(.035,.09,measured.lowest-groundY);
+       const flightPitch=Math.min(0,desired)*swing*nearPitch;
+       const roll=desired*flatten+flightPitch;
+       stats.flightPitchDeg=flightPitch*DEG;
        if(Math.abs(roll)>1e-8){
         end.getWorldQuaternion(worldQ);
         worldQ.premultiply(new THREE.Quaternion().setFromAxisAngle(axis,roll));
