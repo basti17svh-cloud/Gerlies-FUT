@@ -217,6 +217,13 @@ function adjustPelvisForReach(model,{anchorWorlds,contactWeights,time,key}){
  // Genuine thigh/calf lengths define the maximum reachable planted ankle.
  // A smoothly rate-limited pelvis drop is anatomically preferable to
  // globally lifting both boots and floating the supporting foot.
+ // Some comparison rigs do not carry the full skinned-outsole sampler;
+ // keep this pelvis PREPASS conditional. Real-boot acceptance stays mandatory.
+ if(!model.collisionSoles){
+  model.pelvisContinuity.reset();
+  return{offset:0,required:0,residual:0,unrecoverable:0,
+   skipped:'no true skinned outsole sampler'};
+ }
  const soles=model.collisionSoles.sample({groundY:0}).feet;
  let needed=0,unrecoverable=0;
  for(const side of ['l','r']){
