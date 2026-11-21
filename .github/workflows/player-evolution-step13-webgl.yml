@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/player-evolution-step13-webgl.yml'
       - 'tests/player-evolution-step13.browser.cjs'
+      - '3d-player-evolution-natural-locomotion.mjs'
+      - 'tests/player-evolution-natural-locomotion.test.mjs'
       - 'player-evolution-natural-locomotion-lab.html'
   workflow_dispatch:
 permissions:
