@@ -257,23 +257,46 @@ function refinePlantAfterRoot(model,{sourcePose,shoulderPose,clip,phase,
  const pelvisReach=adjustPelvisForReach(model,{
   anchorWorlds,contactWeights,time,key});
  if(grounding)grounding.pelvisReach=pelvisReach;
- const soles=model.collisionSoles?.sample({groundY:0});
- const corrected=model.ik.computePose({
-  clip,phase,strength:1,kneeAlignment:states.kneeAlign?1:0,
-  anchorWorlds,contactWeights,contactPhases,footMotion,
-  plantLock:true,groundContact:true,groundY:0,
-  measuredSoles:soles?.feet??null
- });
- if(corrected.pose.size){
-  model.poses.submit('ik',corrected.pose);
-  model.poses.commit();
+ // Re-solve with the REAL animated outsole after the IK shoe rotation:
+ // 1st solve can change heel/toe pitch by ~11 degrees. That alters the
+ // actual skinned-boot lowest vertex by several centimeters, so a second
+ // contact pass is necessary to avoid a visibly floating heel.
+ let corrected=null,finalSoles=null,iterations=0;
+ for(let pass=0;pass<3;pass++){
+  const soles=model.collisionSoles?.sample({groundY:0});
+  corrected=model.ik.computePose({
+   clip,phase,strength:1,kneeAlignment:states.kneeAlign?1:0,
+   anchorWorlds,contactWeights,contactPhases,footMotion,
+   plantLock:true,groundContact:true,groundY:0,
+   measuredSoles:soles?.feet??null
+  });
+  if(corrected.pose.size){
+   // Preserve the captured baseline and the most recently solved absolute
+   // world-contact quaternions; the IK layer may not be submitted twice in
+   // one PoseDirector frame.
+   model.poses.beginFrame();
+   model.poses.submit('locomotion',sourcePose);
+   if(shoulderPose?.size)model.poses.submit('contact',shoulderPose);
+   model.poses.submit('ik',corrected.pose);
+   model.poses.commit();
+  }
+  iterations++;
+  if(!model.collisionSoles)break;
+  finalSoles=model.collisionSoles.sample({groundY:0});
+  const supported=['l','r'].filter(side=>(contactWeights?.[side]??0)>.60);
+  const hover=supported.length?Math.max(...supported.map(side=>
+   Math.max(0,finalSoles.feet[side].lowest-.003))):0;
+  const penetration=Math.max(finalSoles.feet.l.penetration,
+   finalSoles.feet.r.penetration);
+  if(hover<.008&&penetration<.002)break;
  }
  if(grounding?.collisionSoles){
-  const after=model.collisionSoles.sample({groundY:0});
+  const after=finalSoles??model.collisionSoles.sample({groundY:0});
   grounding.collisionSoles.after=after;
   grounding.collisionSoles.maxPenetration=Math.max(
    after.feet.l.penetration,after.feet.r.penetration);
   grounding.limbSafeRefinement=true;
+  grounding.limbRefinementIterations=iterations;
  }
  return corrected;
 }
