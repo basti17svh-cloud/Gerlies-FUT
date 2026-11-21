@@ -35,8 +35,9 @@ export function createFooteraCollisionSoles(root){
   if(sources[side].length<24)
    throw new Error('No actual skinned boot outsole: '+side);
   sources[side].sort((a,b)=>a.bindHeight-b.bindHeight);
-  // Bottom 40% retains genuine toe/heel surfaces during foot rotation.
-  sources[side]=sources[side].slice(0,Math.max(24,Math.ceil(sources[side].length*.40)));
+  // Full weighted boot coverage: low bind-pose points alone may miss
+  // sidewall and heel points becoming lowest after a strong foot rotation.
+  // Collision must constrain every weighted vertex on BOTH real shoes.
  }
  const meshes=[...new Set([...sources.l,...sources.r].map(s=>s.mesh))];
  function sample({groundY=0}={}){
