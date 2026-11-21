@@ -648,7 +648,7 @@ const server=http.createServer((req,res)=>{
     const gait=Object.hasOwn(step10Rates,name);
     const span=gait?1/step10Rates[name]:3;
     const samples=gait?49:91; // full recorded cycle / full 3s transition
-    let maxPen=0,maxFootClearance=0,maxYStep=0,maxOverRate=0,
+    let maxPen=0,maxFootClearance=0,maxSupportHover=0,maxYStep=0,maxOverRate=0,
      limitExceeded=0,emergencies=0,maxPlanarSlip=0,previous=null;
     for(let i=0;i<samples;i++){
      const time=span*i/(samples-1);
@@ -672,6 +672,14 @@ const server=http.createServer((req,res)=>{
      const soleMin=Math.min(c.after.feet.l.lowest,c.after.feet.r.lowest);
      // Minimum (not mean!) contact clearance across BOTH actual outsole surfaces.
      maxFootClearance=Math.max(maxFootClearance,soleMin);
+     // Hover of a genuinely supported shoe is a stricter quality signal
+     // than flight-phase clearance of both shoes.
+     const soleStates=gait?data.feet:data.groundFeet;
+     for(const side of ['l','r']){
+      const support=soleStates?.[side];
+      if(support?.active&&support.weight>.65)
+       maxSupportHover=Math.max(maxSupportHover,c.after.feet[side].lowest);
+     }
      if(data.collisionSafetyOverride)emergencies++;
      if(data.collisionRootLimitExceeded)limitExceeded++;
      maxOverRate=Math.max(maxOverRate,data.collisionRootOverRate);
@@ -692,6 +700,7 @@ const server=http.createServer((req,res)=>{
     unresolved+=limitExceeded;
     report.collisionSafe10.modes.push({name,samples,maxPenetrationMetres:maxPen,
      maxMinimumOutsoleClearanceMetres:maxFootClearance,
+     maxSupportedFootHoverMetres:maxSupportHover,
      maxRootStepMetres:maxYStep,maxRootOverRateMetresPerSecond:maxOverRate,
      supportSlipMetres:maxPlanarSlip,safetyOverrides:emergencies,
      rootLimitExceededFrames:limitExceeded});
@@ -700,6 +709,14 @@ const server=http.createServer((req,res)=>{
    report.collisionSafe10.maxPenetrationMetres=maxGlobalPen;
    report.collisionSafe10.maxRootOverRateMetresPerSecond=maxGlobalOverRate;
    report.collisionSafe10.rootLimitExceededFrames=unresolved;
+   report.collisionSafe10.maxSupportedFootHoverMetres=Math.max(
+    0,...report.collisionSafe10.modes.map(x=>x.maxSupportedFootHoverMetres));
+   report.collisionSafe10.premiumApproved=false;
+   report.collisionSafe10.premiumBlockers=[
+    'Hard collision emergency overrides produce physically excessive instantaneous root velocities',
+    'Measured support-shoe hover and nonzero shoe/IK anchor residuals still require correction',
+    'No real stadium terrain, authoritative match root or smartphone hardware acceptance'
+   ];
    assert.ok(maxGlobalPen<=.003,'STEP10 COLLISION FAIL: real outsole entered flat pitch '+maxGlobalPen);
    assert.equal(unresolved,0,'STEP10 COLLISION FAIL: required offset exceeded root safety cap');
    // A/B uses identical ORIGINAL Mixamo timestamps, same full-size 60-bone GLB.
