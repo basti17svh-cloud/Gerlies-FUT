@@ -81,7 +81,10 @@ export function createFooteraNaturalLocomotion(capture,{
    const calA=calibration[blend.low],calB=calibration[blend.high];
    const effectiveCadence=lerp(calA.sourceCadenceHz,calB.sourceCadenceHz,
     blend.alpha)*clamp(averageSpeed/Math.max(.25,
-     lerp(speedNodes[blend.low],speedNodes[blend.high],blend.alpha)),.2,1.45);
+     lerp(speedNodes[blend.low],speedNodes[blend.high],blend.alpha)),0,1.45);
+   // A genuine stop must freeze the Mixamo phase: no treadmill feet when
+   // the player-root speed has reached zero. Step 14 handles full braking
+   // pose/weight transfer and Step 12 is responsible for ground contact.
    // Blend captured stride directions, keeping root displacement monotone.
    const dir=normalized(add(scale(calA.direction,1-blend.alpha),
     scale(calB.direction,blend.alpha)));
