@@ -148,6 +148,7 @@ function readyModel(gltf){
  const transitions=createFooteraDirectionalTransitions(root,capture);
  const directionContact=createFooteraDirectionalContact(transitions);
   const contactContinuity=createFooteraContactContinuity();
+ const pelvisContinuity=createFooteraContactContinuity({maxOffset:.14,maxRate:.85,maxAcceleration:12});
   const collisionSoles=info.evolutionTwist?createFooteraCollisionSoles(root):null;
   const collisionContact=createFooteraCollisionSafeContact();
  const shoePhase=createFooteraShoePhaseTracker();
@@ -158,7 +159,7 @@ function readyModel(gltf){
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,collisionSoles,collisionContact,shoePhase,plantLock,lastMocap:null};
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,pelvisContinuity,collisionSoles,collisionContact,shoePhase,plantLock,lastMocap:null};
 }
 function jointPose(model,t){
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
@@ -212,14 +213,43 @@ function applyPreviewRootGround(model,feet,time,key,{individualShoeIK=false}={})
  }
  return flow;
 }
+function adjustPelvisForReach(model,{anchorWorlds,contactWeights,time,key}){
+ // Genuine thigh/calf lengths define the maximum reachable planted ankle.
+ // A smoothly rate-limited pelvis drop is anatomically preferable to
+ // globally lifting both boots and floating the supporting foot.
+ const soles=model.collisionSoles.sample({groundY:0}).feet;
+ let needed=0,unrecoverable=0;
+ for(const side of ['l','r']){
+  if((contactWeights?.[side]??0)<.25||!anchorWorlds?.[side])continue;
+  const hip=model.bones.get('thigh_'+side).getWorldPosition(new THREE.Vector3()),
+   knee=model.bones.get('calf_'+side).getWorldPosition(new THREE.Vector3()),
+   ankle=model.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3());
+  const target=new THREE.Vector3(...anchorWorlds[side]);
+  target.y=ankle.y+.003-soles[side].lowest;
+  const maxLen=hip.distanceTo(knee)+knee.distanceTo(ankle)-.006;
+  const horizontal=Math.hypot(target.x-hip.x,target.z-hip.z);
+  const allowedY=Math.sqrt(Math.max(0,maxLen*maxLen-horizontal*horizontal));
+  needed=Math.max(needed,Math.max(0,hip.y-target.y-allowedY));
+  unrecoverable=Math.max(unrecoverable,Math.max(0,horizontal-maxLen));
+ }
+ const flow=model.pelvisContinuity.sample({time,key,target:-Math.min(.14,needed),
+  enabled:true});
+ model.bones.get('pelvis').position.y+=flow.offset;
+ model.root.updateMatrixWorld(true);
+ return {offset:flow.offset,required:needed,
+  residual:Math.max(0,needed+flow.offset),unrecoverable};
+}
 function refinePlantAfterRoot(model,{sourcePose,shoulderPose,clip,phase,
- anchorWorlds,contactWeights,contactPhases,footMotion},grounding){
+ anchorWorlds,contactWeights,contactPhases,footMotion,time,key},grounding){
  // World-space plant must be solved AFTER root motion. First restore the
  // original captured quaternions at the final root position.
  model.poses.beginFrame();
  model.poses.submit('locomotion',sourcePose);
  if(shoulderPose?.size)model.poses.submit('contact',shoulderPose);
  model.poses.commit();
+ const pelvisReach=adjustPelvisForReach(model,{
+  anchorWorlds,contactWeights,time,key});
+ if(grounding)grounding.pelvisReach=pelvisReach;
  const soles=model.collisionSoles?.sample({groundY:0});
  const corrected=model.ik.computePose({
   clip,phase,strength:1,kneeAlignment:states.kneeAlign?1:0,
@@ -301,7 +331,8 @@ function captureWalkPose(model,t){
   planted=refinePlantAfterRoot(model,{sourcePose:sample.pose,
    shoulderPose:upper.pose,clip:states.mocapClip,phase:sample.phase,
    anchorWorlds,contactWeights:plant12.weights,
-   contactPhases:plant12.phases,footMotion:shoeMotion},grounding);
+   contactPhases:plant12.phases,footMotion:shoeMotion,
+   time:t,key:'gait:'+states.mocapClip},grounding);
  }
  const groundRootY=grounding?.offset??0;
   const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
@@ -315,6 +346,8 @@ function captureWalkPose(model,t){
   rootGroundTargetY:grounding?.target??0,
   rootGroundResidualY:grounding?.residual??0,
   rootGroundVelocityY:grounding?.velocity??0,
+  pelvisReachY:grounding?.pelvisReach?.offset??0,
+  pelvisReachResidual:grounding?.pelvisReach?.residual??0,
   groundContinuity:states.groundContinuity,
   collisionSafe:states.collisionSafe,
   collisionSoles:grounding?.collisionSoles??null,
@@ -399,7 +432,8 @@ function capturedDirectionalPose(model,t){
   ground=refinePlantAfterRoot(model,{sourcePose:sequence.pose,
    shoulderPose:shoulders.pose,clip:'run',phase:sequence.phase,
    anchorWorlds,contactWeights:plant12.weights,
-   contactPhases:plant12.phases,footMotion:shoeMotion},grounding);
+   contactPhases:plant12.phases,footMotion:shoeMotion,
+   time:t,key:'direction:'+states.direction},grounding);
  }
  const groundRootY=grounding?.offset??0;
   const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
@@ -422,6 +456,8 @@ function capturedDirectionalPose(model,t){
    rootGroundTargetY:grounding?.target??0,
    rootGroundResidualY:grounding?.residual??0,
    rootGroundVelocityY:grounding?.velocity??0,
+  pelvisReachY:grounding?.pelvisReach?.offset??0,
+  pelvisReachResidual:grounding?.pelvisReach?.residual??0,
    groundContinuity:states.groundContinuity,
    collisionSafe:states.collisionSafe,
    collisionSoles:grounding?.collisionSoles??null,
@@ -445,7 +481,7 @@ function naturalWalkPose(model,t){
 function resetPose(model){
  model.poses.beginFrame();model.poses.commit();
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
- model.lastMocap=null;model.plantLock.reset();model.contactContinuity.reset();model.collisionContact.reset();model.twist?.reset();
+ model.lastMocap=null;model.plantLock.reset();model.contactContinuity.reset();model.pelvisContinuity.reset();model.collisionContact.reset();model.twist?.reset();
 }
 function axialPose(model,bone,deg){
  resetPose(model);
