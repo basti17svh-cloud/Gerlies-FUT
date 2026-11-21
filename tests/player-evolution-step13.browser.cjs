@@ -59,7 +59,7 @@ const server=http.createServer((req,res)=>{
     const time=i/fps,step=interval(time);
     const args={version:'master',mode:'mocap',time,
      mocapClip:enabled?'run':step.clip,angle:Math.PI/2,
-     zoom:'knees',cameraFixed:false,footPlant:false,
+     zoom:'full',cameraFixed:false,footPlant:false,
      rootTravel:true,kneeAlign:false,shoulderAlign:false,
      groundIK:false,groundContinuity:false,collisionSafe:false,
      footMotion11:false,footPlantLock:false,
@@ -97,6 +97,17 @@ const server=http.createServer((req,res)=>{
       time,speedMps:d.speedMps,targetSpeedMps:step.target,
       gaitWeights:d.clipWeights,rootTravel:d.rootDisplacementMetres});
     }
+    // Labels are overlaid in the REAL lab HTML; video frames still contain
+    // unmodified original Mixamo-rendered WebGL pixels.
+    await page.evaluate(({enabled,target,speed,clip})=>{
+     const title=document.getElementById('model-title');
+     const sub=document.getElementById('model-subtitle');
+     title.textContent=enabled?'SCHRITT 13 · NATURAL LOCOMOTION':'SCHRITT 12 · FIXE ANIMATIONEN';
+     sub.textContent=enabled
+      ?'Ziel '+target.toFixed(2)+' m/s · Ist '+speed.toFixed(2)+' m/s'
+      :'Original Mixamo · '+clip;
+    },{enabled,target:step.target,
+      speed:enabled?q.mocap.naturalLocomotion13.speedMps:0,clip:step.clip});
     const shot=await page.locator('canvas').screenshot();
     images[enabled?'after':'before'].push(PNG.sync.read(shot));
     if(i%30===10)fs.writeFileSync(path.join(out,enabled?'after-'+i+'.png':'before-'+i+'.png'),shot);
