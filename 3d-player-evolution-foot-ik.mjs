@@ -263,11 +263,13 @@ export function createFooteraFootPlant(root,mocap){
    let outsoleYCorrection=0;
    if(plantLock&&trueLowest!==null&&groundContact){
     const remaining=groundY+.003-(trueLowest+goal.y-current.y);
-    if(weight>.10){
-     outsoleYCorrection=clamp(remaining,-.30,.30)*footWeight;
-    }else{
-     // Unplanted feet are free in XZ; only rescue genuine sole intersection.
+    // The hard outsole collision is never faded by contact weight:
+    // even a transitioning/swinging foot must not tunnel into the pitch.
+    // Only downward grounding of a naturally airborne shoe is feathered.
+    if(remaining>0){
      outsoleYCorrection=clamp(remaining,0,.30);
+    }else if(weight>.10){
+     outsoleYCorrection=clamp(remaining,-.30,0)*footWeight;
     }
    }
    goal.y+=soleLift+swingLift+outsoleYCorrection;
