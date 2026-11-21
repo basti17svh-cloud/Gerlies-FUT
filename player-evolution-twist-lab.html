@@ -181,16 +181,17 @@ function jointPose(model,t){
  model.poses.beginFrame();model.poses.submit('action',rot);model.poses.commit();
  model.twist?.update();
 }
-function applyPreviewRootGround(model,feet,time,key){
+function applyPreviewRootGround(model,feet,time,key,{individualShoeIK=false}={}){
+ // Step 12 resolves collisions in each leg after a smooth root adjustment.
  const target=footeraGroundRootOffset(feet,{groundY:0,maxOffset:.10});
  const before=states.collisionSafe&&model.collisionSoles
   ?model.collisionSoles.sample({groundY:0}):null;
- const flow=before
+ const flow=before&&!individualShoeIK
   ?model.collisionContact.sample({time,key,target,
      floorLowest:before.lowest,enabled:states.groundContinuity})
   :model.contactContinuity.sample({time,key,target,
      enabled:states.groundContinuity});
- if(before)model.contactContinuity.reset();
+ if(before&&!individualShoeIK)model.contactContinuity.reset();
  else model.collisionContact.reset();
  const vertical=flow.offset;
  // Root translation only: no replacement of the real Mixamo shoe/leg motion.
@@ -210,6 +211,34 @@ function applyPreviewRootGround(model,feet,time,key){
    maxPenetration:Math.max(after.feet.l.penetration,after.feet.r.penetration)};
  }
  return flow;
+}
+function refinePlantAfterRoot(model,{sourcePose,shoulderPose,clip,phase,
+ anchorWorlds,contactWeights,contactPhases,footMotion},grounding){
+ // World-space plant must be solved AFTER root motion. First restore the
+ // original captured quaternions at the final root position.
+ model.poses.beginFrame();
+ model.poses.submit('locomotion',sourcePose);
+ if(shoulderPose?.size)model.poses.submit('contact',shoulderPose);
+ model.poses.commit();
+ const soles=model.collisionSoles?.sample({groundY:0});
+ const corrected=model.ik.computePose({
+  clip,phase,strength:1,kneeAlignment:states.kneeAlign?1:0,
+  anchorWorlds,contactWeights,contactPhases,footMotion,
+  plantLock:true,groundContact:true,groundY:0,
+  measuredSoles:soles?.feet??null
+ });
+ if(corrected.pose.size){
+  model.poses.submit('ik',corrected.pose);
+  model.poses.commit();
+ }
+ if(grounding?.collisionSoles){
+  const after=model.collisionSoles.sample({groundY:0});
+  grounding.collisionSoles.after=after;
+  grounding.collisionSoles.maxPenetration=Math.max(
+   after.feet.l.penetration,after.feet.r.penetration);
+  grounding.limbSafeRefinement=true;
+ }
+ return corrected;
 }
 function lockMeasuredFeet(model){
  const feet=model.ik.measureFeet();
@@ -265,8 +294,15 @@ function captureWalkPose(model,t){
   }
  }
  const grounding=states.groundIK&&planted?.feet
-  ?applyPreviewRootGround(model,planted.feet,t,'gait:'+states.mocapClip)
+  ?applyPreviewRootGround(model,planted.feet,t,'gait:'+states.mocapClip,
+    {individualShoeIK:!!plant12})
   :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
+ if(plant12&&grounding){
+  planted=refinePlantAfterRoot(model,{sourcePose:sample.pose,
+   shoulderPose:upper.pose,clip:states.mocapClip,phase:sample.phase,
+   anchorWorlds,contactWeights:plant12.weights,
+   contactPhases:plant12.phases,footMotion:shoeMotion},grounding);
+ }
  const groundRootY=grounding?.offset??0;
   const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
   model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
@@ -314,13 +350,13 @@ function capturedDirectionalPose(model,t){
  if(shoulders.pose.size){
   model.poses.submit('contact',shoulders.pose);model.poses.commit();
  }
- let ground=null,shoeMotion=null,plant12=null;
+ let ground=null,shoeMotion=null,plant12=null,anchorWorlds=null;
  if(states.groundIK&&states.footPlant&&states.directionContact){
   // Step 7 supplies the stationary shoe footprint and actual root path.
   // Only the CURRENT support foot is considered planted; swing remains
   // the fully authored Mixamo foot animation.
   model.root.updateMatrixWorld(true);
-  const anchorWorlds={};
+  anchorWorlds={};
   for(const side of ['l','r'])
    anchorWorlds[side]=model.bones.get('foot_'+side)
     .getWorldPosition(new THREE.Vector3()).toArray();
@@ -356,8 +392,15 @@ function capturedDirectionalPose(model,t){
   }
  }
  const grounding=ground?.feet
-  ?applyPreviewRootGround(model,ground.feet,t,'direction:'+states.direction)
+  ?applyPreviewRootGround(model,ground.feet,t,'direction:'+states.direction,
+    {individualShoeIK:!!plant12})
   :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
+ if(plant12&&grounding){
+  ground=refinePlantAfterRoot(model,{sourcePose:sequence.pose,
+   shoulderPose:shoulders.pose,clip:'run',phase:sequence.phase,
+   anchorWorlds,contactWeights:plant12.weights,
+   contactPhases:plant12.phases,footMotion:shoeMotion},grounding);
+ }
  const groundRootY=grounding?.offset??0;
   const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
   model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
