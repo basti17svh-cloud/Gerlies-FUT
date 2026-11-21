@@ -718,7 +718,7 @@ const server=http.createServer((req,res)=>{
       const time=span*i/11;
       const args={version:'master',mode:gait?'mocap':'directional',
        mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
-       time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,rootTravel:true,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:gait,rootTravel:true,
        footPlant:true,kneeAlign:true,shoulderAlign:true,
        directionContact:true,groundIK:true,groundContinuity:true,
        collisionSafe};
