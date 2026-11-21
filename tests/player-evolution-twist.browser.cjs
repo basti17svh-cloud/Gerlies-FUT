@@ -680,8 +680,8 @@ const server=http.createServer((req,res)=>{
       maxYStep=Math.max(maxYStep,step);
      }
      const slip=gait
-      ?Math.min(...Object.values(data.feet||{}).filter(f=>f.active)
-       .map(f=>f.errorAfter).filter(Number.isFinite).concat([0]))
+      ?Math.max(0,...Object.values(data.feet||{}).filter(f=>f.active)
+       .map(f=>f.errorAfter).filter(Number.isFinite))
       :(data.supportSlipMetres??0);
      maxPlanarSlip=Math.max(maxPlanarSlip,slip);
      previous={time,y:data.rootGroundOffsetY};
@@ -709,9 +709,13 @@ const server=http.createServer((req,res)=>{
    let frameIndex=0;
    for(const name of step10Names){
     const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
-    for(let i=0;i<12;i++){
-     const time=span*i/11,imgs=[];
-     for(const collisionSafe of [false,true]){
+    const chronological={before:[],after:[]};
+    // Do not interleave modes: that would repeatedly reset the online height
+    // solver and invalidate the actual contact transition comparison.
+    for(const collisionSafe of [false,true]){
+     const kind=collisionSafe?'after':'before';
+     for(let i=0;i<12;i++){
+      const time=span*i/11;
       const args={version:'master',mode:gait?'mocap':'directional',
        mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
        time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,rootTravel:true,
@@ -720,16 +724,19 @@ const server=http.createServer((req,res)=>{
        collisionSafe};
       await page.evaluate(v=>window.footeraQaRender(v),args);
       const png=await page.locator('canvas').screenshot();
-      imgs.push(PNG.sync.read(png));
+      chronological[kind].push(PNG.sync.read(png));
       if(i===5){
-       const shot='step10-'+name+'-'+(collisionSafe?'after':'before')+'.png';
+       const shot='step10-'+name+'-'+kind+'.png';
        fs.writeFileSync(path.join(out,shot),png);
        report.collisionSafe10.stills.push(shot);
       }
      }
-     const pair=new PNG({width:imgs[0].width+imgs[1].width,height:imgs[0].height});
-     PNG.bitblt(imgs[0],pair,0,0,imgs[0].width,imgs[0].height,0,0);
-     PNG.bitblt(imgs[1],pair,0,0,imgs[1].width,imgs[1].height,imgs[0].width,0);
+    }
+    for(let i=0;i<12;i++){
+     const before=chronological.before[i],after=chronological.after[i];
+     const pair=new PNG({width:before.width+after.width,height:before.height});
+     PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
+     PNG.bitblt(after,pair,0,0,after.width,after.height,before.width,0);
      fs.writeFileSync(path.join(step10Frames,
       'frame-'+String(frameIndex++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
     }
