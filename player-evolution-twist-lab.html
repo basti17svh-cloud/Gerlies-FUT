@@ -48,6 +48,7 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
 <button id="ground-ik" aria-pressed="true">Foot IK 2.0 / Sohle: an</button>
 <button id="ground-continuity" aria-pressed="true">Schritt 9: Höhenübergänge weich</button>
+ <button id="collision-safe" aria-pressed="true">Schritt 10: Sohle kollisionssicher</button>
 <button id="fixed-cam" aria-pressed="false">Kamera: Spieler folgen</button>
 <button id="knee-axis" aria-pressed="true">Knieachse: stabil</button>
 <button id="kneeview">Knie nah</button>
@@ -77,6 +78,8 @@ import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
 import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
 import {createFooteraFootPlant,footeraGroundRootOffset} from './3d-player-evolution-foot-ik.mjs';
 import {createFooteraContactContinuity} from './3d-player-evolution-contact-continuity.mjs';
+ import {createFooteraCollisionSoles,createFooteraCollisionSafeContact}
+  from './3d-player-evolution-collision-contact.mjs';
 import {createFooteraShoulderAlignment} from './3d-player-evolution-shoulders.mjs';
 import {createFooteraDirectionalTransitions} from './3d-player-evolution-transitions.mjs';
 import {createFooteraDirectionalContact} from './3d-player-evolution-direction-contact.mjs';
@@ -104,7 +107,7 @@ const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true,groundIK:true,cameraFixed:false,groundContinuity:true},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true,groundIK:true,cameraFixed:false,groundContinuity:true,collisionSafe:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -139,13 +142,15 @@ function readyModel(gltf){
  const transitions=createFooteraDirectionalTransitions(root,capture);
  const directionContact=createFooteraDirectionalContact(transitions);
   const contactContinuity=createFooteraContactContinuity();
+  const collisionSoles=info.evolutionTwist?createFooteraCollisionSoles(root):null;
+  const collisionContact=createFooteraCollisionSafeContact();
  const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
  const twistReport=twist?inspectFooteraTwistRig(root):null;
  if(twistReport&&!twistReport.ok)
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,lastMocap:null};
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,collisionSoles,collisionContact,lastMocap:null};
 }
 function jointPose(model,t){
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
@@ -170,8 +175,15 @@ function jointPose(model,t){
 }
 function applyPreviewRootGround(model,feet,time,key){
  const target=footeraGroundRootOffset(feet,{groundY:0,maxOffset:.10});
- const flow=model.contactContinuity.sample({time,key,target,
-  enabled:states.groundContinuity});
+ const before=states.collisionSafe&&model.collisionSoles
+  ?model.collisionSoles.sample({groundY:0}):null;
+ const flow=before
+  ?model.collisionContact.sample({time,key,target,
+     floorLowest:before.lowest,enabled:states.groundContinuity})
+  :model.contactContinuity.sample({time,key,target,
+     enabled:states.groundContinuity});
+ if(before)model.contactContinuity.reset();
+ else model.collisionContact.reset();
  const vertical=flow.offset;
  // Root translation only: no replacement of the real Mixamo shoe/leg motion.
  if(Math.abs(vertical)>1e-9){
@@ -183,6 +195,11 @@ function applyPreviewRootGround(model,feet,time,key){
    f.toeHeight+=vertical;
    f.floorPenetration=Math.max(0,-Math.min(f.heelHeight,f.toeHeight));
   }
+ } 
+ if(before){
+  const after=model.collisionSoles.sample({groundY:0});
+  flow.collisionSoles={before,after,
+   maxPenetration:Math.max(after.feet.l.penetration,after.feet.r.penetration)};
  }
  return flow;
 }
@@ -222,7 +239,7 @@ function captureWalkPose(model,t){
  }
  const grounding=states.groundIK&&planted?.feet
   ?applyPreviewRootGround(model,planted.feet,t,'gait:'+states.mocapClip)
-  :(model.contactContinuity.reset(),null);
+  :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
  const groundRootY=grounding?.offset??0;
  model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
   source:sample.source,hipTranslation:sample.translation,
@@ -235,6 +252,11 @@ function captureWalkPose(model,t){
   rootGroundResidualY:grounding?.residual??0,
   rootGroundVelocityY:grounding?.velocity??0,
   groundContinuity:states.groundContinuity,
+  collisionSafe:states.collisionSafe,
+  collisionSoles:grounding?.collisionSoles??null,
+  collisionSafetyOverride:grounding?.safetyOverride??false,
+  collisionRootOverRate:grounding?.overRate??0,
+  collisionRootLimitExceeded:grounding?.limitExceeded??false,
   shoulders:upper.arms,shoulderSource:upper.source};
  model.twist?.update();
 }
@@ -289,7 +311,7 @@ function capturedDirectionalPose(model,t){
  }
  const grounding=ground?.feet
   ?applyPreviewRootGround(model,ground.feet,t,'direction:'+states.direction)
-  :(model.contactContinuity.reset(),null);
+  :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
  const groundRootY=grounding?.offset??0;
  model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
   direction:{from:sequence.from,to:sequence.to,weight:sequence.weight,
@@ -311,6 +333,11 @@ function capturedDirectionalPose(model,t){
    rootGroundResidualY:grounding?.residual??0,
    rootGroundVelocityY:grounding?.velocity??0,
    groundContinuity:states.groundContinuity,
+   collisionSafe:states.collisionSafe,
+   collisionSoles:grounding?.collisionSoles??null,
+   collisionSafetyOverride:grounding?.safetyOverride??false,
+   collisionRootOverRate:grounding?.overRate??0,
+   collisionRootLimitExceeded:grounding?.limitExceeded??false,
    groundKnees:ground?.knees??null,
    rootContactEnabled:states.directionContact,
    contactStats:contact.limits},shoulders:shoulders.arms};
@@ -326,7 +353,7 @@ function naturalWalkPose(model,t){
 function resetPose(model){
  model.poses.beginFrame();model.poses.commit();
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
- model.lastMocap=null;model.contactContinuity.reset();model.twist?.reset();
+ model.lastMocap=null;model.contactContinuity.reset();model.collisionContact.reset();model.twist?.reset();
 }
 function axialPose(model,bone,deg){
  resetPose(model);
@@ -418,9 +445,9 @@ function renderAt(t=0){
  camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true,groundIK=false,cameraFixed=false,groundContinuity=true}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true,groundIK=false,cameraFixed=false,groundContinuity=true,collisionSafe=false}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact,groundIK,cameraFixed,groundContinuity});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact,groundIK,cameraFixed,groundContinuity,collisionSafe});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -497,12 +524,23 @@ control('ground-ik',()=>{
 });
 control('ground-continuity',()=>{
  states.groundContinuity=!states.groundContinuity;
- for(const model of Object.values(versions))model.contactContinuity.reset();
+ for(const model of Object.values(versions)){
+   model.contactContinuity.reset();model.collisionContact.reset();
+  }
  el('ground-continuity').setAttribute('aria-pressed',String(states.groundContinuity));
  el('ground-continuity').textContent=states.groundContinuity
   ?'Schritt 9: Höhenübergänge weich':'Schritt 9: Höhenübergänge direkt';
 });
-control('fixed-cam',()=>{
+control('collision-safe',()=>{
+  states.collisionSafe=!states.collisionSafe;
+  for(const model of Object.values(versions)){
+   model.collisionContact.reset();model.contactContinuity.reset();
+  }
+  el('collision-safe').setAttribute('aria-pressed',String(states.collisionSafe));
+  el('collision-safe').textContent=states.collisionSafe
+   ?'Schritt 10: Sohle kollisionssicher':'Schritt 10: Sohle A/B aus';
+ });
+ control('fixed-cam',()=>{
  states.cameraFixed=!states.cameraFixed;states.rotate=false;
  el('fixed-cam').setAttribute('aria-pressed',String(states.cameraFixed));
  el('fixed-cam').textContent=states.cameraFixed?'Kamera: fest':'Kamera: Spieler folgen';
