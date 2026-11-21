@@ -232,5 +232,18 @@
       "x": true
     },
     "scheduled": false
+  },
+  {
+    "id": "2026-11-28-1900-blackfriday-pick-20261128",
+    "postAt": "2026-11-28T19:00:00+01:00",
+    "title": "Deal-Pick – Team 1",
+    "kind": "sbc",
+    "plan": {
+      "instagram": "post",
+      "story": true,
+      "tiktok": "photo",
+      "x": false
+    },
+    "scheduled": false
   }
 ]

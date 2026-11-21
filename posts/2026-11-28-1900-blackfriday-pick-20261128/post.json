@@ -1,0 +1,39 @@
+{
+  "kind": "sbc",
+  "theme": "blackfriday",
+  "postAt": "2026-11-28T19:00:00+01:00",
+  "title": "Deal-Pick – Team 1",
+  "keys": [
+    "sbc-start:blackfriday_pick_20261128"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "⚡ DEAL DES TAGES: DEAL-PICK – TEAM 1\n\nEin garantierter BLACK-FRIDAY-Spieler aus Team 1. Bis Sa 05.12. 19 Uhr\n\nHolst du ihn dir? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "type": "post"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "⚡ DEAL DES TAGES: DEAL-PICK – TEAM 1",
+    "caption": "⚡ DEAL DES TAGES: DEAL-PICK – TEAM 1\n\nEin garantierter BLACK-FRIDAY-Spieler aus Team 1. Bis Sa 05.12. 19 Uhr\n\nHolst du ihn dir? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "format": "photo"
+  },
+  "x": {
+    "priority": 2,
+    "text": "⚡ DEAL DES TAGES: DEAL-PICK – TEAM 1\n\n• Ein garantierter BLACK-FRIDAY-Spieler aus Team 1. Bis Sa 05.12. 19 Uhr\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "post",
+    "story": true,
+    "tiktok": "photo",
+    "x": false
+  },
+  "id": "2026-11-28-1900-blackfriday-pick-20261128",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ]
+  }
+}
