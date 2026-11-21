@@ -545,7 +545,94 @@ const server=http.createServer((req,res)=>{
    'Missing actual GLB WebGL fixed-camera before/after MP4');
   report.groundIK2.measuredPixelDifferences=visibleDifferences;
   report.groundIK2.caveat='Not terrain collision, not actual match physics, no visual premium approval';
-  for(const mode of ['walk','cut','kick']){
+  // Step 9: ACTUAL skinned 60-bone WebGL, continuous sampled support
+   // transitions. A snapshot alone cannot verify root vertical popping.
+   report.groundContinuity9={
+    source:'Mixamo source + real 60-bone boot measured sole + bounded root Y',
+    enabledInLiveGame:false,terrainCollision:false,
+    modes:[],video:'footera-step9-continuity-before-after.mp4'};
+   let smoothedRealFrameCount=0;
+   for(const name of ['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal']){
+    const isGait=['walk','jog','run','sprint'].includes(name);
+    const duration=isGait?.92/gaitRates[name]:2.35;
+    const count=isGait?40:48;
+    let prev=null,maxStep=0,maxResidual=0,maxPenetration=0,smoothed=0;
+    for(let i=0;i<count;i++){
+     const time=duration*i/(count-1);
+     const args={version:'master',mode:isGait?'mocap':'directional',
+      mocapClip:isGait?name:'run',direction:isGait?'strafeLeft':name,
+      time,angle:Math.PI/2,zoom:'full',cameraFixed:true,
+      footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true,
+      directionContact:true,groundIK:true,groundContinuity:true};
+     const qa=await page.evaluate(v=>window.footeraQaRender(v),args);
+     const data=isGait?qa.mocap:qa.mocap.direction;
+     const y=data.rootGroundOffsetY;
+     assert.ok([y,data.rootGroundTargetY,
+      data.rootGroundResidualY,data.rootGroundVelocityY].every(Number.isFinite),
+      name+' invalid grounding diagnostics');
+     assert.ok(Math.abs(y)<=.100001&&Math.abs(data.rootGroundTargetY)<=.100001,
+      name+' root ground correction exceeded 10 cm limit');
+     if(prev){
+      const step=Math.abs(y-prev.y);
+      maxStep=Math.max(maxStep,step);
+      assert.ok(step<=.72*(time-prev.time)+.00005,
+       name+' discontinuous stance switch at t='+time);
+     }
+     if(Math.abs(data.rootGroundResidualY)>.0005)smoothed++;
+     maxResidual=Math.max(maxResidual,Math.abs(data.rootGroundResidualY));
+     const feet=isGait?data.feet:data.groundFeet;
+     if(feet)for(const f of Object.values(feet)){
+      if(f.active&&Number.isFinite(f.floorPenetration))
+       maxPenetration=Math.max(maxPenetration,f.floorPenetration);
+     }
+     prev={time,y};
+    }
+    assert.ok(maxPenetration<.12,name+' root continuity caused severe floor penetration');
+    smoothedRealFrameCount+=smoothed;
+    report.groundContinuity9.modes.push({name,samples:count,
+     maxVerticalStepMetres:maxStep,maxResidualMetres:maxResidual,
+     maxFloorPenetrationMetres:maxPenetration,smoothedFrames:smoothed});
+   }
+   assert.ok(smoothedRealFrameCount>0,'No real Mixamo contact transition was smoothed');
+   // Render each side in chronological order. Interleaving A/B resets an
+   // online filter; that would be an invalid before/after experiment.
+   const temporalFrames={before:[],after:[]};
+   for(const [kind,continuous] of [['before',false],['after',true]]){
+    for(let i=0;i<40;i++){
+     const clip=i<20?'run':'sprint',phase=(i%20)/19*.8;
+     const args={version:'master',mode:'mocap',mocapClip:clip,
+      time:phase/gaitRates[clip],angle:Math.PI/2,zoom:'knees',
+      cameraFixed:true,footPlant:true,kneeAlign:true,rootTravel:true,
+      shoulderAlign:true,groundIK:true,groundContinuity:continuous};
+     await page.evaluate(v=>window.footeraQaRender(v),args);
+     const png=await page.locator('canvas').screenshot();
+     temporalFrames[kind].push(PNG.sync.read(png));
+     if(i===10||i===30)
+      fs.writeFileSync(path.join(out,'step9-'+clip+'-'+kind+'.png'),png);
+    }
+   }
+   const temporalDir=path.join(out,'step9-continuity-pair-frames');
+   fs.mkdirSync(temporalDir,{recursive:true});
+   for(let i=0;i<40;i++){
+    const a=temporalFrames.before[i],b=temporalFrames.after[i];
+    assert.equal(a.width,b.width);assert.equal(a.height,b.height);
+    const pair=new PNG({width:a.width+b.width,height:a.height});
+    PNG.bitblt(a,pair,0,0,a.width,a.height,0,0);
+    PNG.bitblt(b,pair,0,0,b.width,b.height,a.width,0);
+    fs.writeFileSync(path.join(temporalDir,
+     'frame-'+String(i).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+   }
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+    ['-hide_banner','-loglevel','error','-y','-framerate','12',
+     '-i',path.join(temporalDir,'frame-%03d.png'),
+     '-vf','scale=1440:-2','-c:v','libx264','-crf','24',
+     '-pix_fmt','yuv420p',path.join(out,report.groundContinuity9.video)]);
+   assert.ok(fs.statSync(path.join(out,report.groundContinuity9.video)).size>25000,
+    'Missing authentic Step 9 WebGL 3D MP4');
+   report.groundContinuity9.images=[
+    'step9-run-before.png','step9-run-after.png',
+    'step9-sprint-before.png','step9-sprint-after.png'];
+   for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
   }
