@@ -173,3 +173,18 @@ Der Erfolg ist nur dann belegt, wenn die Node- und WebGL-Regressionssuite besteh
 - Kontakt ist weiter eine flache Testfläche ohne World-Terrain-Raycasts, echte Sohlendruckmessung oder physische Kollision. Bind-Pose-Markierungen sind eine geometrische Annäherung.
 - Realer Match-Root, Ballinteraktion, belastbare Beschleunigungs-/Bremskinetik, Höhenunterschiede und Smartphone-Hardware-Performance sind nicht validiert.
 - Automatisierte Quaternion-Grenzen und Bilder sind keine menschliche biomechanische Premium-Abnahme. Schleifende oder schwebende Sohlen können trotz bestandener Unit-Tests auftreten; hierfür sind das Kontaktblatt und die MP4 gezielt zu prüfen.
+
+
+## Schritt 12 – Foot Plant Lock & Natural Gait (experimentell, 21.11.2026)
+
+**Ursachenanalyse:** Schritt 11 korrigierte lediglich die Schwingfuß-Bodenfreiheit. Der Standfuß wurde durch veränderliche Anker aus der Mixamo-Root-Rekonstruktion und eine auf 18 cm begrenzte Fuß-IK beeinflusst. Gleichzeitig konnte die Kollisionsbarriere die gesamte Root-Höhe ohne Geschwindigkeitsbegrenzung anheben. Ein Stützfuß mit >20 cm Abstand zum Rasen kann nicht durch reine Schwungfuß-Lifts stabilisiert werden.
+
+**Isolierte Lösung:**
+- `3d-player-evolution-plant-lock.mjs`: Vorher gemessene echte Schuhsohle und Knöchelweltposition werden beim Eintritt in die aus dem ORIGINAL-Capture ermittelte Standphase als festes, nicht wanderndes Welt-IK-Ziel gespeichert. L/R werden separat und hysteretisch verwaltet, inklusive Zehenabdruck/Standbeinwechsel. Ein Anker wird nicht nachgeführt, nur weil die Quellanimation den Schuh verschiebt.
+- `3d-player-evolution-foot-ik.mjs`: Das vorhandene anatomische Zwei-Knochen-System kann optional die festgehaltenen Ziele erreichen; es gibt tatsächliche 3D-Residualfehler, Knie-Reichweitenbegrenzung und Schuhsohlenmarker aus. Die stärkere Korrektur ist nur im experimentellen Lock-Modus erlaubt, die tatsächlichen Ober-/Unterschenkellängen werden **nicht** verändert.
+- `player-evolution-twist-lab.html`: A/B-Schalter, echte Skinning-Vertices für Aufsetzkorrektur, Messung von Ankerdrift/Schwebehöhe/Bodendurchdringung nach IK und Kollisionsbarriere. Unveränderte Mixamo-Clips und unverändertes 60-Bone-GLB.
+- `tests/player-evolution-plant-lock.test.mjs`: Regression für Stand-/Schwungphasen, feste Weltanker, echte Zehenabdruck-Freigabe, Rückwärtsbewegung, Zeitsprung und ungültige Daten.
+- `tests/player-evolution-twist.browser.cjs`: 17 Sekunden authentische 12-FPS-WebGL-Bilder (204 Frames je Kanal) als synchrones Vorher/Nachher-MP4: 2 s je Walk/Jog/Run/Sprint, je 3 s Strafe links/rechts und Backpedal. Gleiche Licht-/Kamera-/Quellclip-Einstellungen pro Paar. In `step12-qa-report.json` stehen pro Modus max. Standfußdrift, Schwebehöhe, Bodendurchdringung, Root-Y-Frame-Sprung und Notfall-Übergeschwindigkeit. **Keine Zeitlupe oder beschleunigten Richtungsclips.**
+- Gating: <3 mm Penetration, <25 mm Stützfußschweben/Drift, <85 mm Root-Y-Schritt bei 12 fps, <0,10 m/s Root-Übergeschwindigkeit und keine unerreichbaren Standfußziele. Bei Überschreitung schlägt der technische CI-Schritt fehl, statt eine Freigabe vorzutäuschen.
+
+**Abnahmestatus:** Nicht optisch abgenommen. Alle Messwerte sind erst mit einem tatsächlich durchgelaufenen Workflow und Sichtung des neuen 17-Sekunden-MP4 gültig. Ursprüngliche Mixamo-Daten haben keine verlässlichen Ground-Truth-Contact-Tags; echte Stadionterrain-, Root-Match- und Smartphone-GPU-Tests stehen aus. Trotz Regression darf PR #240 nicht gemergt werden. `main` und Livespiel bleiben unverändert.
