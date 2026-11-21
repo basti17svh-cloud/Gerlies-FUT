@@ -210,7 +210,8 @@ export function createFooteraFootPlant(root,mocap){
  }
  function computePose({clip='run',phase=0,strength=1,kneeAlignment=strength,
                       anchorWorlds=null,groundContact=false,groundY=0,
-                      contactWeights=null,contactPhases=null,footMotion=null,plantLock=false}={}){
+                      contactWeights=null,contactPhases=null,footMotion=null,plantLock=false,
+                      measuredSoles=null}={}){
   if(![phase,strength,kneeAlignment,groundY].every(Number.isFinite)||
    strength<0||strength>1||kneeAlignment<0||kneeAlignment>1||typeof plantLock!=='boolean'||
    groundY<-.2||groundY>.3||
@@ -236,10 +237,15 @@ export function createFooteraFootPlant(root,mocap){
    const stats={weight,active:false,errorBefore:Math.hypot(shift.x,shift.z),
     errorAfter:Math.hypot(shift.x,shift.z),correction:0};
    results[side]=stats;
-   const wanted=shift.length(),reachLimit=plantLock&&weight>.01?.29:MAX_FOOT_REACH;
+   const wanted=shift.length(),reachLimit=plantLock&&weight>.01?Infinity:MAX_FOOT_REACH;
    stats.reachLimited=wanted>reachLimit;
+   // A world-space stance target must not be secretly clamped to 29 cm.
+   // The anatomical 2-bone solver already enforces the actual leg lengths.
+   // Transition weight is feathered near heel strike/toe off but becomes
+   // fully planted before the QA support threshold (0.65).
+   const footWeight=plantLock?smooth(.10,.60,weight):weight;
    const bounded=Math.min(1,reachLimit/
-    Math.max(wanted,1e-9))*weight;
+    Math.max(wanted,1e-9))*footWeight;
    const goal=current.clone().addScaledVector(shift,bounded);
    // Keep the ankle within the existing 18 cm reach bound. A secondary,
    // bounded Y-only correction brings the actual outsole close to the pitch.
@@ -247,12 +253,30 @@ export function createFooteraFootPlant(root,mocap){
    const soleLift=soleBefore&&!plantLock&&weight>.01
     ?clamp(groundY+.004-soleBefore.lowest,-MAX_SOLE_LIFT,MAX_SOLE_LIFT)*weight
     :0;
+   const trueLowest=measuredSoles?.[side]?.lowest??soleBefore?.lowest??null;
    const swingLift=soleBefore&&swing>.001
     ?footeraSwingClearance({lowest:soleBefore.lowest,groundY,swing}):0;
-   goal.y+=soleLift+swingLift;
+   // Collision belongs to the LEG, not an emergency lift of the whole root.
+   // Predict where the real boot surface will be after the ankle translation.
+   // Support keeps its world XZ lock, while vertical ankle position follows
+   // the actual outsole even when captured toe pitch changes during stance.
+   let outsoleYCorrection=0;
+   if(plantLock&&trueLowest!==null&&groundContact){
+    const remaining=groundY+.003-(trueLowest+goal.y-current.y);
+    if(weight>.10){
+     outsoleYCorrection=clamp(remaining,-.30,.30)*footWeight;
+    }else{
+     // Unplanted feet are free in XZ; only rescue genuine sole intersection.
+     outsoleYCorrection=clamp(remaining,0,.30);
+    }
+   }
+   goal.y+=soleLift+swingLift+outsoleYCorrection;
+   stats.outsoleYCorrection=outsoleYCorrection;
+   stats.trueLowestBefore=trueLowest;
    stats.soleLift=soleLift;
    stats.swingLift=swingLift;
    stats.swingWeight=swing;
+   stats.footTargetFactor=bounded;
    stats.meshCalibrated=limb.sole.meshCalibrated;
    const plane=kneePlane(limb,goal);
    const deviationBefore=plane?.angle*DEG||0;
@@ -262,7 +286,7 @@ export function createFooteraFootPlant(root,mocap){
    const kneeStats={deviationBeforeDeg:deviationBefore,deviationAfterDeg:deviationBefore,
     flexBeforeDeg:beforeFlex,flexAfterDeg:beforeFlex,aligned:false};
    knees[side]=kneeStats;
-   if(weight<.01&&!needsKnee&&swingLift<.0002)continue;
+   if(weight<.01&&!needsKnee&&swingLift<.0002&&outsoleYCorrection<.0002)continue;
    const prior=[upper,mid,end].map(b=>b.quaternion.clone());
    const footQ=end.getWorldQuaternion(new THREE.Quaternion());
    try{
