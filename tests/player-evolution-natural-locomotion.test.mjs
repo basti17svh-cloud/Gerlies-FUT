@@ -75,8 +75,9 @@ test('sampling same time is idempotent and seek does not use stale root',()=>{
 test('each player locomotion state is independent',()=>{
  const m=fixture(),a=createFooteraNaturalLocomotion(m),b=createFooteraNaturalLocomotion(m);
  a.sample({time:0,targetSpeed:5});b.sample({time:0,targetSpeed:1});
- const fast=a.sample({time:.1,targetSpeed:5});
- const slow=b.sample({time:.1,targetSpeed:1});
+ for(const t of [.1,.2,.3]){a.sample({time:t,targetSpeed:5});b.sample({time:t,targetSpeed:1})}
+ const fast=a.sample({time:.4,targetSpeed:5});
+ const slow=b.sample({time:.4,targetSpeed:1});
  assert.ok(fast.speedMps>slow.speedMps);
  assert.notDeepEqual(fast.rootTravel,slow.rootTravel);
 });
