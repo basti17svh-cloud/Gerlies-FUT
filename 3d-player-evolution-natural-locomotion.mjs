@@ -98,6 +98,13 @@ export function createFooteraNaturalLocomotion(capture,{
    capture.sample(hi,p.cycles);
   if(!(base.pose instanceof Map)||(!next?false:!(next.pose instanceof Map)))
    throw new TypeError('Captured source poses must be maps of 60-bone quaternions');
+  // Preserve the captured pelvis's genuine vertical motion as well as
+  // every joint quaternion. Blending never writes into the source samples.
+  const translation=Object.fromEntries(['x','y','z'].map(axis=>{
+   const a=base.translation?.[axis]??0,b=next?.translation?.[axis]??a;
+   if(!finite(a)||!finite(b))throw new TypeError('Invalid capture pelvis translation');
+   return [axis,lerp(a,b,which.alpha)];
+  }));
   const pose=new Map();
   for(const [name,q] of base.pose){
    if(!q||typeof q.clone!=='function'||typeof q.slerp!=='function')
@@ -110,7 +117,8 @@ export function createFooteraNaturalLocomotion(capture,{
    }
    pose.set(name,blend);
   }
-  return {pose,phase:((p.cycles%1)+1)%1,cycles:p.cycles,
+  return {pose,translation,clip:next?lo+'+'+hi:lo,frame:base.frame,
+   phase:((p.cycles%1)+1)%1,cycles:p.cycles,
    speedMps:p.speed,targetSpeedMps:targetSpeed,
    accelerationMps2:p.acceleration,
    rootTravel:[p.travel[0],0,p.travel[1]],
