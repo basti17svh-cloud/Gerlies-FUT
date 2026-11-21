@@ -103,17 +103,17 @@ renderer.toneMappingExposure=1.17;
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(35,1,.01,30);
+const camera=new THREE.PerspectiveCamera(35,1,.01,120);
 const hemi=new THREE.HemisphereLight(0xd5f6ff,0x1a2631,2.1);scene.add(hemi);
 const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(3.5,6,5);key.castShadow=true;
 key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-3;key.shadow.camera.right=3;
 key.shadow.camera.top=5;key.shadow.camera.bottom=-2;scene.add(key);
 const rim=new THREE.DirectionalLight(0x8af7d7,2.1);rim.position.set(-3,3,-4);scene.add(rim);
 scene.add(key.target,rim.target);
-const floor=new THREE.Mesh(new THREE.CircleGeometry(42,96),
+const floor=new THREE.Mesh(new THREE.CircleGeometry(130,128),
  new THREE.MeshStandardMaterial({color:0x17413d,roughness:.88}));
 floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=true;scene.add(floor);
-const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
+const grid=new THREE.GridHelper(260,260,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
