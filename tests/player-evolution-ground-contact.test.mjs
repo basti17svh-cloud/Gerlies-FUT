@@ -10,6 +10,7 @@ import {FOOTERA_EVOLUTION_BONES,createFooteraPoseDirector}
 import {createFooteraCapturedGait,FOOTERA_MOCAP_GAITS}
  from '../3d-player-evolution-mocap.mjs';
 import {createFooteraFootPlant,footeraGroundRootOffset} from '../3d-player-evolution-foot-ik.mjs';
+import {createFooteraContactContinuity} from '../3d-player-evolution-contact-continuity.mjs';
 import {createFooteraDirectionalTransitions,FOOTERA_DIRECTION_MOVES}
  from '../3d-player-evolution-transitions.mjs';
 import {createFooteraDirectionalContact}
@@ -140,4 +141,48 @@ test('Original Mixamo directional support gets a bounded IK overlay without chan
  director.beginFrame();director.commit();
  assert.ok(FOOTERA_EVOLUTION_BONES.every(x=>
   bones.get(x.name).quaternion.angleTo(before[x.name])<1e-5));
+});
+
+test('Step 9: continuous contact root never jumps across 60Hz support changes',()=>{
+ const controller=createFooteraContactContinuity();
+ const {maxRate,maxOffset,maxAcceleration}=controller.limits;
+ let previous=null,maxFrameStep=0,initialOffset=null,limitedFrames=0;
+ for(let i=0;i<=180;i++){
+  const time=i/60;
+  // Mimic a hard left/right-foot support handoff plus alternating heel pitches.
+  // The original Step 8 root translated abruptly between these two requests.
+  const raw=i<35?-.088:i<60?-.012:i<100?-.098:i<140?-.014:-.091;
+  const result=controller.sample({key:'run',time,target:raw});
+  assert.ok(Math.abs(result.offset)<=maxOffset+1e-9);
+  assert.ok(Number.isFinite(result.velocity)&&Number.isFinite(result.residual));
+  assert.ok(result.velocity>=-maxRate-.00001&&result.velocity<=maxRate+.00001);
+  if(i===0)initialOffset=result.offset;
+  if(result.limited)limitedFrames++;
+  if(previous){
+   const frameStep=Math.abs(result.offset-previous.offset);
+   maxFrameStep=Math.max(maxFrameStep,frameStep);
+   assert.ok(frameStep<=maxRate/60+.00001,
+    'Root correction must not teleport at the support-foot change');
+  }
+  previous=result;
+ }
+ assert.equal(initialOffset,-.088,'First pose initializes to actual measured contact');
+ assert.ok(maxFrameStep>0&&limitedFrames>10,'Real support transitions must be smoothed');
+ assert.equal(maxAcceleration,10);
+ // Standalone time seeks reinitialize so QA stills remain reproducible.
+ const seek=controller.sample({key:'run',time:.2,target:-.05});
+ assert.equal(seek.offset,-.05);
+ assert.ok(seek.reset);
+ const newClip=controller.sample({key:'sprint',time:.21,target:.02});
+ assert.equal(newClip.offset,.02);
+ assert.ok(newClip.reset);
+ assert.equal(controller.sample({key:'sprint',time:.21,target:.01}).offset,.02,
+  'Repeat render of same timestamp must never integrate twice');
+ const toggled=controller.sample({key:'sprint',time:.23,target:-.02,enabled:false});
+ assert.equal(toggled.offset,-.02);
+ assert.ok(toggled.reset);
+ assert.ok(controller.sample({key:'sprint',time:.24,target:-.03}).reset);
+ assert.throws(()=>controller.sample({key:'',time:0,target:0}),RangeError);
+ assert.throws(()=>controller.sample({key:'run',time:0,target:NaN}),RangeError);
+ assert.throws(()=>createFooteraContactContinuity({maxRate:20}),RangeError);
 });
