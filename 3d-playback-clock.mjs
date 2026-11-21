@@ -8,7 +8,19 @@ import {isDreamGoal,dreamShotRate} from './3d-dream-goals.mjs?v=21455';
 export const SHOT_RATE=1.5;
 // tail (V21.439): extra scene seconds after the normal end, e.g. the scorer's
 // sprint to the corner flag before his celebration; played at the same pace.
-export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100,tail=0}={}){
+// V21.496 (Basti: "nicht so halbherzig"): a shot flies at a real pace on
+// screen. Before, the flight took 1.25 scene seconds at 1.5x whatever the
+// distance and the scene's length, so a long build-up (scale ~.6) let a 15 m
+// shot crawl at ~11 m/s. Now the rate is set from the shot distance and the
+// scene's scale so the ball really travels at the finish's pace. It depends
+// only on the scene and the finish, never on the outcome.
+export const SHOT_PACE=Object.freeze({power:30,normal:26,low_driven:27,finesse:23,volley:26,header:15,bicycle:18,chip:13,backheel:15});
+export function shotPaceRate(finish,distance,scale){
+ const v=SHOT_PACE[finish]||SHOT_PACE.normal,d=Number(distance);
+ if(!Number.isFinite(d)||d<=0||!(scale>0))return SHOT_RATE;
+ return Math.max(SHOT_RATE,Math.min(5,1.25*v/(d*scale)));
+}
+export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100,tail=0,shotDistance=null}={}){
  // V21.226 walk-out / final whistle: plain real time, no shot segments.
  if(event.type==='ceremony'){
   // V21.444: the cup presentation runs longer (tail).
@@ -30,7 +42,7 @@ export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100,tail
  const signature=event.type!=='ball_won'&&!extended&&(event.signatures?.length?event.signatures.some(m=>m.phase==='finish'&&m.who==='scorer'):event.signature?.who==='scorer'&&!['technical','trickster','rapid','quick-step','first-touch','press-proven'].includes(event.signature?.id));
  // V21.445 Traumtore: a heel flick from four metres or a diving header flies
  // faster than a shot from thirty (same for every outcome of that scene).
- const shotRate=isDreamGoal(event.sequence)?dreamShotRate(event.sequence):SHOT_RATE;
+ const shotRate=isDreamGoal(event.sequence)?dreamShotRate(event.sequence):shotDistance===null?SHOT_RATE:shotPaceRate(event.finish,shotDistance,scale);
  const segments=event.type==='ball_won'?[]:[...(signature?[{from:4.85,to:5.4,rate:.4}]:[]),{from:5.4,to:6.65,rate:shotRate}];
  // The build-up runs at its own pace until the first timed segment begins.
  const buildEnd=segments.length?Math.min(actionTime,segments[0].from):actionTime;
