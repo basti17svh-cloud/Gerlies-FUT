@@ -884,6 +884,128 @@ const server=http.createServer((req,res)=>{
     'Root emergency lifts, support hover and horizontal plant drift need further acceptance',
     'No phone-hardware frame rate or actual live stadium locomotion verification'
    ];
+
+   // STEP 12: 17 s at TRUE 12 FPS, actual 60-bone WebGL pixel frames and the
+   // original Mixamo time coordinates (gaits 2 s each, directions 3 s each).
+   // The before channel is Step 11, the after channel changes ONLY plant lock.
+   // Render each timeline consecutively: never alternate states frame by frame
+   // because that would reset the causal touchdown tracker.
+   report.plantLock12={source:'captured Adobe Mixamo + real skinned GLB soles',
+    flatFloor:true,liveMatch:false,visualApproval:false,
+    video:'footera-step12-17s-plant-lock-before-after.mp4',
+    fps:12,seconds:17,frames:204,stills:[],modes:[],
+    acceptance:{maxPenetration:.003,maxSupportHover:.025,
+     maxSupportDrift:.025,maxRootStep:.085,maxRootOverRate:.10},
+    premiumApproved:false};
+   const step12Modes=[...['walk','jog','run','sprint'].map(name=>({name,duration:2,gait:true})),
+    ...['strafeLeft','strafeRight','backpedal'].map(name=>({name,duration:3,gait:false}))];
+   const pairFrames12=path.join(out,'step12-pair-frames');
+   fs.mkdirSync(pairFrames12,{recursive:true});
+   let pairIndex12=0;
+   const nonPassing=[];
+   for(const {name,duration,gait} of step12Modes){
+    const frameCount=duration*12,paired={before:[],after:[]};
+    const measurements=[];
+    for(const footPlantLock of [false,true]){
+     const state=footPlantLock?'after':'before';
+     let maxPen=0,maxHover=0,maxDrift=0,maxRootStep=0,maxOverRate=0,
+      maxVerticalResidual=0,lockedCount=0,unreachableCount=0,previous=null;
+     for(let i=0;i<frameCount;i++){
+      const time=i/12;
+      const args={version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,zoom:'knees',angle:Math.PI/2,cameraFixed:false,
+       footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe:true,footMotion11:true,footPlantLock};
+      const q=await page.evaluate(v=>window.footeraQaRender(v),args);
+      assert.equal(q.boneCount,60,'Step 12 requires the 60-bone mesh');
+      const d=gait?q.mocap:q.mocap.direction;
+      if(!d?.collisionSoles)throw Error('Step 12 outsole measurement missing: '+name);
+      const c=d.collisionSoles;
+      maxPen=Math.max(maxPen,c.maxPenetration);
+      maxOverRate=Math.max(maxOverRate,d.collisionRootOverRate||0);
+      maxVerticalResidual=Math.max(maxVerticalResidual,Math.abs(d.rootGroundResidualY||0));
+      if(previous)maxRootStep=Math.max(maxRootStep,
+       Math.abs(d.rootGroundOffsetY-previous.rootY));
+      previous={rootY:d.rootGroundOffsetY};
+      const lock=d.plantLock12;
+      if(footPlantLock){
+       assert.ok(lock,'Step12 contact tracker absent');
+       for(const side of ['l','r']){
+        const measured=lock.measured[side],state=lock.feet[side];
+        if(state.locked&&state.weight>.65){
+         lockedCount++;
+         maxHover=Math.max(maxHover,measured.hover||0);
+         maxDrift=Math.max(maxDrift,measured.driftXZ||0);
+         if(state.unreachable||measured.unreachable)unreachableCount++;
+        }
+       }
+      }else{
+       const feet=gait?d.feet:d.groundFeet;
+       for(const side of ['l','r']){
+        const foot=feet?.[side];
+        if(foot?.active&&foot.weight>.65)
+         maxHover=Math.max(maxHover,c.after.feet[side].lowest);
+       }
+      }
+      const png=await page.locator('canvas').screenshot();
+      paired[state].push(PNG.sync.read(png));
+      if(i===Math.min(frameCount-1,9)){
+       const file='step12-'+name+'-'+state+'.png';
+       fs.writeFileSync(path.join(out,file),png);
+       report.plantLock12.stills.push(file);
+      }
+     }
+     measurements.push({condition:state,samples:frameCount,
+      lockedSamples:lockedCount,maxPenetrationMetres:maxPen,
+      maxSupportHoverMetres:maxHover,maxSupportDriftMetres:maxDrift,
+      maxRootStepMetres:maxRootStep,maxRootOverRateMetresPerSecond:maxOverRate,
+      maxVerticalResidualMetres:maxVerticalResidual,
+      unreachableSamples:unreachableCount});
+    }
+    report.plantLock12.modes.push({name,durationSeconds:duration,
+     before:measurements[0],after:measurements[1]});
+    const accept=report.plantLock12.acceptance,a=measurements[1];
+    if(a.lockedSamples===0||a.maxPenetrationMetres>accept.maxPenetration||
+     a.maxSupportHoverMetres>accept.maxSupportHover||
+     a.maxSupportDriftMetres>accept.maxSupportDrift||
+     a.maxRootStepMetres>accept.maxRootStep||
+     a.maxRootOverRateMetresPerSecond>accept.maxRootOverRate||
+     a.unreachableSamples>0)
+     nonPassing.push({name,after:a});
+    for(let i=0;i<frameCount;i++){
+     const before=paired.before[i],after=paired.after[i];
+     const pair=new PNG({width:before.width+after.width,height:before.height});
+     PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
+     PNG.bitblt(after,pair,0,0,after.width,after.height,before.width,0);
+     fs.writeFileSync(path.join(pairFrames12,
+      'frame-'+String(pairIndex12++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+    }
+   }
+   assert.equal(pairIndex12,204);
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',[
+    '-hide_banner','-loglevel','error','-y','-framerate','12',
+    '-i',path.join(pairFrames12,'frame-%03d.png'),
+    '-vf','scale=1440:-2','-c:v','libx264','-crf','23','-pix_fmt','yuv420p',
+    path.join(out,report.plantLock12.video)]);
+   assert.ok(fs.statSync(path.join(out,report.plantLock12.video)).size>35000,
+    'Missing true-time 17 second Step 12 WebGL MP4');
+   report.plantLock12.blockers=nonPassing;
+   report.plantLock12.qualityGatesPassed=nonPassing.length===0;
+   report.plantLock12.premiumApproved=false; // requires actual human review
+   report.plantLock12.limitations=[
+    'Inferred Mixamo gait contacts, not labelled ground-truth strike times',
+    'Flat-floor WebGL laboratory only: no pitch terrain / live match root',
+    'No human visual review or real smartphone GPU profiling'
+   ];
+   fs.writeFileSync(path.join(out,'step12-qa-report.json'),
+    JSON.stringify(report.plantLock12,null,2));
+   // Fail the CI if physical acceptance gates fail. Artifact remains available
+   // for inspecting every original WebGL comparison and debugging.
+   if(nonPassing.length)
+    throw new Error('STEP12 NOT ACCEPTED: '+JSON.stringify(nonPassing));
+
    for(const mode of ['walk','cut','kick']){
    for(const version of ['before','master'])
     await capture(mode+'-'+version,{version,mode,time:1.07});
