@@ -1,0 +1,1055 @@
+/* Real WebGL / Chrome renders of original 52 and experimental 60 bone GLBs.
+   Captured frames are genuine Three.js skinning output, not AI illustrations.
+   This does not replace a manual anatomical quality review. */
+'use strict';
+const {chromium}=require('playwright');
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const assert=require('node:assert/strict'),cp=require('node:child_process');
+const root=path.resolve(__dirname,'..'),out=path.join(root,'test-artifacts','player-evolution-twist');
+const frames=path.join(out,'video-frames');
+fs.mkdirSync(frames,{recursive:true});
+const server=http.createServer((req,res)=>{
+ const url=new URL(req.url,'http://localhost');
+ const file=path.resolve(root,'.'+decodeURIComponent(url.pathname));
+ if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){
+  res.writeHead(404).end();return;
+ }
+ res.setHeader('Content-Type',/\.(mjs|js)$/.test(file)?'text/javascript':
+  file.endsWith('.html')?'text/html':file.endsWith('.glb')?'model/gltf-binary':'application/octet-stream');
+ fs.createReadStream(file).pipe(res);
+});
+(async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const browser=await chromium.launch({headless:true,
+  ...(process.env.FOOTERA_CHROME_PATH?{executablePath:process.env.FOOTERA_CHROME_PATH}:{}),args:[
+  '--enable-unsafe-swiftshader','--use-angle=swiftshader','--disable-dev-shm-usage']});
+ try{
+  const page=await browser.newPage({viewport:{width:940,height:840},deviceScaleFactor:1});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('http://127.0.0.1:'+server.address().port+'/player-evolution-twist-lab.html',
+   {waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>['true','error'].includes(document.documentElement.dataset.ready),
+   null,{timeout:180000});
+  const status=await page.locator('#status').textContent();
+  assert.equal(await page.locator('html').getAttribute('data-ready'),'true',status);
+  const report={engine:'Three.js WebGL / GLBLoader / Chrome SwiftShader',
+   caveat:'Automated screenshots and pose checks, not a passed human visual approval',
+   comparisons:[],errors};
+  async function capture(name,args){
+   const data=await page.evaluate(v=>window.footeraQaRender(v),args);
+   assert.ok(data.ok&&data.skinnedMeshes>=5,'Invalid model QA: '+JSON.stringify(data));
+   assert.equal(data.boneCount,args.version==='master'?60:52);
+   if(args.version==='master'){
+    assert.equal(data.twistReport?.auxiliaryBones,8);
+    assert.ok(data.twistReport.ok,'Twist skin audit failed');
+   }
+   await page.locator('canvas').screenshot({path:path.join(out,name+'.png')});
+   return data;
+  }
+  for(const [joint,side] of [
+   ['upperarm','l'],['lowerarm','l'],['thigh','l'],['calf','l'],
+   ['upperarm','r'],['lowerarm','r'],['thigh','r'],['calf','r']
+  ]){
+   const bone=joint+'_'+side;
+   for(const deg of [0,45,90,-90]){
+    const label=joint+'-'+side+'-'+(deg<0?'minus':'plus')+Math.abs(deg);
+    const info=await capture(label+'-twist',{version:'master',mode:'axial',bone,deg});
+    if(deg===90){
+     await capture(label+'-52',{version:'before',mode:'axial',bone,deg});
+     const a=fs.readFileSync(path.join(out,label+'-twist.png'));
+     const b=fs.readFileSync(path.join(out,label+'-52.png'));
+     assert.notDeepEqual(a,b,'No visible deformation difference: '+bone);
+     report.comparisons.push({bone,angle:deg,visibleDifference:true,
+      vertices:info.twistReport.skinnedVertices[joint+'_twist_'+side]});
+    }
+   }
+  }
+  // Same 60-bone geometry, OLD synthetic gait vs NEW biomechanics.
+  // A change in pixel values is not an aesthetic/IK-quality guarantee.
+  const hipBefore=await capture('hip-walk-stiff-before',
+   {version:'master',mode:'walk',zoom:'hips',time:.17,hipNatural:false});
+  const hipAfter=await capture('hip-walk-natural-after',
+   {version:'master',mode:'walk',zoom:'hips',time:.17,hipNatural:true});
+  assert.ok(hipBefore.pelvisOffset.every(x=>Math.abs(x)<1e-9),
+   'Legacy gait must keep the pelvis locked');
+  assert.ok(Math.abs(hipAfter.pelvisOffset[0])>.01,
+   'New gait needs actual pelvis weight transfer');
+  assert.ok(hipBefore.pelvisRotation.some((x,i)=>Math.abs(x-hipAfter.pelvisRotation[i])>.01),
+   'Pelvis quaternion must actually change, not just skin shading');
+  assert.notDeepEqual(fs.readFileSync(path.join(out,'hip-walk-stiff-before.png')),
+   fs.readFileSync(path.join(out,'hip-walk-natural-after.png')),
+   'Visual hip comparison must show a different pose');
+  report.hipComparison={
+   sameModelAndGeometry:true,oldHipOffset:hipBefore.pelvisOffset,
+   newHipOffset:hipAfter.pelvisOffset,
+   hipQuaternionChanged:true,imageDifference:true,
+   images:['hip-walk-stiff-before.png','hip-walk-natural-after.png']
+  };
+  // Real baked Adobe Mixamo locomotion on BOTH GLBs. Compare captured hip,
+  // shoulder and foot motion, and quantify what the local preview IK changes.
+  report.mixamo={source:'FOOTERA_MIXAMO_GAIT and FOOTERA_MIXAMO baked captures',
+   clips:[],footContact:null};
+  for(const clip of ['walk','jog','run','sprint']){
+   const a=await capture('mixamo-'+clip+'-52',{version:'before',mode:'mocap',
+    mocapClip:clip,time:.31,footPlant:true});
+   const b=await capture('mixamo-'+clip+'-60',{version:'master',mode:'mocap',
+    mocapClip:clip,time:.31,footPlant:true});
+   assert.equal(b.mocap.clip,clip);
+   assert.ok(b.mocap.source.includes('Adobe Mixamo'),'Not an authentic baked clip');
+   assert.ok(b.mocap.frame>=0&&b.mocap.frame<=40,'Bad capture frame '+clip);
+   assert.ok(b.pelvisRotation.every(Number.isFinite));
+   assert.ok(b.actualFeet.l.every(Number.isFinite));
+   report.mixamo.clips.push({clip,source:b.mocap.source,frame:b.mocap.frame,
+    hipTranslation:b.mocap.hipTranslation,rigs:[a.boneCount,b.boneCount]});
+  }
+  // Quantify true world-foot stability with recovered captured root travel.
+  // Two instants INSIDE the same left-stance half cycle.
+  await capture('mixamo-run-60-front',{version:'master',mode:'mocap',
+   mocapClip:'run',time:.15/1.7,angle:Math.PI,footPlant:true,rootTravel:true});
+  await capture('mixamo-sprint-60-side',{version:'master',mode:'mocap',
+   mocapClip:'sprint',time:.22/2.1,angle:Math.PI/2,footPlant:true,rootTravel:true});
+  const stationaryA=await capture('mixamo-run-treadmill-early',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.15/1.7,
+    footPlant:false,rootTravel:false});
+  const stationaryB=await capture('mixamo-run-treadmill-late',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.35/1.7,
+    footPlant:false,rootTravel:false});
+  const movingA=await capture('mixamo-run-root-motion-early',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.15/1.7,
+    footPlant:false,rootTravel:true});
+  const movingB=await capture('mixamo-run-root-motion-late',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.35/1.7,
+    footPlant:false,rootTravel:true});
+  const slide=(a,b)=>Math.hypot(a.actualFeet.l[0]-b.actualFeet.l[0],
+   a.actualFeet.l[2]-b.actualFeet.l[2]);
+  const beforeSlip=slide(stationaryA,stationaryB),
+   afterSlip=slide(movingA,movingB);
+  assert.ok(beforeSlip>.07,'A treadmill must have measurable slip from the baked capture');
+  assert.ok(afterSlip<.025,'Real root travel must keep the support shoe world-fixed');
+  assert.ok(afterSlip<beforeSlip*.15,'Must remove at least 85% of stance shoe sliding');
+  report.mixamo.rootTravel={
+   capturedSource:'Mixamo shoe positions, not procedural sway',
+   stanceShoeSlipBeforeMetres:beforeSlip,
+   stanceShoeSlipAfterMetres:afterSlip,
+   rootPositionEarly:movingA.rootPosition,rootPositionLate:movingB.rootPosition,
+   caveat:'Preview root on static test floor; authoritative live gameplay root remains unchanged'
+  };
+  const noIK=await capture('mixamo-run-60-no-foot-ik',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.25/1.7,footPlant:false});
+  const yesIK=await capture('mixamo-run-60-with-foot-ik',
+   {version:'master',mode:'mocap',mocapClip:'run',time:.25/1.7,footPlant:true});
+  assert.ok(yesIK.mocap.feet?.l?.active,'Missing captured-foot IK during midstance');
+  const measured=yesIK.mocap.feet.l;
+  assert.ok(measured.errorAfter<=measured.errorBefore+.008,
+   'Foot IK should not increase in-place ankle slip');
+  report.mixamo.footContact={hipAndFootCaptureBefore:noIK.mocap.source,
+   clip:'run',stance:'left',anchorErrorBeforeMetres:measured.errorBefore,
+   anchorErrorAfterMetres:measured.errorAfter,
+   peakCorrectionMetres:measured.correction,footIKChangedPose:
+   yesIK.actualFeet.l.some((x,i)=>Math.abs(x-noIK.actualFeet.l[i])>.0001),
+   caveat:'In-place test-studio foot plant; no live moving-root game footage'};
+  // Real, same-geometry 60-bone A/B: anatomical knee alignment OFF vs ON.
+  // Do not label a pixel difference alone as a biomechanical improvement.
+  report.mixamo.kneeAxis={geometry:'Same skinned 60-bone GLB',
+   limitDegrees:14,samples:[],maxDeviationBefore:0,maxDeviationAfter:0,
+   genuineCapture:true,visuallyReviewed:false};
+  const cadence={walk:1.05,jog:1.4,run:1.7,sprint:2.1};
+  let largest={deviation:-1,clip:'run',phase:.27,side:'l'};
+  for(const clip of ['walk','jog','run','sprint']){
+   for(const phase of [.12,.27,.63,.77]){
+    const opts={version:'master',mode:'mocap',mocapClip:clip,
+     time:phase/cadence[clip],angle:0,zoom:'knees',footPlant:true,rootTravel:true};
+    const before=await page.evaluate(v=>window.footeraQaRender(v),
+     {...opts,kneeAlign:false});
+    const after=await page.evaluate(v=>window.footeraQaRender(v),
+     {...opts,kneeAlign:true});
+    for(const side of ['l','r']){
+     const b=before.mocap.knees?.[side],a=after.mocap.knees?.[side];
+     assert.ok(b&&a,'Knee measurement missing: '+clip+side);
+     const original=Math.abs(b.deviationAfterDeg),corrected=Math.abs(a.deviationAfterDeg);
+     assert.ok(Number.isFinite(original)&&Number.isFinite(corrected));
+     if(original>largest.deviation)largest={deviation:original,clip,phase,side};
+     report.mixamo.kneeAxis.maxDeviationBefore=Math.max(
+      report.mixamo.kneeAxis.maxDeviationBefore,original);
+     report.mixamo.kneeAxis.maxDeviationAfter=Math.max(
+      report.mixamo.kneeAxis.maxDeviationAfter,corrected);
+     if(original>14.5)assert.ok(corrected<14.7,
+      clip+' '+phase+' '+side+' knee remains sideways: '+corrected+' deg');
+     assert.ok(a.flexAfterDeg>=0&&a.flexAfterDeg<=180,
+      'Impossible flex angle in '+clip+': '+a.flexAfterDeg);
+     report.mixamo.kneeAxis.samples.push({clip,phase,side,
+      originalLateralDegrees:original,alignedLateralDegrees:corrected,
+      flexBeforeDegrees:b.flexAfterDeg,flexAfterDegrees:a.flexAfterDeg});
+    }
+   }
+  }
+  report.mixamo.kneeAxis.mostAffected=largest;
+  // The largest abnormal knee pose receives camera-matched real screenshots,
+  // from both a straight-on and a lateral viewing angle.
+  const opts={version:'master',mode:'mocap',mocapClip:largest.clip,
+   time:largest.phase/cadence[largest.clip],footPlant:true,rootTravel:true,
+   zoom:'knees'};
+  for(const [view,angle] of [['front',0],['side',Math.PI/2]]){
+   await capture('knee-axis-'+view+'-before',
+    {...opts,angle,kneeAlign:false});
+   await capture('knee-axis-'+view+'-after',
+    {...opts,angle,kneeAlign:true});
+  }
+  report.mixamo.kneeAxis.images=['knee-axis-front-before.png','knee-axis-front-after.png',
+   'knee-axis-side-before.png','knee-axis-side-after.png'];
+  report.mixamo.kneeAxis.note='Authentic capture, not procedural gait; inspection still required';
+  // Render synchronized A/B frames for a second, dedicated before/after MP4.
+  // Same GLB, clip, frame, lighting, camera and root-travel on each side.
+  const pairFrames=path.join(out,'knee-pair-frames');
+  fs.mkdirSync(pairFrames,{recursive:true});
+  const {PNG}=require('pngjs');
+  for(let i=0;i<48;i++){
+   const clip=['walk','jog','run','sprint'][Math.floor(i/12)];
+   const time=((i%12)/12)/cadence[clip],angle=i<24?0:Math.PI/2;
+   const shot={version:'master',mode:'mocap',mocapClip:clip,time,
+    angle,zoom:'full',footPlant:true,rootTravel:true};
+   const result=[];
+   for(const kneeAlign of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),{...shot,kneeAlign});
+    const png=await page.locator('canvas').screenshot();
+    result.push(PNG.sync.read(png));
+   }
+   const width=result[0].width,height=result[0].height;
+   const pair=new PNG({width:2*width,height});
+   for(let j=0;j<2;j++)PNG.bitblt(result[j],pair,0,0,width,height,j*width,0);
+   fs.writeFileSync(path.join(pairFrames,'frame-'+String(i).padStart(3,'0')+'.png'),
+    PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',['-hide_banner','-loglevel','error','-y',
+   '-framerate','12','-i',path.join(pairFrames,'frame-%03d.png'),
+   '-vf','scale=1440:-2','-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+   path.join(out,'footera-knee-alignment-3d-before-after.mp4')]);
+  assert.ok(fs.statSync(path.join(out,'footera-knee-alignment-3d-before-after.mp4')).size>30000);
+  report.mixamo.kneeAxis.video='footera-knee-alignment-3d-before-after.mp4';
+  // Same 60-bone GLB on BOTH sides: original recorded Mixamo upper arms
+  // against pelvis-relative shoulder retarget (no added synthetic swing).
+  report.mixamo.shoulders={source:'Adobe Mixamo originals retained',samples:[],
+   maxBeforeDegrees:0,maxAfterDegrees:0,casesCorrected:0,
+   geometryIdentical:true,visualApproval:false};
+  let worst={excess:0,clip:'sprint',phase:.25,side:'l'};
+  for(const clip of ['walk','jog','run','sprint']){
+   const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[clip];
+   for(const phase of [.12,.28,.48,.72,.88]){
+    const args={version:'master',mode:'mocap',mocapClip:clip,
+     time:phase/rate,footPlant:true,kneeAlign:true,rootTravel:true,
+     angle:0,zoom:'chest'};
+    const a=await page.evaluate(v=>window.footeraQaRender(v),
+     {...args,shoulderAlign:false});
+    const b=await page.evaluate(v=>window.footeraQaRender(v),
+     {...args,shoulderAlign:true});
+    assert.equal(a.mocap.clip,clip);
+    assert.ok(b.mocap.shoulderSource.includes('Mixamo'));
+    for(const side of ['l','r']){
+     const x=a.mocap.shoulders[side],y=b.mocap.shoulders[side];
+     assert.ok([x.beforeDeg,y.afterDeg,y.changeDeg].every(Number.isFinite));
+     assert.ok(y.afterDeg<=x.beforeDeg+.01,'Shoulder wider than original');
+     const excess=x.beforeDeg-y.afterDeg;
+     if(excess>.1)report.mixamo.shoulders.casesCorrected++;
+     if(excess>worst.excess)worst={excess,clip,phase,side};
+     report.mixamo.shoulders.maxBeforeDegrees=Math.max(
+      report.mixamo.shoulders.maxBeforeDegrees,x.beforeDeg);
+     report.mixamo.shoulders.maxAfterDegrees=Math.max(
+      report.mixamo.shoulders.maxAfterDegrees,y.afterDeg);
+     report.mixamo.shoulders.samples.push({clip,phase,side,
+      original:x.beforeDeg,after:y.afterDeg,change:excess});
+    }
+    for(const side of ['l','r']){
+     const afoot=a.actualFeet[side],bfoot=b.actualFeet[side];
+     assert.ok(Math.hypot(...afoot.map((p,i)=>p-bfoot[i]))<.0002,
+      'Upper body must not change captured foot placement: '+clip+side);
+    }
+   }
+  }
+  report.mixamo.shoulders.worst=worst;
+  assert.ok(report.mixamo.shoulders.casesCorrected>0,
+   'The source mocap should expose at least one excessive arm-out pose');
+  const worstRate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[worst.clip];
+  for(const [view,angle] of [['front',0],['side',Math.PI/2]]){
+   for(const [suffix,shoulderAlign] of [['before',false],['after',true]])
+    await capture('shoulder-'+view+'-'+suffix,{version:'master',mode:'mocap',
+     mocapClip:worst.clip,time:worst.phase/worstRate,angle,zoom:'chest',
+     footPlant:true,kneeAlign:true,rootTravel:true,shoulderAlign});
+  }
+  // Capture synchronized before/after video with identical original gait
+  // phases, real Three.js skin deformation and camera. Avoid fabricated images.
+  const shoulderFrames=path.join(out,'shoulder-pair-frames');
+  fs.mkdirSync(shoulderFrames,{recursive:true});
+  for(let i=0;i<36;i++){
+   const clip=i<12?'jog':i<24?'run':'sprint',
+    rate={jog:1.4,run:1.7,sprint:2.1}[clip],
+    shot={version:'master',mode:'mocap',mocapClip:clip,time:(i%12)/12/rate,
+     angle:i<18?0:Math.PI/2,zoom:'full',
+     kneeAlign:true,footPlant:true,rootTravel:true};
+   const views=[];
+   for(const shoulderAlign of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),{...shot,shoulderAlign});
+    views.push(PNG.sync.read(await page.locator('canvas').screenshot()));
+   }
+   const pair=new PNG({width:2*views[0].width,height:views[0].height});
+   views.forEach((p,j)=>PNG.bitblt(p,pair,0,0,p.width,p.height,j*p.width,0));
+   fs.writeFileSync(path.join(shoulderFrames,'frame-'+String(i).padStart(3,'0')+'.png'),
+    PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(shoulderFrames,'frame-%03d.png'),'-vf','scale=1440:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,'footera-shoulder-mixamo-before-after.mp4')]);
+  report.mixamo.shoulders.video='footera-shoulder-mixamo-before-after.mp4';
+  report.mixamo.shoulders.images=['shoulder-front-before.png',
+   'shoulder-front-after.png','shoulder-side-before.png','shoulder-side-after.png'];
+  assert.ok(fs.statSync(path.join(out,report.mixamo.shoulders.video)).size>30000);
+  // Original Adobe Mixamo directional moves, NOT synthetic cutPose.
+  report.mixamo.directional={clips:[],genuineCaptures:true,headingsChecked:true,
+   worldFootPlantGuaranteed:false,liveRootMotion:false,
+   caveat:'In-place laboratory crossfades; game-root turn, contact and inertia pending'};
+  for(const direction of ['strafeLeft','strafeRight','backpedal']){
+   const sampled=[];
+   for(const time of [.4,.65,.85,1.05,1.35,1.55,1.75,1.95,2.3]){
+    const shot={version:'master',mode:'directional',direction,time,
+     angle:Math.PI/2,zoom:'full',shoulderAlign:true};
+    const qa=await page.evaluate(x=>window.footeraQaRender(x),shot);
+    assert.ok(qa.skinnedMeshes>=5);
+    assert.ok(qa.mocap.source.includes('original baked Adobe Mixamo'));
+    assert.equal(qa.mocap.direction.to,direction);
+    assert.equal(qa.mocap.direction.worldFootPlantGuaranteed,false);
+    assert.ok(qa.mocap.direction.feet.l.every(Number.isFinite));
+    assert.ok(qa.mocap.direction.feet.r.every(Number.isFinite));
+    sampled.push({time,blend:qa.mocap.direction.easedWeight,
+     sourceFrame:qa.mocap.direction.toFrame});
+    if([.85,1.35,1.75].includes(time))
+     await capture('direction-'+direction+'-'+time,{...shot,angle:0});
+   }
+   report.mixamo.directional.clips.push({direction,states:sampled,
+    capture:'Footera baked Adobe Mixamo, captured real 60-bone WebGL'});
+  }
+  // 3 seconds of real skinned 3D at 12fps. Every frame is rendered from
+  // the genuine Mixamo clip and interpolated source-joint quaternions.
+  const directionFrames=path.join(out,'direction-mixamo-frames');
+  fs.mkdirSync(directionFrames,{recursive:true});
+  for(let i=0;i<36;i++){
+   const direction=i<12?'strafeLeft':i<24?'strafeRight':'backpedal';
+   const t=(i%12)*2.4/11;
+   await page.evaluate(v=>window.footeraQaRender(v),{version:'master',
+    mode:'directional',direction,time:t,angle:i%2?0:Math.PI/2,
+    zoom:'full',shoulderAlign:true});
+   await page.locator('canvas').screenshot({path:path.join(directionFrames,
+    'frame-'+String(i).padStart(3,'0')+'.png')});
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(directionFrames,'frame-%03d.png'),'-vf','scale=1280:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,'footera-original-mixamo-directional-cuts.mp4')]);
+  report.mixamo.directional.video='footera-original-mixamo-directional-cuts.mp4';
+  assert.ok(fs.statSync(path.join(out,report.mixamo.directional.video)).size>20000);
+  // Step 7 - same original directional Mixamo keyframes, original 60-bone
+  // geometry and camera; contact-derived root OFF vs ON. A root controller
+  // is NOT an IK solver: no fake boot-to-floor contact claim.
+  report.mixamo.directional.contactRoot={
+   derivedFrom:'Original Mixamo FK shoes at 90Hz, lowest-foot hysteresis',
+   sourceBonesUnchanged:true,usesRealMatchRoot:false,usesCollisionFootIK:false,
+   modes:[],video:'footera-direction-foot-contact-3d-before-after.mp4'};
+  for(const direction of ['strafeLeft','strafeRight','backpedal']){
+   const timePoints=[.18,.45,.85,1.08,1.35,1.61,1.86,2.20];
+   const measurements=[];
+   for(const time of timePoints){
+    const args={version:'master',mode:'directional',direction,time,
+     angle:0,zoom:'full',shoulderAlign:true};
+    const off=await page.evaluate(x=>window.footeraQaRender(x),
+     {...args,directionContact:false});
+    const on=await page.evaluate(x=>window.footeraQaRender(x),
+     {...args,directionContact:true});
+    const d=on.mocap.direction;
+    assert.equal(d.rootContactEnabled,true);
+    assert.equal(d.contactInferred,true);
+    assert.ok(['l','r'].includes(d.estimatedContactSide));
+    assert.ok(d.rootTravel.every(Number.isFinite));
+    assert.ok(d.contactStats.maxRootSpeed<=7.51,'Unphysical root jerk');
+    assert.ok(d.contactStats.maxStepMetres<=7.5/90+.001);
+    assert.ok(d.contactStats.switches>=1,'No alternate support foot');
+    const shift=on.rootPosition.map((v,i)=>v-off.rootPosition[i]);
+    const movement=Math.hypot(...shift);
+    assert.ok(Math.abs(movement-Math.hypot(...d.rootTravel))<.0004,
+     'Only authoritative preview root may move, no shoe or bone offsets');
+    for(const side of ['l','r']){
+     const shoeShift=on.actualFeet[side].map((v,i)=>v-off.actualFeet[side][i]);
+     assert.ok(Math.hypot(...shoeShift.map((v,i)=>v-shift[i]))<.002,
+      'Skeletal FK shoes must travel with captured root, not be stretched');
+    }
+    measurements.push({time,side:d.estimatedContactSide,
+     rootMetres:d.rootTravel,contactErrorMetres:d.supportSlipMetres,
+     speedLimited:d.speedLimited});
+    if(Math.abs(time-1.35)<1e-6){
+     await capture('direction-root-'+direction+'-before',
+      {...args,directionContact:false,angle:Math.PI/2});
+     await capture('direction-root-'+direction+'-after',
+      {...args,directionContact:true,angle:Math.PI/2});
+    }
+   }
+   report.mixamo.directional.contactRoot.modes.push({direction,measurements,
+    trackStats:measurements.length?(
+     await page.evaluate(x=>window.footeraQaRender(x),{
+      version:'master',mode:'directional',direction,time:1.35
+     })).mocap.direction.contactStats:null});
+  }
+  const contactFrames=path.join(out,'direction-foot-contact-pairs');
+  fs.mkdirSync(contactFrames,{recursive:true});
+  for(let i=0;i<36;i++){
+   const direction=i<12?'strafeLeft':i<24?'strafeRight':'backpedal';
+   const time=(i%12)*2.45/11;
+   const args={version:'master',mode:'directional',direction,time,angle:0,
+    zoom:'full',shoulderAlign:true};
+   const imgs=[];
+   for(const directionContact of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),{...args,directionContact});
+    imgs.push(PNG.sync.read(await page.locator('canvas').screenshot()));
+   }
+   const pair=new PNG({width:imgs[0].width*2,height:imgs[0].height});
+   imgs.forEach((p,j)=>PNG.bitblt(p,pair,0,0,p.width,p.height,p.width*j,0));
+   fs.writeFileSync(path.join(contactFrames,
+    'frame-'+String(i).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(contactFrames,'frame-%03d.png'),'-vf','scale=1440:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,report.mixamo.directional.contactRoot.video)]);
+  assert.ok(fs.statSync(path.join(out,report.mixamo.directional.contactRoot.video)).size>25000);
+  // Step 8: SHOE OUTSOLE before/after, identical unmodified Mixamo capture,
+  // fixed WORLD camera, identical root travel, identical lights and frame.
+  report.groundIK2={source:'Original Adobe Mixamo + real 60-bone GLB boot outsole',
+   camera:'fixed world-space',mobileGame:false,terrainRaycasts:false,
+   gait:[],directional:[],frames:60,
+   video:'footera-ground-ik2-fixed-camera-before-after.mp4'};
+  const gaitRates={walk:1.05,jog:1.4,run:1.7,sprint:2.1};
+  let visibleDifferences=0;
+  for(const clip of ['walk','jog','run','sprint']){
+   const args={version:'master',mode:'mocap',mocapClip:clip,
+    time:.27/gaitRates[clip],angle:Math.PI/2,zoom:'full',cameraFixed:true,
+    footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true};
+   const a=await capture('foot-ik2-'+clip+'-before',{...args,groundIK:false});
+   const b=await capture('foot-ik2-'+clip+'-after',{...args,groundIK:true});
+   assert.ok(!a.mocap.groundContact&&b.mocap.groundContact,'Ground A/B mode invalid');
+   assert.ok(Math.hypot(a.rootPosition[0]-b.rootPosition[0],
+      a.rootPosition[2]-b.rootPosition[2])<.000001,
+    'Ground IK must preserve horizontal captured root track');
+   assert.ok(Math.abs(b.mocap.rootGroundOffsetY)<=.10001,
+    'Preview contact root height correction exceeds 10 cm');
+   const active=Object.values(b.mocap.feet).filter(f=>f.active);
+   assert.ok(active.length>=1,clip+' no ground-contact foot');
+   for(const foot of active){
+    assert.ok(foot.floorPenetration>=0&&foot.floorPenetration<.02);
+    assert.ok(Math.min(foot.heelHeight,foot.toeHeight)<.025,
+     clip+' support shoe must be close to actual floor');
+    assert.ok(Math.abs(foot.soleLift)<=.07001&&Math.abs(foot.rollDeg)<11.6);
+   }
+   report.groundIK2.gait.push({clip,active,soles:b.mocap.soles,
+    rootMeters:b.rootPosition});
+  }
+  // Readable fixed-WORLD-camera sole detail, same time and source pose.
+  // The regular route video stays full-frame and fixed, while these stills
+  // permit real inspection of each boot instead of using a fake zoom crop.
+  report.groundIK2.closeupImages=[];
+  for(const clip of ['walk','jog','run','sprint']){
+   const opts={version:'master',mode:'mocap',mocapClip:clip,
+    time:.27/gaitRates[clip],angle:Math.PI/2,zoom:'knees',
+    cameraFixed:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
+    rootTravel:true};
+   for(const groundIK of [false,true]){
+    const suffix=groundIK?'after':'before';
+    const name='foot-ik2-close-'+clip+'-'+suffix;
+    await capture(name,{...opts,groundIK});
+    report.groundIK2.closeupImages.push(name+'.png');
+   }
+  }
+  for(const direction of ['strafeLeft','strafeRight','backpedal']){
+   const args={version:'master',mode:'directional',direction,time:1.35,
+    angle:direction==='backpedal'?Math.PI/2:0,
+    cameraFixed:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
+    directionContact:true};
+   const off=await capture('foot-ik2-'+direction+'-before',{...args,groundIK:false});
+   const on=await capture('foot-ik2-'+direction+'-after',{...args,groundIK:true});
+   assert.equal(on.mocap.direction.groundIKEnabled,true);
+   assert.equal(off.mocap.direction.groundIKEnabled,false);
+   assert.ok(Math.hypot(off.rootPosition[0]-on.rootPosition[0],
+     off.rootPosition[2]-on.rootPosition[2])<.000001,
+    direction+' ground correction must preserve horizontal preview root');
+   assert.ok(Math.abs(on.mocap.direction.rootGroundOffsetY)<=.10001,
+    direction+' preview vertical root correction exceeds 10 cm');
+   const feet=on.mocap.direction.groundFeet;
+   assert.ok(feet?.l&&feet?.r,direction+' missing shoe diagnostics');
+   const active=Object.values(feet).filter(f=>f.active);
+   for(const foot of active){
+    assert.ok(Math.abs(foot.soleLift)<=.07001&&Math.abs(foot.rollDeg)<=11.6);
+    assert.ok(foot.floorPenetration<.025&&
+      Math.min(foot.heelHeight,foot.toeHeight)<.035,
+      direction+' planted shoe must not float or penetrate in flat studio');
+   }
+   report.groundIK2.directional.push({direction,
+    source:on.mocap.source,active,rootMeters:on.rootPosition,
+    support:on.mocap.direction.estimatedContactSide});
+  }
+  // Compare actual THREE canvas pixels; diagnostic, not human visual approval.
+  for(const clip of ['walk','run','strafeLeft']){
+   const off=PNG.sync.read(fs.readFileSync(path.join(out,'foot-ik2-'+clip+'-before.png')));
+   const on=PNG.sync.read(fs.readFileSync(path.join(out,'foot-ik2-'+clip+'-after.png')));
+   let count=0;
+   for(let i=0;i<off.data.length;i+=4)
+    if(Math.abs(off.data[i]-on.data[i])+
+       Math.abs(off.data[i+1]-on.data[i+1])+
+       Math.abs(off.data[i+2]-on.data[i+2])>30)count++;
+   visibleDifferences+=count;
+   report.groundIK2[clip+'PixelDelta']=count;
+  }
+  // 60 matching pairs, fixed camera across each actual gait/cut trajectory.
+  const soleFrames=path.join(out,'ground-ik2-fixed-frames');
+  fs.mkdirSync(soleFrames,{recursive:true});
+  for(let i=0;i<60;i++){
+   let shot;
+   if(i<36){
+    const clip=['walk','jog','run','sprint'][Math.floor(i/9)];
+    const phase=(i%9)/9;
+    shot={version:'master',mode:'mocap',mocapClip:clip,
+     time:phase/gaitRates[clip],angle:Math.PI/2,
+     rootTravel:true,footPlant:true,kneeAlign:true,shoulderAlign:true};
+   }else{
+    const direction=['strafeLeft','strafeRight','backpedal'][Math.floor((i-36)/8)];
+    shot={version:'master',mode:'directional',direction,
+     time:2.35*((i-36)%8)/7,
+     angle:direction==='backpedal'?Math.PI/2:0,
+     directionContact:true,footPlant:true,kneeAlign:true,shoulderAlign:true};
+   }
+   const imgs=[];
+   for(const groundIK of [false,true]){
+    await page.evaluate(v=>window.footeraQaRender(v),
+     {...shot,groundIK,cameraFixed:true,zoom:'full'});
+    imgs.push(PNG.sync.read(await page.locator('canvas').screenshot()));
+   }
+   const pair=new PNG({width:imgs[0].width*2,height:imgs[0].height});
+   imgs.forEach((p,j)=>PNG.bitblt(p,pair,0,0,p.width,p.height,p.width*j,0));
+   fs.writeFileSync(path.join(soleFrames,
+    'frame-'+String(i).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+   ['-hide_banner','-loglevel','error','-y','-framerate','12','-i',
+    path.join(soleFrames,'frame-%03d.png'),'-vf','scale=1440:-2',
+    '-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+    path.join(out,report.groundIK2.video)]);
+  assert.ok(fs.statSync(path.join(out,report.groundIK2.video)).size>25000,
+   'Missing actual GLB WebGL fixed-camera before/after MP4');
+  report.groundIK2.measuredPixelDifferences=visibleDifferences;
+  report.groundIK2.caveat='Not terrain collision, not actual match physics, no visual premium approval';
+  // Step 9: ACTUAL skinned 60-bone WebGL, continuous sampled support
+   // transitions. A snapshot alone cannot verify root vertical popping.
+   report.groundContinuity9={
+    source:'Mixamo source + real 60-bone boot measured sole + bounded root Y',
+    enabledInLiveGame:false,terrainCollision:false,
+    modes:[],video:'footera-step9-continuity-before-after.mp4'};
+   let smoothedRealFrameCount=0;
+   for(const name of ['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal']){
+    const isGait=['walk','jog','run','sprint'].includes(name);
+    const duration=isGait?.92/gaitRates[name]:2.35;
+    const count=isGait?40:48;
+    let prev=null,maxStep=0,maxResidual=0,maxPenetration=0,smoothed=0;
+    for(let i=0;i<count;i++){
+     const time=duration*i/(count-1);
+     const args={version:'master',mode:isGait?'mocap':'directional',
+      mocapClip:isGait?name:'run',direction:isGait?'strafeLeft':name,
+      time,angle:Math.PI/2,zoom:'full',cameraFixed:true,
+      footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true,
+      directionContact:true,groundIK:true,groundContinuity:true};
+     const qa=await page.evaluate(v=>window.footeraQaRender(v),args);
+     const data=isGait?qa.mocap:qa.mocap.direction;
+     const y=data.rootGroundOffsetY;
+     assert.ok([y,data.rootGroundTargetY,
+      data.rootGroundResidualY,data.rootGroundVelocityY].every(Number.isFinite),
+      name+' invalid grounding diagnostics');
+     assert.ok(Math.abs(y)<=.100001&&Math.abs(data.rootGroundTargetY)<=.100001,
+      name+' root ground correction exceeded 10 cm limit');
+     if(prev){
+      const step=Math.abs(y-prev.y);
+      maxStep=Math.max(maxStep,step);
+      assert.ok(step<=.72*(time-prev.time)+.00005,
+       name+' discontinuous stance switch at t='+time);
+     }
+     if(Math.abs(data.rootGroundResidualY)>.0005)smoothed++;
+     maxResidual=Math.max(maxResidual,Math.abs(data.rootGroundResidualY));
+     const feet=isGait?data.feet:data.groundFeet;
+     if(feet)for(const f of Object.values(feet)){
+      if(f.active&&Number.isFinite(f.floorPenetration))
+       maxPenetration=Math.max(maxPenetration,f.floorPenetration);
+     }
+     prev={time,y};
+    }
+    assert.ok(maxPenetration<.12,name+' root continuity caused severe floor penetration');
+    smoothedRealFrameCount+=smoothed;
+    report.groundContinuity9.modes.push({name,samples:count,
+     maxVerticalStepMetres:maxStep,maxResidualMetres:maxResidual,
+     maxFloorPenetrationMetres:maxPenetration,smoothedFrames:smoothed});
+   }
+   assert.ok(smoothedRealFrameCount>0,'No real Mixamo contact transition was smoothed');
+   // Render each side in chronological order. Interleaving A/B resets an
+   // online filter; that would be an invalid before/after experiment.
+   const temporalFrames={before:[],after:[]};
+   for(const [kind,continuous] of [['before',false],['after',true]]){
+    for(let i=0;i<40;i++){
+     const clip=i<20?'run':'sprint',phase=(i%20)/19*.8;
+     const args={version:'master',mode:'mocap',mocapClip:clip,
+      time:phase/gaitRates[clip],angle:Math.PI/2,zoom:'knees',
+      cameraFixed:true,footPlant:true,kneeAlign:true,rootTravel:true,
+      shoulderAlign:true,groundIK:true,groundContinuity:continuous};
+     await page.evaluate(v=>window.footeraQaRender(v),args);
+     const png=await page.locator('canvas').screenshot();
+     temporalFrames[kind].push(PNG.sync.read(png));
+     if(i===10||i===30)
+      fs.writeFileSync(path.join(out,'step9-'+clip+'-'+kind+'.png'),png);
+    }
+   }
+   const temporalDir=path.join(out,'step9-continuity-pair-frames');
+   fs.mkdirSync(temporalDir,{recursive:true});
+   for(let i=0;i<40;i++){
+    const a=temporalFrames.before[i],b=temporalFrames.after[i];
+    assert.equal(a.width,b.width);assert.equal(a.height,b.height);
+    const pair=new PNG({width:a.width+b.width,height:a.height});
+    PNG.bitblt(a,pair,0,0,a.width,a.height,0,0);
+    PNG.bitblt(b,pair,0,0,b.width,b.height,a.width,0);
+    fs.writeFileSync(path.join(temporalDir,
+     'frame-'+String(i).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+   }
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',
+    ['-hide_banner','-loglevel','error','-y','-framerate','12',
+     '-i',path.join(temporalDir,'frame-%03d.png'),
+     '-vf','scale=1440:-2','-c:v','libx264','-crf','24',
+     '-pix_fmt','yuv420p',path.join(out,report.groundContinuity9.video)]);
+   assert.ok(fs.statSync(path.join(out,report.groundContinuity9.video)).size>25000,
+    'Missing authentic Step 9 WebGL 3D MP4');
+   report.groundContinuity9.images=[
+    'step9-run-before.png','step9-run-after.png',
+    'step9-sprint-before.png','step9-sprint-after.png'];
+
+   // Step 10: FULL-CYCLE real GLB / WebGL collision test; both original skinned
+   // boots are sampled every frame, INCLUDING heel/toe switches and swing.
+   report.collisionSafe10={
+    source:'actual GLB boot outsole vertices / Three.js applyBoneTransform',
+    flatFloor:true,terrainCollision:false,liveMatchRoot:false,
+    modes:[],stills:[],video:'footera-step10-collision-safe-before-after.mp4',
+    passCriteria:{penetrationMetres:.003,rootLimitExcess:0}
+   };
+   const step10Rates={walk:1.05,jog:1.4,run:1.7,sprint:2.1};
+   const step10Names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal'];
+   let step10Total=0,maxGlobalPen=0,maxGlobalOverRate=0,unresolved=0;
+   for(const name of step10Names){
+    const gait=Object.hasOwn(step10Rates,name);
+    const span=gait?1/step10Rates[name]:3;
+    const samples=gait?49:91; // full recorded cycle / full 3s transition
+    let maxPen=0,maxFootClearance=0,maxSupportHover=0,maxYStep=0,maxOverRate=0,
+     limitExceeded=0,emergencies=0,maxPlanarSlip=0,previous=null;
+    for(let i=0;i<samples;i++){
+     const time=span*i/(samples-1);
+     const q=await page.evaluate(v=>window.footeraQaRender(v),{
+      version:'master',mode:gait?'mocap':'directional',
+      mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+      time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,
+      footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true,
+      directionContact:true,groundIK:true,groundContinuity:true,
+      collisionSafe:true});
+     const data=gait?q.mocap:q.mocap.direction;
+     const c=data.collisionSoles;
+     assert.ok(c?.before?.feet?.l?.meshCalibrated&&
+      c?.before?.feet?.r?.meshCalibrated,name+' lacks authentic boot vertices');
+     assert.ok(c.before.feet.l.vertices>=500&&c.before.feet.r.vertices>=500,
+      name+' lacks full skinned outsole geometry (expected weighted shoe surface)');
+     assert.ok(c.after.feet.l.lowPoint.every(Number.isFinite)&&
+      c.after.feet.r.lowPoint.every(Number.isFinite),'Invalid skinned shoe contact');
+     assert.ok(q.boneCount===60,'Shoe collision must use 60 bone rig');
+     maxPen=Math.max(maxPen,c.maxPenetration);
+     const soleMin=Math.min(c.after.feet.l.lowest,c.after.feet.r.lowest);
+     // Minimum (not mean!) contact clearance across BOTH actual outsole surfaces.
+     maxFootClearance=Math.max(maxFootClearance,soleMin);
+     // Hover of a genuinely supported shoe is a stricter quality signal
+     // than flight-phase clearance of both shoes.
+     const soleStates=gait?data.feet:data.groundFeet;
+     for(const side of ['l','r']){
+      const support=soleStates?.[side];
+      if(support?.active&&support.weight>.65)
+       maxSupportHover=Math.max(maxSupportHover,c.after.feet[side].lowest);
+     }
+     if(data.collisionSafetyOverride)emergencies++;
+     if(data.collisionRootLimitExceeded)limitExceeded++;
+     maxOverRate=Math.max(maxOverRate,data.collisionRootOverRate);
+     if(previous){
+      const step=Math.abs(data.rootGroundOffsetY-previous.y);
+      maxYStep=Math.max(maxYStep,step);
+     }
+     const slip=gait
+      ?Math.max(0,...Object.values(data.feet||{}).filter(f=>f.active)
+       .map(f=>f.errorAfter).filter(Number.isFinite))
+      :(data.supportSlipMetres??0);
+     maxPlanarSlip=Math.max(maxPlanarSlip,slip);
+     previous={time,y:data.rootGroundOffsetY};
+     step10Total++;
+    }
+    maxGlobalPen=Math.max(maxGlobalPen,maxPen);
+    maxGlobalOverRate=Math.max(maxGlobalOverRate,maxOverRate);
+    unresolved+=limitExceeded;
+    report.collisionSafe10.modes.push({name,samples,maxPenetrationMetres:maxPen,
+     maxMinimumOutsoleClearanceMetres:maxFootClearance,
+     maxSupportedFootHoverMetres:maxSupportHover,
+     maxRootStepMetres:maxYStep,maxRootOverRateMetresPerSecond:maxOverRate,
+     supportSlipMetres:maxPlanarSlip,safetyOverrides:emergencies,
+     rootLimitExceededFrames:limitExceeded});
+   }
+   report.collisionSafe10.totalRealWebGLFrames=step10Total;
+   report.collisionSafe10.maxPenetrationMetres=maxGlobalPen;
+   report.collisionSafe10.maxRootOverRateMetresPerSecond=maxGlobalOverRate;
+   report.collisionSafe10.rootLimitExceededFrames=unresolved;
+   report.collisionSafe10.maxSupportedFootHoverMetres=Math.max(
+    0,...report.collisionSafe10.modes.map(x=>x.maxSupportedFootHoverMetres));
+   report.collisionSafe10.premiumApproved=false;
+   report.collisionSafe10.premiumBlockers=[
+    'Hard collision emergency overrides produce physically excessive instantaneous root velocities',
+    'Measured support-shoe hover and nonzero shoe/IK anchor residuals still require correction',
+    'No real stadium terrain, authoritative match root or smartphone hardware acceptance'
+   ];
+   assert.ok(maxGlobalPen<=.003,'STEP10 COLLISION FAIL: real outsole entered flat pitch '+maxGlobalPen);
+   assert.equal(unresolved,0,'STEP10 COLLISION FAIL: required offset exceeded root safety cap');
+   // A/B uses identical ORIGINAL Mixamo timestamps, same full-size 60-bone GLB.
+   // No generated replacement animation or artificial camera zoom/crop.
+   const step10Frames=path.join(out,'step10-contact-pair-frames');
+   fs.mkdirSync(step10Frames,{recursive:true});
+   let frameIndex=0;
+   for(const name of step10Names){
+    const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
+    const chronological={before:[],after:[]};
+    // Do not interleave modes: that would repeatedly reset the online height
+    // solver and invalidate the actual contact transition comparison.
+    for(const collisionSafe of [false,true]){
+     const kind=collisionSafe?'after':'before';
+     for(let i=0;i<12;i++){
+      const time=span*i/11;
+      const args={version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:gait,rootTravel:true,
+       footPlant:true,kneeAlign:true,shoulderAlign:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe};
+      await page.evaluate(v=>window.footeraQaRender(v),args);
+      const png=await page.locator('canvas').screenshot();
+      chronological[kind].push(PNG.sync.read(png));
+      if(i===5){
+       const shot='step10-'+name+'-'+kind+'.png';
+       fs.writeFileSync(path.join(out,shot),png);
+       report.collisionSafe10.stills.push(shot);
+      }
+     }
+    }
+    for(let i=0;i<12;i++){
+     const before=chronological.before[i],after=chronological.after[i];
+     const pair=new PNG({width:before.width+after.width,height:before.height});
+     PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
+     PNG.bitblt(after,pair,0,0,after.width,after.height,before.width,0);
+     fs.writeFileSync(path.join(step10Frames,
+      'frame-'+String(frameIndex++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+    }
+   }
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',[
+    '-hide_banner','-loglevel','error','-y','-framerate','12',
+    '-i',path.join(step10Frames,'frame-%03d.png'),
+    '-vf','scale=1440:-2','-c:v','libx264','-crf','23',
+    '-pix_fmt','yuv420p',path.join(out,report.collisionSafe10.video)]);
+   assert.ok(fs.statSync(path.join(out,report.collisionSafe10.video)).size>25000,
+    'STEP10: Missing actual 60-bone WebGL close-up MP4');
+   // Step 11: WebGL A/B uses identical original 60-bone Mixamo timestamps
+   // and the SAME Step-10 mesh collision protection on BOTH sides.
+   // This evaluates shoe-flight cleanup, not changed geometry or camera.
+   report.shoeFlight11={source:'real skinned GLB shoes + genuine captured Mixamo',
+    isolatedFromLive:true,modes:[],video:'footera-step11-shoe-flight-before-after.mp4',
+    passCriteria:{maximumPenetrationMetres:.003,minimumRaisedShoeFrames:1},
+    premiumApproved:false};
+   const step11Names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal'];
+   let raisedShoeFrames=0,maxPen11=0;
+   for(const name of step11Names){
+    const gait=Object.hasOwn(step10Rates,name),span=gait?1/step10Rates[name]:3;
+    const samples=gait?25:46;
+    const variants=[];
+    for(const footMotion11 of [false,true]){
+     let raised=0,maxLift=0,maxPitch=0,penetration=0,
+      maxHover=0,overRate=0,rootEmergencies=0;
+     const soles=[];
+     for(let i=0;i<samples;i++){
+      const time=span*i/(samples-1);
+      const q=await page.evaluate(v=>window.footeraQaRender(v),{
+       version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:true,
+       footPlant:true,kneeAlign:true,shoulderAlign:true,rootTravel:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe:true,footMotion11});
+      const d=gait?q.mocap:q.mocap.direction,c=d.collisionSoles;
+      assert.ok(c?.before?.feet?.l?.meshCalibrated&&c.before.feet.r.meshCalibrated,
+       'Step 11 requires real skinned boot vertex measurements');
+      assert.equal(q.boneCount,60);
+      penetration=Math.max(penetration,c.maxPenetration);
+      overRate=Math.max(overRate,d.collisionRootOverRate);
+      if(d.collisionSafetyOverride)rootEmergencies++;
+      for(const side of ['l','r']){
+       const f=(gait?d.feet:d.groundFeet)?.[side];
+       if(f?.swingLift>.002){raised++;maxLift=Math.max(maxLift,f.swingLift);}
+       maxPitch=Math.max(maxPitch,Math.abs(f?.flightPitchDeg??0));
+       if(f?.active&&f.weight>.65)
+        maxHover=Math.max(maxHover,c.after.feet[side].lowest);
+      }
+      if(!gait&&footMotion11&&d.shoeMotion){
+       assert.equal(d.shoeMotion[d.estimatedContactSide].swing,0,
+        'Step 11 must never lift the planted directional support shoe');
+      }
+      soles.push({l:c.before.feet.l.lowest,r:c.before.feet.r.lowest});
+     }
+     variants.push({enabled:footMotion11,samples,raised,maximumSwingLiftMetres:maxLift,
+      maxCorrectiveToePitchDegrees:maxPitch,maxPenetrationMetres:penetration,
+      maxSupportHoverMetres:maxHover,maxRootOverRateMetresPerSecond:overRate,
+      emergencyRootLifts:rootEmergencies,soles});
+     if(footMotion11){raisedShoeFrames+=raised;maxPen11=Math.max(maxPen11,penetration);}
+    }
+    // Compare measured shoe heights at matching timestamps BEFORE whole-root
+    // collision height is changed. This tests actual boot-mesh response.
+    let maxSoleGain=0,shoeGainFrames=0;
+    for(let i=0;i<samples;i++)for(const side of ['l','r']){
+     const gain=variants[1].soles[i][side]-variants[0].soles[i][side];
+     maxSoleGain=Math.max(maxSoleGain,gain);
+     if(gain>.003)shoeGainFrames++;
+    }
+    report.shoeFlight11.modes.push({name,samples,
+     before:Object.fromEntries(Object.entries(variants[0]).filter(([k])=>k!=='soles')),
+     after:Object.fromEntries(Object.entries(variants[1]).filter(([k])=>k!=='soles')),
+     maxMeasuredSoleGainMetres:maxSoleGain,measuredSoleGainFrames:shoeGainFrames});
+   }
+   report.shoeFlight11.totalShoeLiftSamples=raisedShoeFrames;
+   report.shoeFlight11.maxPenetrationMetres=maxPen11;
+   assert.ok(maxPen11<=.003,'STEP11: live skinned outsole crossed the pitch');
+   assert.ok(raisedShoeFrames>0,'STEP11: shoe cleanup never actually activated');
+   // Keep a visual report of *consecutive* full gait and directional samples,
+   // including the end-of-video backpedal where toe-drag was reported.
+   const step11Frames=path.join(out,'step11-flight-pair-frames');
+   fs.mkdirSync(step11Frames,{recursive:true});
+   let step11Index=0;
+   for(const name of step11Names){
+    const gait=Object.hasOwn(step10Rates,name);
+    // True-time MP4: 1 second per gait, 3 seconds per directional
+    // transition; the Step-10 7s movie compressed these 3s moves 3x.
+    const frames=gait?12:36;
+    const chronological={before:[],after:[]};
+    for(const footMotion11 of [false,true]){
+     const kind=footMotion11?'after':'before';
+     for(let i=0;i<frames;i++){
+      const time=i/12;
+      const args={version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,angle:Math.PI/2,zoom:'knees',cameraFixed:gait,
+       rootTravel:true,footPlant:true,kneeAlign:true,shoulderAlign:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe:true,footMotion11};
+      await page.evaluate(v=>window.footeraQaRender(v),args);
+      const png=await page.locator('canvas').screenshot();
+      chronological[kind].push(PNG.sync.read(png));
+      if(i===9){
+       fs.writeFileSync(path.join(out,'step11-'+name+'-'+kind+'.png'),png);
+      }
+     }
+    }
+    for(let i=0;i<frames;i++){
+     const before=chronological.before[i],after=chronological.after[i];
+     const pair=new PNG({width:before.width+after.width,height:before.height});
+     PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
+     PNG.bitblt(after,pair,0,0,after.width,after.height,before.width,0);
+     fs.writeFileSync(path.join(step11Frames,
+      'frame-'+String(step11Index++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+    }
+   }
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',[
+    '-hide_banner','-loglevel','error','-y','-framerate','12',
+    '-i',path.join(step11Frames,'frame-%03d.png'),
+    '-vf','scale=1440:-2','-c:v','libx264','-crf','23',
+    '-pix_fmt','yuv420p',path.join(out,report.shoeFlight11.video)]);
+   assert.ok(fs.statSync(path.join(out,report.shoeFlight11.video)).size>25000,
+    'Step 11 missing real WebGL after/before MP4');
+   report.shoeFlight11.premiumBlockers=[
+    'No terrain/contact events in original directional Mixamo captures',
+    'Root emergency lifts, support hover and horizontal plant drift need further acceptance',
+    'No phone-hardware frame rate or actual live stadium locomotion verification'
+   ];
+
+   // STEP 12: 17 s at TRUE 12 FPS, actual 60-bone WebGL pixel frames and the
+   // original Mixamo time coordinates (gaits 2 s each, directions 3 s each).
+   // The before channel is Step 11, the after channel changes ONLY plant lock.
+   // Render each timeline consecutively: never alternate states frame by frame
+   // because that would reset the causal touchdown tracker.
+   report.plantLock12={source:'captured Adobe Mixamo + real skinned GLB soles',
+    flatFloor:true,liveMatch:false,visualApproval:false,
+    video:'footera-step12-17s-plant-lock-before-after.mp4',
+    fps:12,seconds:17,frames:204,stills:[],modes:[],
+    acceptance:{maxPenetration:.003,maxSupportHover:.025,
+     maxSupportDrift:.025,maxRootStep:.085,maxRootOverRate:.10},
+    premiumApproved:false};
+   const step12Modes=[...['walk','jog','run','sprint'].map(name=>({name,duration:2,gait:true})),
+    ...['strafeLeft','strafeRight','backpedal'].map(name=>({name,duration:3,gait:false}))];
+   const pairFrames12=path.join(out,'step12-pair-frames');
+   fs.mkdirSync(pairFrames12,{recursive:true});
+   let pairIndex12=0;
+   const nonPassing=[];
+   for(const {name,duration,gait} of step12Modes){
+    const frameCount=duration*12,paired={before:[],after:[]};
+    const measurements=[];
+    for(const footPlantLock of [false,true]){
+     const state=footPlantLock?'after':'before';
+     let maxPen=0,maxHover=0,maxDrift=0,maxRootStep=0,maxOverRate=0,
+      maxVerticalResidual=0,lockedCount=0,unreachableCount=0,previous=null;
+     for(let i=0;i<frameCount;i++){
+      const time=i/12;
+      const args={version:'master',mode:gait?'mocap':'directional',
+       mocapClip:gait?name:'run',direction:gait?'strafeLeft':name,
+       time,zoom:'knees',angle:Math.PI/2,cameraFixed:false,
+       footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,
+       directionContact:true,groundIK:true,groundContinuity:true,
+       collisionSafe:true,footMotion11:true,footPlantLock};
+      const q=await page.evaluate(v=>window.footeraQaRender(v),args);
+      assert.equal(q.boneCount,60,'Step 12 requires the 60-bone mesh');
+      const d=gait?q.mocap:q.mocap.direction;
+      if(!d?.collisionSoles)throw Error('Step 12 outsole measurement missing: '+name);
+      const c=d.collisionSoles;
+      maxPen=Math.max(maxPen,c.maxPenetration);
+      maxOverRate=Math.max(maxOverRate,d.collisionRootOverRate||0);
+      maxVerticalResidual=Math.max(maxVerticalResidual,Math.abs(d.rootGroundResidualY||0));
+      if(previous)maxRootStep=Math.max(maxRootStep,
+       Math.abs(d.rootGroundOffsetY-previous.rootY));
+      previous={rootY:d.rootGroundOffsetY};
+      const lock=d.plantLock12;
+      if(footPlantLock){
+       assert.ok(lock,'Step12 contact tracker absent');
+       for(const side of ['l','r']){
+        const measured=lock.measured[side],state=lock.feet[side];
+        if(state.locked&&state.weight>.65){
+         lockedCount++;
+         maxHover=Math.max(maxHover,measured.hover||0);
+         maxDrift=Math.max(maxDrift,measured.driftXZ||0);
+         if(state.unreachable||measured.unreachable)unreachableCount++;
+        }
+       }
+      }else{
+       const feet=gait?d.feet:d.groundFeet;
+       for(const side of ['l','r']){
+        const foot=feet?.[side];
+        if(foot?.active&&foot.weight>.65)
+         maxHover=Math.max(maxHover,c.after.feet[side].lowest);
+       }
+      }
+      const png=await page.locator('canvas').screenshot();
+      paired[state].push(PNG.sync.read(png));
+      if(i===Math.min(frameCount-1,9)){
+       const file='step12-'+name+'-'+state+'.png';
+       fs.writeFileSync(path.join(out,file),png);
+       report.plantLock12.stills.push(file);
+      }
+     }
+     measurements.push({condition:state,samples:frameCount,
+      lockedSamples:lockedCount,maxPenetrationMetres:maxPen,
+      maxSupportHoverMetres:maxHover,maxSupportDriftMetres:maxDrift,
+      maxRootStepMetres:maxRootStep,maxRootOverRateMetresPerSecond:maxOverRate,
+      maxVerticalResidualMetres:maxVerticalResidual,
+      unreachableSamples:unreachableCount});
+    }
+    report.plantLock12.modes.push({name,durationSeconds:duration,
+     before:measurements[0],after:measurements[1]});
+    const accept=report.plantLock12.acceptance,a=measurements[1];
+    if(a.lockedSamples===0||a.maxPenetrationMetres>accept.maxPenetration||
+     a.maxSupportHoverMetres>accept.maxSupportHover||
+     a.maxSupportDriftMetres>accept.maxSupportDrift||
+     a.maxRootStepMetres>accept.maxRootStep||
+     a.maxRootOverRateMetresPerSecond>accept.maxRootOverRate||
+     a.unreachableSamples>0)
+     nonPassing.push({name,after:a});
+    for(let i=0;i<frameCount;i++){
+     const before=paired.before[i],after=paired.after[i];
+     const pair=new PNG({width:before.width+after.width,height:before.height});
+     PNG.bitblt(before,pair,0,0,before.width,before.height,0,0);
+     PNG.bitblt(after,pair,0,0,after.width,after.height,before.width,0);
+     fs.writeFileSync(path.join(pairFrames12,
+      'frame-'+String(pairIndex12++).padStart(3,'0')+'.png'),PNG.sync.write(pair));
+    }
+   }
+   assert.equal(pairIndex12,204);
+   cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',[
+    '-hide_banner','-loglevel','error','-y','-framerate','12',
+    '-i',path.join(pairFrames12,'frame-%03d.png'),
+    '-vf','scale=1440:-2','-c:v','libx264','-crf','23','-pix_fmt','yuv420p',
+    path.join(out,report.plantLock12.video)]);
+   assert.ok(fs.statSync(path.join(out,report.plantLock12.video)).size>35000,
+    'Missing true-time 17 second Step 12 WebGL MP4');
+   report.plantLock12.blockers=nonPassing;
+   report.plantLock12.qualityGatesPassed=nonPassing.length===0;
+   report.plantLock12.premiumApproved=false; // requires actual human review
+   report.plantLock12.limitations=[
+    'Inferred Mixamo gait contacts, not labelled ground-truth strike times',
+    'Flat-floor WebGL laboratory only: no pitch terrain / live match root',
+    'No human visual review or real smartphone GPU profiling'
+   ];
+   fs.writeFileSync(path.join(out,'step12-qa-report.json'),
+    JSON.stringify(report.plantLock12,null,2));
+   // Fail the CI if physical acceptance gates fail. Artifact remains available
+   // for inspecting every original WebGL comparison and debugging.
+   if(nonPassing.length)
+    throw new Error('STEP12 NOT ACCEPTED: '+JSON.stringify(nonPassing));
+
+   for(const mode of ['walk','cut','kick']){
+   for(const version of ['before','master'])
+    await capture(mode+'-'+version,{version,mode,time:1.07});
+  }
+  // 6-second MP4, 72 actual Chrome GLB frames. Most frames now sample the
+  // EXISTING baked Mixamo footwork rather than invented synthetic motion.
+  for(let i=0;i<72;i++){
+   const mode=i<10?'axial':i<65?'mocap':'kick';
+   const mocapClip=i<24?'walk':i<39?'jog':i<54?'run':'sprint';
+   const segStart=i<24?10:i<39?24:i<54?39:54;
+   const args={version:'master',mode,mocapClip,footPlant:true,
+    time:mode==='mocap'?Math.max(0,i-segStart)/12:i/12,
+    angle:i>=54?Math.PI/2:i>=39?Math.PI/4:.18,
+    deg:(i%10)*9,bone:'lowerarm_l'};
+   await page.evaluate(v=>window.footeraQaRender(v),args);
+   await page.locator('canvas').screenshot({path:path.join(frames,
+    'frame-'+String(i).padStart(3,'0')+'.png')});
+  }
+  cp.execFileSync(process.env.FOOTERA_FFMPEG||'ffmpeg',['-hide_banner','-loglevel','error','-y',
+   '-framerate','12','-i',path.join(frames,'frame-%03d.png'),
+   '-vf','scale=720:-2','-c:v','libx264','-crf','24','-pix_fmt','yuv420p',
+   path.join(out,'footera-60-bone-engine-proof.mp4')]);
+  assert.ok(fs.statSync(path.join(out,'footera-60-bone-engine-proof.mp4')).size>30000);
+  // Mobile viewport/GLB load smoke check (NOT a real phone GPU benchmark).
+  const mobile=await browser.newPage({viewport:{width:412,height:915},
+   deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  await mobile.goto('http://127.0.0.1:'+server.address().port+'/player-evolution-twist-lab.html',
+   {waitUntil:'domcontentloaded'});
+  await mobile.waitForFunction(()=>['true','error'].includes(document.documentElement.dataset.ready),
+   null,{timeout:180000});
+  assert.equal(await mobile.locator('html').getAttribute('data-ready'),'true',
+   await mobile.locator('#status').textContent());
+  const mobileResult=await mobile.evaluate(()=>window.footeraQaRender(
+   {version:'master',mode:'cut',time:1.5,angle:.4}));
+  assert.equal(mobileResult.boneCount,60);
+  assert.ok(mobileResult.twistReport?.ok);
+  await mobile.locator('canvas').screenshot({path:path.join(out,'mobile-viewport-60bone.png')});
+  report.mobileViewport={width:412,height:915,load:true,skinning:true,
+   caveat:'Software-rendered mobile viewport; no actual smartphone FPS measured'};
+  await mobile.close();
+  assert.deepEqual(errors,[]);
+  report.video={frames:72,fps:12,modes:['axial','mixamo-walk','mixamo-jog',
+   'mixamo-run','mixamo-sprint','kick'],file:'footera-60-bone-engine-proof.mp4'};
+  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));
+  console.log('PASS: physical GLB WebGL before/after screenshots and MP4',JSON.stringify(report));
+ }finally{await browser.close();server.close()}
+})().catch(e=>{console.error(e);server.close();process.exitCode=1});

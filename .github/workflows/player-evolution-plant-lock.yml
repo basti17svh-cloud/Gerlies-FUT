@@ -1,0 +1,46 @@
+name: Footera Player Evolution Step 12 – focused WebGL QA
+on:
+  push:
+    branches: ['feature/player-evolution-twist-bones']
+    paths:
+      - 'tests/player-evolution-step12-quick.browser.cjs'
+      - '.github/workflows/player-evolution-plant-lock.yml'
+      - '3d-player-evolution-plant-lock.mjs'
+      - 'player-evolution-twist-lab.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  step12:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Check Step 12 source syntax
+        run: |
+          node --check tests/player-evolution-step12-quick.browser.cjs
+          node --check 3d-player-evolution-plant-lock.mjs
+          node --test tests/player-evolution-plant-lock.test.mjs
+          test -s assets/footera/models/footera-evolution-twist-prototype.glb
+      - name: Install headless WebGL QA and ffmpeg
+        run: |
+          npm install --prefix /tmp/footera-step12-webgl playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
+          command -v google-chrome
+          echo "FOOTERA_FFMPEG=/tmp/footera-step12-webgl/node_modules/@ffmpeg-installer/linux-x64/ffmpeg" >> "$GITHUB_ENV"
+      - name: Render 17 seconds of original 60-bone Mixamo with actual foot metrics
+        env:
+          NODE_PATH: /tmp/footera-step12-webgl/node_modules
+          FOOTERA_CHROME_PATH: /usr/bin/google-chrome
+        run: node tests/player-evolution-step12-quick.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-step12-real-webgl-qa
+          path: |
+            test-artifacts/plant-lock-step12/*.png
+            test-artifacts/plant-lock-step12/*.json
+            test-artifacts/plant-lock-step12/*.mp4
+          retention-days: 30
+          if-no-files-found: warn

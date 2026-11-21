@@ -1,0 +1,47 @@
+name: Footera Player Evolution Step 13 – authentic 60-bone WebGL speed QA
+on:
+  push:
+    branches: ['feature/player-evolution-twist-bones']
+    paths:
+      - '.github/workflows/player-evolution-step13-webgl.yml'
+      - 'tests/player-evolution-step13.browser.cjs'
+      - '3d-player-evolution-natural-locomotion.mjs'
+      - 'tests/player-evolution-natural-locomotion.test.mjs'
+      - 'player-evolution-natural-locomotion-lab.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  step13-real-mixamo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Validate Step 13 source and original 60-bone GLB
+        run: |
+          node --check 3d-player-evolution-natural-locomotion.mjs
+          node --check tests/player-evolution-step13.browser.cjs
+          node --test tests/player-evolution-natural-locomotion.test.mjs
+          test -s assets/footera/models/footera-evolution-twist-prototype.glb
+      - name: Install Chromium QA + video encoder
+        run: |
+          npm install --prefix /tmp/footera-step13-webgl playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
+          command -v google-chrome
+          echo "FOOTERA_FFMPEG=/tmp/footera-step13-webgl/node_modules/@ffmpeg-installer/linux-x64/ffmpeg" >> "$GITHUB_ENV"
+      - name: Render actual 16-second Mixamo speed-correct gait WebGL before/after
+        env:
+          NODE_PATH: /tmp/footera-step13-webgl/node_modules
+          FOOTERA_CHROME_PATH: /usr/bin/google-chrome
+        run: node tests/player-evolution-step13.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-step13-real-60-bone-locomotion-video
+          path: |
+            test-artifacts/natural-locomotion-step13/*.png
+            test-artifacts/natural-locomotion-step13/*.json
+            test-artifacts/natural-locomotion-step13/*.mp4
+          retention-days: 30
+          if-no-files-found: warn

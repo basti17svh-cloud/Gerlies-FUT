@@ -1,0 +1,234 @@
+name: Footera Player Evolution – 8 echte Drehknochen
+concurrency:
+  group: player-evolution-twist-${{ github.ref }}
+  cancel-in-progress: true
+on:
+  push:
+    branches: ['feature/player-evolution-twist-bones']
+    paths:
+      - '3d-player-evolution-twist.mjs'
+      - '3d-player-evolution-gait.mjs'
+      - '3d-player-evolution-mocap.mjs'
+      - '3d-player-evolution-shoulders.mjs'
+      - '3d-player-evolution-transitions.mjs'
+      - '3d-player-evolution-direction-contact.mjs'
+      - '3d-player-evolution-foot-ik.mjs'
+      - '3d-player-evolution-contact-continuity.mjs'
+      - '3d-player-evolution-collision-contact.mjs'
+      - '3d-player-evolution-shoe-phases.mjs'
+      - '3d-player-evolution-plant-lock.mjs'
+      - 'tools/build-player-evolution-twist.py'
+      - 'tests/player-evolution-twist.test.mjs'
+      - 'tests/player-evolution-gait.test.mjs'
+      - 'tests/player-evolution-mocap.test.mjs'
+      - 'tests/player-evolution-ground-contact.test.mjs'
+      - 'tests/player-evolution-collision-contact.test.mjs'
+      - 'tests/player-evolution-shoe-phases.test.mjs'
+      - 'tests/player-evolution-plant-lock.test.mjs'
+      - 'tests/player-evolution-twist.browser.cjs'
+      - 'player-evolution-twist-lab.html'
+      - '.github/workflows/player-evolution-twist.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  twist:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install model tool dependencies
+        run: python -m pip install --disable-pip-version-check numpy pillow
+      - name: Generate 60-joint twist prototype from verified 52-joint master
+        run: |
+          python tools/build-player-evolution-twist.py > twist-build-report.json
+          cat twist-build-report.json
+      - name: Contract and quaternion validation
+        run: |
+          node --check 3d-player-evolution-twist.mjs
+          node --check 3d-player-evolution-gait.mjs
+          node --check 3d-player-evolution-mocap.mjs
+          node --check 3d-player-evolution-shoulders.mjs
+          node --check 3d-player-evolution-transitions.mjs
+          node --check 3d-player-evolution-direction-contact.mjs
+          node --check 3d-player-evolution-foot-ik.mjs
+          node --check 3d-player-evolution-contact-continuity.mjs
+          node --check 3d-player-evolution-collision-contact.mjs
+          node --check 3d-player-evolution-shoe-phases.mjs
+          node --check 3d-player-evolution-plant-lock.mjs
+          node --check tests/player-evolution-plant-lock.test.mjs
+          node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-collision-contact.test.mjs tests/player-evolution-shoe-phases.test.mjs tests/player-evolution-plant-lock.test.mjs tests/player-evolution-ground-contact.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
+      - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
+        run: |
+          npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
+          command -v google-chrome
+          google-chrome --version
+          FFMPEG_BIN=$(node -p "require('/tmp/footera-twist-qa/node_modules/@ffmpeg-installer/ffmpeg').path")
+          test -x "$FFMPEG_BIN"
+          echo "FOOTERA_FFMPEG=$FFMPEG_BIN" >> "$GITHUB_ENV"
+      - name: Render authentic Mixamo knee, shoulder, directional root-contact and skinning A/B MP4s
+        env:
+          NODE_PATH: /tmp/footera-twist-qa/node_modules
+          FOOTERA_CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node tests/player-evolution-twist.browser.cjs
+          cp twist-build-report.json test-artifacts/player-evolution-twist/skin-report.json
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          p=Path('test-artifacts/player-evolution-twist')
+          cells=[]
+          for limb in ['upperarm-l','lowerarm-l','thigh-r','calf-r']:
+              for kind in ['52','twist']:
+                  f=p/f'{limb}-plus90-{kind}.png'
+                  img=Image.open(f).convert('RGB')
+                  img.thumbnail((450,460))
+                  box=Image.new('RGB',(470,490),'#10232d')
+                  box.paste(img,((470-img.width)//2,22))
+                  ImageDraw.Draw(box).text((12,7),f'{limb} / {kind} / 90 deg',fill='white')
+                  cells.append(box)
+          canvas=Image.new('RGB',(940,1960),'#06131d')
+          for i,img in enumerate(cells):
+              canvas.paste(img,((i%2)*470,(i//2)*490))
+          canvas.save(p/'real-3d-before-after-contact-sheet.jpg',quality=88)
+          hip=Image.new('RGB',(1100,780),'#08141e')
+          for i,kind in enumerate(['stiff-before','natural-after']):
+              source=Image.open(p/f'hip-walk-{kind}.png').convert('RGB')
+              source.thumbnail((540,700))
+              hip.paste(source,(i*550+(550-source.width)//2,38))
+              ImageDraw.Draw(hip).text((18+i*550,13),
+                  'VORHER - Fixierte Huefte' if i==0 else 'NACHHER - Gewichtsverlagerung',fill='white')
+          hip.save(p/'hip-gait-before-after.jpg',quality=91)
+          mocap=Image.new('RGB',(1320,2080),'#06131d')
+          for i,clip in enumerate(['walk','jog','run','sprint']):
+              for c,rig in enumerate(['52','60']):
+                  source=Image.open(p/f'mixamo-{clip}-{rig}.png').convert('RGB')
+                  source.thumbnail((630,485))
+                  base=Image.new('RGB',(660,520),'#10232d')
+                  base.paste(source,((660-source.width)//2,28))
+                  ImageDraw.Draw(base).text((12,8),f'Mixamo {clip.upper()} - {rig} bone',fill='white')
+                  mocap.paste(base,(660*c,520*i))
+          mocap.save(p/'mixamo-4-captures-52-vs-60.jpg',quality=91)
+          feet=Image.new('RGB',(1320,540),'#06131d')
+          for i,mode in enumerate(['no-foot-ik','with-foot-ik']):
+              source=Image.open(p/f'mixamo-run-60-{mode}.png').convert('RGB')
+              source.thumbnail((640,510))
+              feet.paste(source,(660*i+(660-source.width)//2,28))
+              ImageDraw.Draw(feet).text((660*i+12,8),
+                  'Mixamo Run / Foot IK OFF' if i==0 else 'Mixamo Run / Foot IK ON',fill='white')
+          feet.save(p/'mixamo-foot-ik-comparison.jpg',quality=91)
+          walking=Image.new('RGB',(1320,1050),'#06131d')
+          modes=['treadmill','root-motion']
+          for row,mode in enumerate(modes):
+              for col,when in enumerate(['early','late']):
+                  source=Image.open(p/f'mixamo-run-{mode}-{when}.png').convert('RGB')
+                  source.thumbnail((625,490))
+                  walking.paste(source,(col*660+(660-source.width)//2,row*525+25))
+                  ImageDraw.Draw(walking).text((col*660+12,row*525+6),
+                      ('Treadmill (slide)' if row==0 else 'Captured root travel (plant)')+' / '+when,fill='white')
+          walking.save(p/'mixamo-root-travel-foot-contact.jpg',quality=91)
+          knee=Image.new('RGB',(1320,1040),'#06131d')
+          for row,view in enumerate(['front','side']):
+              for col,condition in enumerate(['before','after']):
+                  source=Image.open(p/f'knee-axis-{view}-{condition}.png').convert('RGB')
+                  source.thumbnail((635,485))
+                  knee.paste(source,(col*660+(660-source.width)//2,row*520+27))
+                  ImageDraw.Draw(knee).text((col*660+12,row*520+7),
+                      f'Mixamo {view} / Knee alignment {condition}',fill='white')
+          knee.save(p/'knee-axis-real-3d-before-after.jpg',quality=92)
+          shoulders=Image.new('RGB',(1320,1040),'#06131d')
+          for row,view in enumerate(['front','side']):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'shoulder-{view}-{state}.png').convert('RGB')
+                  source.thumbnail((635,485))
+                  shoulders.paste(source,(col*660+(660-source.width)//2,row*520+27))
+                  ImageDraw.Draw(shoulders).text((col*660+12,row*520+7),
+                      f'Original Mixamo / shoulder {view} / {state}',fill='white')
+          shoulders.save(p/'shoulder-mixamo-real-3d-before-after.jpg',quality=92)
+          directions=Image.new('RGB',(1320,1560),'#06131d')
+          for row,name in enumerate(['strafeLeft','strafeRight','backpedal']):
+              for col,time in enumerate(['0.85','1.35']):
+                  source=Image.open(p/f'direction-{name}-{time}.png').convert('RGB')
+                  source.thumbnail((635,480))
+                  directions.paste(source,(col*660+(660-source.width)//2,row*520+28))
+                  ImageDraw.Draw(directions).text((col*660+12,row*520+8),
+                      f'Original Mixamo {name} / t={time}',fill='white')
+          directions.save(p/'direction-mixamo-real-3d-contact-sheet.jpg',quality=92)
+          contacts=Image.new('RGB',(1320,1560),'#06131d')
+          for row,name in enumerate(['strafeLeft','strafeRight','backpedal']):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'direction-root-{name}-{state}.png').convert('RGB')
+                  source.thumbnail((635,475))
+                  contacts.paste(source,(col*660+(660-source.width)//2,row*520+30))
+                  ImageDraw.Draw(contacts).text((col*660+12,row*520+8),
+                      f'Original Mixamo {name} / contact root {state}',fill='white')
+          contacts.save(p/'direction-foot-contact-real-3d-before-after.jpg',quality=92)
+          # Step 8: identical real 3D captures, with a true fixed world camera.
+          names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal']
+          ground=Image.new('RGB',(1320,520*len(names)),'#06131d')
+          for row,name in enumerate(names):
+              for col,kind in enumerate(['before','after']):
+                  source=Image.open(p/f'foot-ik2-{name}-{kind}.png').convert('RGB')
+                  source.thumbnail((635,480))
+                  ground.paste(source,(col*660+(660-source.width)//2,row*520+30))
+                  ImageDraw.Draw(ground).text((col*660+12,row*520+8),
+                      f'{name} / Foot IK 2.0 {kind.upper()} / FIXED CAMERA',fill='white')
+          ground.save(p/'foot-ik2-fixed-camera-real-3d-before-after.jpg',quality=91)
+          close=Image.new('RGB',(1320,520*4),'#06131d')
+          for row,name in enumerate(['walk','jog','run','sprint']):
+              for col,kind in enumerate(['before','after']):
+                  shot=Image.open(p/f'foot-ik2-close-{name}-{kind}.png').convert('RGB')
+                  shot.thumbnail((635,485))
+                  close.paste(shot,(col*660+(660-shot.width)//2,row*520+28))
+                  ImageDraw.Draw(close).text((col*660+12,row*520+8),
+                      f'{name} / GENUINE 3D SOLE CLOSE-UP / {kind}',fill='white')
+          close.save(p/'foot-ik2-fixed-camera-close-up.jpg',quality=93)
+          # Step 9: actual temporal contact comparison, original 60-bone GLB.
+          temporal=Image.new('RGB',(1320,520*2),'#06131d')
+          for row,clip in enumerate(['run','sprint']):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'step9-{clip}-{state}.png').convert('RGB')
+                  source.thumbnail((635,485))
+                  temporal.paste(source,(col*660+(660-source.width)//2,row*520+27))
+                  ImageDraw.Draw(temporal).text((col*660+12,row*520+8),
+                      f'{clip} / Step 9 ROOT Y CONTINUITY / {state.upper()}',fill='white')
+          temporal.save(p/'step9-temporal-grounding-real-3d-before-after.jpg',quality=93)
+          # Step 10: genuine live-GLB skinned-boot collision A/B, 7 modes.
+          names=['walk','jog','run','sprint','strafeLeft','strafeRight','backpedal']
+          collision=Image.new('RGB',(1320,420*len(names)),'#06131d')
+          for row,name in enumerate(names):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'step10-{name}-{state}.png').convert('RGB')
+                  source.thumbnail((645,385))
+                  collision.paste(source,(col*660+(660-source.width)//2,row*420+27))
+                  ImageDraw.Draw(collision).text((col*660+12,row*420+8),
+                      f'{name} / Step 10 SKINNED SOLE / {state.upper()}',fill='white')
+          collision.save(p/'step10-real-webgl-contact-before-after.jpg',quality=93)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-eight-twist-bones-prototype
+          path: |
+            assets/footera/models/footera-evolution-twist-prototype.glb
+            twist-build-report.json
+            test-artifacts/player-evolution-twist/*.png
+            test-artifacts/player-evolution-twist/*.jpg
+            test-artifacts/player-evolution-twist/*.mp4
+            test-artifacts/player-evolution-twist/*.json
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Save verified experimental GLB to twist branch only
+        if: success() && github.event_name == 'push' && github.ref_name == 'feature/player-evolution-twist-bones'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/footera/models/footera-evolution-twist-prototype.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "build(player-evolution): publish experimental 60-bone twist GLB [skip ci]"
+            git push origin HEAD:refs/heads/feature/player-evolution-twist-bones
+          fi

@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Footera Player Evolution – Step 13 Natural Locomotion – 60-Bone WebGL</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#08121b;color:#eef9f9;font:15px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:1140px;margin:auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font-size:clamp(22px,4vw,36px);margin:4px 0}small,.muted{color:#a7b9c0}
+.pill{font-size:12px;padding:5px 12px;border:1px solid #427d77;border-radius:999px;color:#a9f0d7}
+.stage{position:relative;border:1px solid #31565e;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 60% 20%,#1e4b4a,#071421 70%)}
+canvas{display:block;width:100%;height:clamp(400px,65vh,690px);touch-action:pan-y}
+.overlay{position:absolute;inset:18px 18px auto;pointer-events:none}
+.overlay strong{display:block;font-size:clamp(18px,4vw,30px)}
+.overlay span{color:#b7dddb;font-size:13px}
+.footnote{position:absolute;inset:auto 14px 12px;font-size:12px;color:#b0c3c3;pointer-events:none}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+button{border:1px solid #4e787c;border-radius:9px;padding:11px 15px;background:#15333c;color:white;cursor:pointer;font:inherit}
+button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
+#status{font-size:13px;color:#b7d5d9}
+.note{background:#101f2b;border:1px solid #24414c;border-radius:12px;padding:15px;margin:16px 0}
+</style>
+</head>
+<body><main>
+<header><div><small>FOOTERA – BUILD YOUR ERA · 3D LAB</small><h1>Player Evolution 2.0</h1></div><span class="pill">Schritt 13 · Natural Locomotion · 60-Bone · Testbranch</span></header>
+<section class="stage">
+<canvas id="view" aria-label="Echte interaktive 3D-Ansicht des Fußballspielers"></canvas>
+<div class="overlay"><strong id="model-title">Lade 3D-Spieler…</strong><span id="model-subtitle">WebGL · Originale GLB-Dateien</span></div>
+<div class="footnote">Entwicklungsmodell · Nicht in der Live-Version aktiviert</div>
+</section>
+<div class="controls">
+<button id="master" aria-pressed="true">60-Bone Twist-Modell</button>
+<button id="before" aria-pressed="false">52-Bone Master</button>
+<button id="rotate" aria-pressed="true">360°-Ansicht</button>
+<button id="pose" aria-pressed="false">Gelenk-Test</button>
+<button id="hips" aria-pressed="true">Hüfte: natürlich</button>
+<button id="hipview">Hüfte nah</button>
+<button id="walk-mocap">Mixamo: Gehen</button>
+<button id="jog-mocap">Mixamo: Joggen</button>
+<button id="run-mocap">Mixamo: Laufen</button>
+<button id="sprint-mocap">Mixamo: Sprinten</button>
+<button id="cut-left-mocap">Mixamo: Linker Seitwärtsschritt</button>
+<button id="cut-right-mocap">Mixamo: Rechter Seitwärtsschritt</button>
+<button id="backpedal-mocap">Mixamo: Rückwärtslauf</button>
+<button id="direction-foot-contact" aria-pressed="true">Stützfuß-Root: an</button>
+<button id="foot-ik" aria-pressed="true">Fuß-IK: an</button>
+<button id="ground-ik" aria-pressed="true">Foot IK 2.0 / Sohle: an</button>
+<button id="ground-continuity" aria-pressed="true">Schritt 9: Höhenübergänge weich</button>
+ <button id="collision-safe" aria-pressed="true">Schritt 10: Sohle kollisionssicher</button>
+<button id="shoe-flight" aria-pressed="true">Schritt 11: Zehenfreiheit im Schwung</button>
+<button id="plant-lock12" aria-pressed="true">Schritt 12: Welt-Fußkontakt</button>
+<button id="locomotion13" aria-pressed="true">Schritt 13: Speed-Matched Locomotion</button>
+<button id="speed13">Schritt 13: Tempo 4,55 m/s</button>
+<button id="fixed-cam" aria-pressed="false">Kamera: Spieler folgen</button>
+<button id="knee-axis" aria-pressed="true">Knieachse: stabil</button>
+<button id="kneeview">Knie nah</button>
+<button id="shoulders" aria-pressed="true">Schultern: anatomisch</button>
+<button id="chestview">Oberkörper nah</button>
+<button id="root-travel" aria-pressed="true">Echte Schrittlänge: an</button>
+<button id="side">Seitenansicht</button>
+<button id="front">Vorne</button>
+<button id="back">Hinten</button>
+<button id="face">Gesicht</button>
+</div>
+<p id="status" role="status">Modelle werden geladen…</p>
+<div class="note"><b>Mixamo-Captures:</b> Die vier Testmodi spielen die echten bereits vorhandenen 30-FPS-Mixamo-Bewegungsdaten auf dem 52-/60-Knochen-Modell ab. Der Spieler erhält seine Vorwärtsbewegung aus dem aufgezeichneten Fußweg; die Kamera folgt dem Spieler. Die zuschaltbare Fuß-IK korrigiert verbleibende kleine Abweichungen. Das ist noch kein Nachweis für Fußkontakt auf bewegter Spielwelt-Route.</div>
+<div class="note"><b>Richtungswechsel (Labor):</b> Originale Mixamo-Aufnahmen für Lateral- und Rückwärtsbewegung werden über Quaternionen überblendet. Der optionale Stützfuß-Root rekonstruiert die Fortbewegung aus realen Schuhtrajektorien. Die Kontakt-Erkennung ist eine Näherung ohne reale Boden-Kollision, vollständig dynamische Drehung, Live-Match-Root oder garantierten Fußhalt.</div>
+<div class="note"><b>Foot IK 2.0 – Step 8:</b> Die Bodenabstände werden aus der echten 3D-Schuhsohle (Mesh-Vertices, wenn vorhanden) und nicht allein vom Knöchel abgeleitet. In der Standphase korrigiert ein anatomisch begrenzter Pass Fersen-/Zehenhöhe und Fußneigung, die Mixamo-Quaternions bleiben Quelle. Die Bodenerkennung bei Richtungswechseln ist weiter aus Schuhhöhe abgeleitet – keine echte Terrain-Raycasts, keine Live-Match-Physik. Die feste Kamera zeigt die Route ohne Spieler-Nachführung.</div>
+<div class="note"><b>Step 9 – Continuous Grounding:</b> Die gemessene Sohlen-Korrektur wird bei normalem Abspielen über eine zeitbasierte Geschwindigkeits- und Beschleunigungsgrenze geführt. Vorher-/Nachher-Schalter isoliert nur diese Höhenkontinuität. Bei beliebigem Zeitsprung wird für reproduzierbare Testbilder neu initialisiert. Kein Terrain-Raycaster, keine garantierte Kollisionsfreiheit während kurzer Übergänge.</div>
+<div class="note"><b>Step 11 – Foot Flight:</b> Gemessene Weltgeschwindigkeit des schwingenden Schuhs bzw. die originalen Gait-Phasen begrenzen die Sohlenkorrektur. Nur der nicht abgestützte bewegte Fuß darf zum Verhindern des Schlurfens angehoben und an der Spitze ausgerichtet werden. Der Standfuß bleibt unverändert; QA und optische Abnahme sind erforderlich.</div>
+<div class="note"><b>Step 12 – Welt-Fußkontakt:</b> Echte Schuhsohle und Knöchel bestimmen das Weltkontaktziel; bis zum Zehenabdruck bleibt es fixiert. Nicht erreichbare Ziele, Drift und Schweben werden gemessen. Experiment im flachen 3D-Studio, kein Match-Release.</div>
+<div class="note"><b>Step 13 – Natural Locomotion:</b> Vier echte Mixamo-Captures werden synchronisiert über originale Quaternionen geblendet. Vorschau-Root folgt gemessener Schrittrichtung, explizitem Beschleunigungs- und Bremsprofil. Schritt-12-Fußkontakt bleibt separat prüfbar. <b>Kein Livespiel-Release.</b></div>
+<div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
+</main>
+<script type="module">
+import * as THREE from './vendor/three/three.module.min.js';
+import {GLTFLoader} from './vendor/three/GLTFLoader.mjs';
+import {FOOTERA_EVOLUTION_BONES,auditFooteraRig,createFooteraPoseDirector} from './3d-player-evolution-rig.mjs';
+import {paintFooteraHumanKit} from './3d-player-human.mjs';
+import {FOOTERA_TWIST_SEGMENTS,inspectFooteraTwistRig,createFooteraTwistSolver}
+ from './3d-player-evolution-twist.mjs';
+import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
+import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
+import {createFooteraFootPlant,footeraGroundRootOffset} from './3d-player-evolution-foot-ik.mjs';
+import {createFooteraShoePhaseTracker,footeraGaitSwing} from './3d-player-evolution-shoe-phases.mjs';
+import {createFooteraPlantLock} from './3d-player-evolution-plant-lock.mjs';
+import {createFooteraNaturalLocomotion} from './3d-player-evolution-natural-locomotion.mjs';
+import {createFooteraContactContinuity} from './3d-player-evolution-contact-continuity.mjs';
+ import {createFooteraCollisionSoles,createFooteraCollisionSafeContact}
+  from './3d-player-evolution-collision-contact.mjs';
+import {createFooteraShoulderAlignment} from './3d-player-evolution-shoulders.mjs';
+import {createFooteraDirectionalTransitions} from './3d-player-evolution-transitions.mjs';
+import {createFooteraDirectionalContact} from './3d-player-evolution-direction-contact.mjs';
+
+const el=id=>document.getElementById(id),canvas=el('view'),status=el('status');
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.17;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(35,1,.01,120);
+const hemi=new THREE.HemisphereLight(0xd5f6ff,0x1a2631,2.1);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(3.5,6,5);key.castShadow=true;
+key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-3;key.shadow.camera.right=3;
+key.shadow.camera.top=5;key.shadow.camera.bottom=-2;scene.add(key);
+const rim=new THREE.DirectionalLight(0x8af7d7,2.1);rim.position.set(-3,3,-4);scene.add(rim);
+scene.add(key.target,rim.target);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(130,128),
+ new THREE.MeshStandardMaterial({color:0x17413d,roughness:.88}));
+floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=true;scene.add(floor);
+const grid=new THREE.GridHelper(260,260,0x246d67,0x1d4644);
+grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
+
+const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true,groundIK:true,cameraFixed:false,groundContinuity:true,collisionSafe:true,footMotion11:true,footPlantLock:true,locomotion13:true,locomotionSpeed:4.55},loader=new GLTFLoader();
+function colorKit(info){
+ const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
+ paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
+ const map=new THREE.CanvasTexture(cloth);map.flipY=false;map.colorSpace=THREE.SRGBColorSpace;
+ map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ return map;
+}
+function readyModel(gltf){
+ const root=gltf.scene;
+ root.rotation.y=Math.PI; // old GLBs face +Z; camera faces Footera -Z
+ const basePosition=root.position.clone();
+ const info=gltf.parser.json.extras?.footera||{};
+ const tex=colorKit(info);
+ root.traverse(o=>{
+  if(!o.isSkinnedMesh)return;
+  if(o.name.startsWith('FooteraHair-'))o.visible=o.name==='FooteraHair-short02';
+  if(o.name.startsWith('FooteraBrows-'))o.visible=o.name==='FooteraBrows-eyebrow001';
+  if(o.name.startsWith('FooteraFacial-'))o.visible=false;
+  if(['FooteraShirt','FooteraShorts','FooteraSocks'].includes(o.name)){
+   o.material=new THREE.MeshStandardMaterial({name:'FooteraEvolutionKit',map:tex,roughness:o.name==='FooteraShirt'?.76:.86,metalness:0,side:THREE.DoubleSide});
+  }
+  o.frustumCulled=false;o.castShadow=true;o.receiveShadow=true;
+ });
+ scene.add(root);
+ const report=auditFooteraRig(root);
+ if(!report.ok)throw new Error('Rig validation: '+report.errors.slice(0,5).join(', '));
+ const poses=createFooteraPoseDirector(root);
+ const gait=createFooteraGaitMotion(root);
+ const capture=createFooteraCapturedGait(root);
+ const locomotion=createFooteraNaturalLocomotion(capture);
+ const ik=createFooteraFootPlant(root,capture);
+ const shoulders=createFooteraShoulderAlignment(root);
+ const transitions=createFooteraDirectionalTransitions(root,capture);
+ const directionContact=createFooteraDirectionalContact(transitions);
+  const contactContinuity=createFooteraContactContinuity();
+  const collisionSoles=info.evolutionTwist?createFooteraCollisionSoles(root):null;
+  const collisionContact=createFooteraCollisionSafeContact();
+ const shoePhase=createFooteraShoePhaseTracker();
+  const plantLock=createFooteraPlantLock();
+ const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
+ const twistReport=twist?inspectFooteraTwistRig(root):null;
+ if(twistReport&&!twistReport.ok)
+  throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
+ const originals=new Map(),bones=new Map();
+ root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,collisionSoles,collisionContact,shoePhase,plantLock,locomotion,lastMocap:null};
+}
+function jointPose(model,t){
+ model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
+ const rot=new Map(),walk=Math.sin(t*3),effort=.36;
+ const add=(name,x=0,y=0,z=0)=>{
+  const base=model.originals.get(name);if(!base)return;
+  rot.set(name,base.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(x,y,z,'XYZ'))));
+ };
+ add('spine_01',.06*Math.sin(t*1.4));
+ add('spine_03',-.04*Math.sin(t*1.4));
+ add('neck_01',.03*Math.sin(t));
+ for(const [i,side] of ['l','r'].entries()){
+  const s=i?1:-1;
+  add('upperarm_'+side,s*.08*walk,0,s*.035);
+  add('lowerarm_'+side,-.10+Math.max(0,s*walk)*-.19);
+  add('thigh_'+side,s*effort*walk);
+  add('calf_'+side,-Math.max(0,-s*walk)*.58);
+  add('foot_'+side,.08*s*walk);
+ }
+ model.poses.beginFrame();model.poses.submit('action',rot);model.poses.commit();
+ model.twist?.update();
+}
+function applyPreviewRootGround(model,feet,time,key,{individualShoeIK=false}={}){
+ // Step 12 resolves collisions in each leg after a smooth root adjustment.
+ const target=footeraGroundRootOffset(feet,{groundY:0,maxOffset:.10});
+ const before=states.collisionSafe&&model.collisionSoles
+  ?model.collisionSoles.sample({groundY:0}):null;
+ const flow=before&&!individualShoeIK
+  ?model.collisionContact.sample({time,key,target,
+     floorLowest:before.lowest,enabled:states.groundContinuity})
+  :model.contactContinuity.sample({time,key,target,
+     enabled:states.groundContinuity});
+ if(before&&!individualShoeIK)model.contactContinuity.reset();
+ else model.collisionContact.reset();
+ const vertical=flow.offset;
+ // Root translation only: no replacement of the real Mixamo shoe/leg motion.
+ if(Math.abs(vertical)>1e-9){
+  model.root.position.y+=vertical;
+  model.root.updateMatrixWorld(true);
+  for(const f of Object.values(feet)){
+   if(f.heelHeight===null||f.heelHeight===undefined)continue;
+   f.heelHeight+=vertical;
+   f.toeHeight+=vertical;
+   f.floorPenetration=Math.max(0,-Math.min(f.heelHeight,f.toeHeight));
+  }
+ } 
+ if(before){
+  const after=model.collisionSoles.sample({groundY:0});
+  flow.collisionSoles={before,after,
+   maxPenetration:Math.max(after.feet.l.penetration,after.feet.r.penetration)};
+ }
+ return flow;
+}
+function refinePlantAfterRoot(model,{sourcePose,shoulderPose,clip,phase,
+ anchorWorlds,contactWeights,contactPhases,footMotion},grounding){
+ // World-space plant must be solved AFTER root motion. First restore the
+ // original captured quaternions at the final root position.
+ model.poses.beginFrame();
+ model.poses.submit('locomotion',sourcePose);
+ if(shoulderPose?.size)model.poses.submit('contact',shoulderPose);
+ model.poses.commit();
+ const soles=model.collisionSoles?.sample({groundY:0});
+ const corrected=model.ik.computePose({
+  clip,phase,strength:1,kneeAlignment:states.kneeAlign?1:0,
+  anchorWorlds,contactWeights,contactPhases,footMotion,
+  plantLock:true,groundContact:true,groundY:0,
+  measuredSoles:soles?.feet??null
+ });
+ if(corrected.pose.size){
+  model.poses.submit('ik',corrected.pose);
+  model.poses.commit();
+ }
+ if(grounding?.collisionSoles){
+  const after=model.collisionSoles.sample({groundY:0});
+  grounding.collisionSoles.after=after;
+  grounding.collisionSoles.maxPenetration=Math.max(
+   after.feet.l.penetration,after.feet.r.penetration);
+  grounding.limbSafeRefinement=true;
+ }
+ return corrected;
+}
+function lockMeasuredFeet(model){
+ const feet=model.ik.measureFeet();
+ const outsole=model.collisionSoles?.sample({groundY:0});
+ if(outsole)for(const side of ['l','r'])
+  feet[side].lowest=outsole.feet[side].lowest;
+ return feet;
+}
+function captureWalkPose(model,t){
+ model.gait.reset();
+ const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[states.mocapClip];
+ const drive=states.locomotion13?model.locomotion.sample({
+  time:t,targetSpeed:states.locomotionSpeed}):null;
+ const cycles=drive?drive.cycles:t*rate;
+ const sample=drive??model.capture.sample(states.mocapClip,cycles);
+ const rootTravel=states.rootTravel
+  ?(drive?new THREE.Vector3(...drive.rootTravel):
+    model.capture.rootTravel(states.mocapClip,cycles,sample.feet))
+  :new THREE.Vector3();
+ model.root.position.copy(model.basePosition).add(
+  rootTravel.clone().applyQuaternion(model.root.quaternion));
+ model.poses.beginFrame();
+ model.poses.submit('locomotion',sample.pose);
+ model.poses.commit();
+ model.capture.applyTranslation(sample.translation);
+ const upper=model.shoulders.sample({enabled:states.shoulderAlign,strength:1});
+ if(upper.pose.size){
+  model.poses.submit('contact',upper.pose);
+  model.poses.commit();
+ }
+ const shoeMotion=states.footMotion11&&states.groundIK
+  ?Object.fromEntries(['l','r'].map(side=>[side,{swing:footeraGaitSwing(sample.phase,side)}])):null;
+ model.shoePhase.reset();
+  const plant12=states.footPlantLock&&states.groundIK&&states.footPlant
+   ?model.plantLock.sample({time:t,key:drive?'locomotion13':'gait:'+states.mocapClip,
+     phase:sample.phase,feet:lockMeasuredFeet(model)})
+   :(model.plantLock.reset(),null);
+  const anchorWorlds={};
+ if(states.rootTravel)for(const side of ['l','r'])
+  anchorWorlds[side]=drive
+   ?model.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()).toArray()
+   :model.capture.worldFootAnchor(states.mocapClip,cycles,side,
+    model.basePosition,model.root.quaternion).toArray();
+ if(plant12)for(const side of ['l','r'])
+   if(plant12.feet[side].locked)anchorWorlds[side]=plant12.anchors[side];
+  let planted=null;
+  if(states.footPlant||states.kneeAlign){
+  planted=model.ik.computePose({clip:drive?'run':states.mocapClip,phase:sample.phase,
+   strength:states.footPlant?1:0,kneeAlignment:states.kneeAlign?1:0,
+   anchorWorlds:states.rootTravel||plant12?anchorWorlds:null,
+    groundContact:states.groundIK&&states.footPlant,groundY:0,
+    contactWeights:plant12?.weights??null,contactPhases:plant12?.phases??null,
+    plantLock:!!plant12,footMotion:shoeMotion,
+     measuredSoles:plant12?model.collisionSoles?.sample({groundY:0}).feet:null});
+  if(planted.pose.size){
+   model.poses.submit('ik',planted.pose);
+   model.poses.commit();
+  }
+ }
+ const grounding=states.groundIK&&planted?.feet
+  ?applyPreviewRootGround(model,planted.feet,t,drive?'locomotion13':'gait:'+states.mocapClip,
+    {individualShoeIK:!!plant12})
+  :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
+ if(plant12&&grounding){
+  planted=refinePlantAfterRoot(model,{sourcePose:sample.pose,
+   shoulderPose:upper.pose,clip:drive?'run':states.mocapClip,phase:sample.phase,
+   anchorWorlds,contactWeights:plant12.weights,
+   contactPhases:plant12.phases,footMotion:shoeMotion},grounding);
+ }
+ const groundRootY=grounding?.offset??0;
+  const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
+  model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
+   naturalLocomotion13:drive?{
+    speedMps:drive.speedMps,targetSpeedMps:drive.targetSpeedMps,
+    accelerationMps2:drive.accelerationMps2,
+    clipWeights:drive.clipWeights,cycles:drive.cycles,
+    rootDisplacementMetres:drive.rootDisplacementMetres,
+    calibrated:drive.measuredCalibration}:null,
+  source:sample.source,hipTranslation:sample.translation,
+  rootTravel:rootTravel.toArray(),
+  worldFootAnchors:states.rootTravel?anchorWorlds:null,
+  feet:planted?.feet||null,knees:planted?.knees||null,
+  groundContact:states.groundIK&&states.footPlant,soles:model.ik.soles,
+  rootGroundOffsetY:groundRootY,
+  rootGroundTargetY:grounding?.target??0,
+  rootGroundResidualY:grounding?.residual??0,
+  rootGroundVelocityY:grounding?.velocity??0,
+  groundContinuity:states.groundContinuity,
+  collisionSafe:states.collisionSafe,
+  collisionSoles:grounding?.collisionSoles??null,
+  collisionSafetyOverride:grounding?.safetyOverride??false,
+  collisionRootOverRate:grounding?.overRate??0,
+  collisionRootLimitExceeded:grounding?.limitExceeded??false,
+  footMotion11:states.footMotion11,shoeMotion,
+   plantLock12:plant12?{...plant12,measured:plantMeasure12}:null,
+   shoulders:upper.arms,shoulderSource:upper.source};
+ model.twist?.update();
+}
+function capturedDirectionalPose(model,t){
+ model.gait.reset();model.capture.reset();
+ model.root.position.copy(model.basePosition);
+ // No fabricated cut foot-contact or artificial root travel: preserve exact
+ // source Mixamo pose and report the outstanding world-foot limitation.
+ const sequence=model.transitions.sampleSequence({
+  time:Math.max(0,Math.min(3,t)),direction:states.direction});
+ const contact=model.directionContact.sample({time:Math.max(0,Math.min(3,t)),
+  direction:states.direction,enabled:states.directionContact});
+ model.root.position.copy(model.basePosition).add(
+  contact.rootTravel.clone().applyQuaternion(model.root.quaternion));
+ model.poses.beginFrame();
+ model.poses.submit('locomotion',sequence.pose);model.poses.commit();
+ model.capture.applyTranslation(sequence.translation);
+ if(states.groundIK&&states.directionContact){
+  // Preview-only physical COM lag from captured-root acceleration. Unlike an
+  // authored walk cycle, no new leg, knee or ankle animation is generated.
+  model.bones.get('pelvis').position.add(contact.inertiaShift);
+  model.root.updateMatrixWorld(true);
+ }
+ const shoulders=model.shoulders.sample({enabled:states.shoulderAlign});
+ if(shoulders.pose.size){
+  model.poses.submit('contact',shoulders.pose);model.poses.commit();
+ }
+ let ground=null,shoeMotion=null,plant12=null,anchorWorlds=null;
+ if(states.groundIK&&states.footPlant&&states.directionContact){
+  // Step 7 supplies the stationary shoe footprint and actual root path.
+  // Only the CURRENT support foot is considered planted; swing remains
+  // the fully authored Mixamo foot animation.
+  model.root.updateMatrixWorld(true);
+  anchorWorlds={};
+  for(const side of ['l','r'])
+   anchorWorlds[side]=model.bones.get('foot_'+side)
+    .getWorldPosition(new THREE.Vector3()).toArray();
+  const footprint=contact.estimatedFootprint.clone()
+   .applyQuaternion(model.root.quaternion).add(model.basePosition);
+  anchorWorlds[contact.supportSide][0]=footprint.x;
+  anchorWorlds[contact.supportSide][2]=footprint.z;
+  shoeMotion=states.footMotion11?model.shoePhase.sample({
+    time:t,key:'direction:'+states.direction,supportSide:contact.supportSide,
+    feet:Object.fromEntries(['l','r'].map(side=>[side,
+     model.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()).toArray()]))
+   }):(model.shoePhase.reset(),null);
+  if(states.footPlantLock){
+    plant12=model.plantLock.sample({time:t,key:'direction:'+states.direction,
+     feet:lockMeasuredFeet(model),supportSide:contact.supportSide,
+     supportWeight:contact.contactWeight,
+     supportProgress:contact.supportProgress});
+    for(const side of ['l','r'])
+     if(plant12.feet[side].locked)anchorWorlds[side]=plant12.anchors[side];
+   }else model.plantLock.reset();
+   const contactWeights={l:0,r:0},contactPhases={l:0,r:0};
+  contactWeights[contact.supportSide]=contact.contactWeight;
+  contactPhases[contact.supportSide]=contact.supportProgress;
+  ground=model.ik.computePose({clip:'run',phase:sequence.phase,
+   strength:1,kneeAlignment:states.kneeAlign?1:0,
+   anchorWorlds,groundContact:true,groundY:0,
+   contactWeights:plant12?.weights??contactWeights,
+    contactPhases:plant12?.phases??contactPhases,
+    plantLock:!!plant12,footMotion:shoeMotion,
+     measuredSoles:plant12?model.collisionSoles?.sample({groundY:0}).feet:null});
+  if(ground.pose.size){
+   model.poses.submit('ik',ground.pose);model.poses.commit();
+  }
+ }
+ const grounding=ground?.feet
+  ?applyPreviewRootGround(model,ground.feet,t,'direction:'+states.direction,
+    {individualShoeIK:!!plant12})
+  :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
+ if(plant12&&grounding){
+  ground=refinePlantAfterRoot(model,{sourcePose:sequence.pose,
+   shoulderPose:shoulders.pose,clip:'run',phase:sequence.phase,
+   anchorWorlds,contactWeights:plant12.weights,
+   contactPhases:plant12.phases,footMotion:shoeMotion},grounding);
+ }
+ const groundRootY=grounding?.offset??0;
+  const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
+  model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
+  direction:{from:sequence.from,to:sequence.to,weight:sequence.weight,
+   easedWeight:sequence.easedWeight,fromFrame:sequence.fromFrame,
+   toFrame:sequence.toFrame,feet:sequence.feet,
+   worldFootPlantGuaranteed:sequence.worldFootPlantGuaranteed,
+   liveRootMotion:sequence.liveRootMotion,
+   estimatedContactSide:contact.supportSide,
+   rootTravel:contact.rootTravel.toArray(),
+   supportSlipMetres:contact.footprintSlip,
+   speedLimited:contact.speedLimited,
+   contactInferred:contact.contactInferred,
+   supportProgress:contact.supportProgress,contactWeight:contact.contactWeight,
+   inferredAcceleration:contact.inferredAcceleration.toArray(),
+   inertiaShift:states.groundIK?contact.inertiaShift.toArray():[0,0,0],
+   groundIKEnabled:!!ground,groundFeet:ground?.feet??null,
+   rootGroundOffsetY:groundRootY,
+   rootGroundTargetY:grounding?.target??0,
+   rootGroundResidualY:grounding?.residual??0,
+   rootGroundVelocityY:grounding?.velocity??0,
+   groundContinuity:states.groundContinuity,
+   collisionSafe:states.collisionSafe,
+   collisionSoles:grounding?.collisionSoles??null,
+   collisionSafetyOverride:grounding?.safetyOverride??false,
+   collisionRootOverRate:grounding?.overRate??0,
+   collisionRootLimitExceeded:grounding?.limitExceeded??false,
+   groundKnees:ground?.knees??null,
+   rootContactEnabled:states.directionContact,
+   footMotion11:states.footMotion11,shoeMotion,
+    plantLock12:plant12?{...plant12,measured:plantMeasure12}:null,
+    contactStats:contact.limits},shoulders:shoulders.arms};
+ model.twist?.update();
+}
+function naturalWalkPose(model,t){
+ model.root.position.copy(model.basePosition);
+ const gait=model.gait.sample(t,{cadence:1.45,strength:1});
+ model.poses.beginFrame();model.poses.submit('locomotion',gait.pose);model.poses.commit();
+ model.gait.applyTranslation(gait.translation);
+ model.twist?.update();
+}
+function resetPose(model){
+ model.poses.beginFrame();model.poses.commit();
+ model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
+ model.lastMocap=null;model.plantLock.reset();model.contactContinuity.reset();model.collisionContact.reset();model.twist?.reset();
+}
+function axialPose(model,bone,deg){
+ resetPose(model);
+ const def=FOOTERA_TWIST_SEGMENTS.find(x=>x.parent===bone);
+ if(!def)throw new Error('Unknown axial limb '+bone);
+ const parent=model.bones.get(bone),end=model.bones.get(def.end);
+ const axis=end.position.clone().normalize();
+ if(axis.lengthSq()<.9)throw new Error('Degenerate anatomical axis '+bone);
+ parent.quaternion.copy(model.originals.get(bone)).multiply(
+  new THREE.Quaternion().setFromAxisAngle(axis,THREE.MathUtils.degToRad(deg)));
+ model.twist?.update();
+ model.root.updateMatrixWorld(true);
+}
+function cutPose(model,t){
+ model.root.position.copy(model.basePosition);
+ // Technical side-step/cut stress pose: hip yaw, counter-rotating torso,
+ // alternate planted and lifted knees. No gameplay speed/physics claim.
+ const a=Math.sin(t*3.6),push=Math.max(0,a),plant=Math.max(0,-a);
+ const pose=new Map();
+ const rot=(name,x=0,y=0,z=0)=>{
+  pose.set(name,model.originals.get(name).clone().multiply(
+   new THREE.Quaternion().setFromEuler(new THREE.Euler(x,y,z,'XYZ'))));
+ };
+ rot('pelvis',.06*a,.42*a,-.10*a);
+ rot('spine_01',-.08*a,-.25*a,.06*a);
+ rot('spine_03',-.03*a,-.07*a,.07*a);
+ rot('thigh_l',.46*push,0,-.19*push);
+ rot('calf_l',-.59*push);
+ rot('foot_l',.22*push);
+ rot('thigh_r',.46*plant,0,.19*plant);
+ rot('calf_r',-.59*plant);
+ rot('foot_r',.22*plant);
+ rot('upperarm_l',-.16*a);
+ rot('upperarm_r',.16*a);
+ model.poses.beginFrame();model.poses.submit('action',pose);model.poses.commit();
+ model.gait.applyTranslation({x:.015*a,y:.008*(1-Math.cos(t*7.2))*.5,z:.005*a});
+ model.twist?.update();
+}
+function kickPose(model,t){
+ model.root.position.copy(model.basePosition);
+ const progress=(Math.sin(t*4)+1)*.5;
+ const pose=new Map();
+ const rot=(name,rx)=>{
+  pose.set(name,model.originals.get(name).clone().multiply(
+   new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),rx)));
+ };
+ rot('thigh_r',1.05*progress);rot('calf_r',-.95*progress);
+ rot('foot_r',.24*progress);rot('thigh_l',-.30*progress);
+ rot('upperarm_l',-.30*progress);rot('upperarm_r',.35*progress);
+ rot('pelvis',.055*progress);
+ rot('spine_01',-.035*progress);
+ model.poses.beginFrame();model.poses.submit('action',pose);model.poses.commit();
+ model.gait.applyTranslation({x:-.012*progress,y:.004*progress,z:-.006*progress});
+ model.twist?.update();
+}
+function setVersions(){
+ for(const [key,m] of Object.entries(versions))m.root.visible=key===states.version;
+ for(const id of ['master','before'])el(id).setAttribute('aria-pressed',String(id===states.version));
+ el('model-title').textContent=states.version==='master'?'60-BONE EVOLUTION':'52-BONE REFERENZ';
+ el('model-subtitle').textContent=states.version==='master'?'Reale acht Twist-Bones · eigene Skinning-Gewichte':'Step-2-Master ohne Twist-Bones · gleiche Geometrie';
+}
+function fit(){
+ const w=canvas.clientWidth||600,h=canvas.clientHeight||520;
+ renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+function renderAt(t=0){
+ const m=versions[states.version];if(!m)return;
+ states.time=t;
+ // Only the visible rig is sampled: hidden 52-bone comparison actors
+ // cannot affect temporal plant/IK state or waste 60-bone WebGL QA time.
+ for(const x of [m]){
+  x.root.rotation.y=Math.PI+states.angle;
+  if(states.mode==='axial')axialPose(x,states.bone,states.deg);
+  else if(states.mode==='kick')kickPose(x,t);
+  else if(states.mode==='mocap')captureWalkPose(x,t);
+  else if(states.mode==='directional')capturedDirectionalPose(x,t);
+  else if(states.mode==='cut')cutPose(x,t);
+  else if(states.mode==='walk'||states.pose)(states.hipNatural?naturalWalkPose:jointPose)(x,t);
+  else resetPose(x);
+ }
+ const focus=states.zoom==='face'?1.57:states.zoom==='chest'?1.41:states.zoom==='hips'?1.03:states.zoom==='knees'?.56:.95;
+ const distance=states.cameraFixed?(states.zoom==='knees'?3.2:7.4):
+  states.zoom==='face'?1.12:states.zoom==='chest'?2.05:
+  states.zoom==='hips'?2.55:states.zoom==='knees'?2.05:3.8;
+ const center=states.cameraFixed?new THREE.Vector3(0,0,0):m.root.position;
+ key.position.set(center.x+3.5,center.y+6,center.z+5);
+ key.target.position.copy(center);
+ rim.position.set(center.x-3,center.y+3,center.z-4);
+ rim.target.position.copy(center);
+ camera.position.set(center.x,focus+.14+center.y,center.z+distance);
+ camera.lookAt(center.x,focus+center.y,center.z);
+ renderer.render(scene,camera);
+}
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true,groundIK=false,cameraFixed=false,groundContinuity=true,collisionSafe=false,footMotion11=false,footPlantLock=false,locomotion13=false,locomotionSpeed=4.55}={})=>{
+ if(!versions[version])throw Error('Model not ready');
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact,groundIK,cameraFixed,groundContinuity,collisionSafe,footMotion11,footPlantLock,locomotion13,locomotionSpeed});
+ setVersions();renderAt(time);
+ const m=versions[version];
+ return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
+  triangles:renderer.info.render.triangles,drawCalls:renderer.info.render.calls,
+  width:canvas.width,height:canvas.height,
+  hipNatural:states.hipNatural,pelvisOffset:m.gait.getOffset().toArray(),
+  pelvisRotation:m.bones.get('pelvis').quaternion.toArray(),
+  spineRotation:m.bones.get('spine_01').quaternion.toArray(),
+  mocap:m.lastMocap,rootPosition:m.root.position.toArray(),actualFeet:Object.fromEntries(['l','r'].map(side=>[side,
+   m.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()).toArray()])),
+  sampleNames:[...m.bones.keys()].slice(0,5)};
+};
+const timer={last:0};
+function loop(timestamp){
+ if(versions.master&&versions.before){
+  if(!timer.last)timer.last=timestamp;
+  const dt=Math.min((timestamp-timer.last)/1000,.04);timer.last=timestamp;
+  if(states.rotate)states.angle=(states.angle+dt*.42)%(Math.PI*2);
+  if(states.pose)states.time+=dt;
+  renderAt(states.time);
+ }
+ requestAnimationFrame(loop);
+}
+function control(id,fn){el(id).addEventListener('click',fn)}
+control('master',()=>{states.version='master';setVersions()});
+control('before',()=>{states.version='before';setVersions()});
+control('rotate',()=>{states.rotate=!states.rotate;el('rotate').setAttribute('aria-pressed',String(states.rotate))});
+control('pose',()=>{states.pose=!states.pose;el('pose').setAttribute('aria-pressed',String(states.pose))});
+control('hips',()=>{
+ states.hipNatural=!states.hipNatural;states.pose=true;states.mode='walk';
+ el('hips').textContent=states.hipNatural?'Hüfte: natürlich':'Hüfte: bisherige';
+ el('hips').setAttribute('aria-pressed',String(states.hipNatural));
+ el('pose').setAttribute('aria-pressed','true');
+});
+control('hipview',()=>{states.zoom='hips';states.rotate=false;states.angle=0;});
+for(const [id,clip] of [['walk-mocap','walk'],['jog-mocap','jog'],
+ ['run-mocap','run'],['sprint-mocap','sprint']]){
+ control(id,()=>{states.mocapClip=clip;states.mode='mocap';states.pose=true;states.time=0;
+  el('pose').setAttribute('aria-pressed','true');
+  for(const [cid,c] of [['walk-mocap','walk'],['jog-mocap','jog'],
+   ['run-mocap','run'],['sprint-mocap','sprint']])
+   el(cid).setAttribute('aria-pressed',String(c===clip));
+ });
+}
+for(const [id,direction] of [['cut-left-mocap','strafeLeft'],
+ ['cut-right-mocap','strafeRight'],['backpedal-mocap','backpedal']]){
+ control(id,()=>{
+  states.direction=direction;states.mode='directional';states.pose=true;
+  states.time=0;states.rotate=false;states.angle=0;
+  el('pose').setAttribute('aria-pressed','true');
+  for(const [btn,move] of [['cut-left-mocap','strafeLeft'],
+   ['cut-right-mocap','strafeRight'],['backpedal-mocap','backpedal']])
+   el(btn).setAttribute('aria-pressed',String(move===direction));
+ });
+}
+control('direction-foot-contact',()=>{
+ states.directionContact=!states.directionContact;
+ el('direction-foot-contact').setAttribute('aria-pressed',String(states.directionContact));
+ el('direction-foot-contact').textContent=states.directionContact
+  ?'Stützfuß-Root: an':'Stützfuß-Root: aus';
+});
+control('root-travel',()=>{states.rootTravel=!states.rootTravel;
+ el('root-travel').setAttribute('aria-pressed',String(states.rootTravel));
+ el('root-travel').textContent=states.rootTravel?'Echte Schrittlänge: an':'Echte Schrittlänge: aus';
+});
+control('foot-ik',()=>{states.footPlant=!states.footPlant;
+ el('foot-ik').setAttribute('aria-pressed',String(states.footPlant));
+ el('foot-ik').textContent=states.footPlant?'Fuß-IK: an':'Fuß-IK: aus';
+});
+control('ground-ik',()=>{
+ states.groundIK=!states.groundIK;
+ el('ground-ik').setAttribute('aria-pressed',String(states.groundIK));
+ el('ground-ik').textContent=states.groundIK?'Foot IK 2.0 / Sohle: an':'Foot IK 2.0 / Sohle: aus';
+});
+control('ground-continuity',()=>{
+ states.groundContinuity=!states.groundContinuity;
+ for(const model of Object.values(versions)){
+   model.contactContinuity.reset();model.collisionContact.reset();
+  }
+ el('ground-continuity').setAttribute('aria-pressed',String(states.groundContinuity));
+ el('ground-continuity').textContent=states.groundContinuity
+  ?'Schritt 9: Höhenübergänge weich':'Schritt 9: Höhenübergänge direkt';
+});
+control('collision-safe',()=>{
+  states.collisionSafe=!states.collisionSafe;
+  for(const model of Object.values(versions)){
+   model.collisionContact.reset();model.contactContinuity.reset();
+  }
+  el('collision-safe').setAttribute('aria-pressed',String(states.collisionSafe));
+  el('collision-safe').textContent=states.collisionSafe
+   ?'Schritt 10: Sohle kollisionssicher':'Schritt 10: Sohle A/B aus';
+ });
+ control('shoe-flight',()=>{
+  states.footMotion11=!states.footMotion11;
+  for(const model of Object.values(versions))model.shoePhase.reset();
+  el('shoe-flight').setAttribute('aria-pressed',String(states.footMotion11));
+  el('shoe-flight').textContent=states.footMotion11
+   ?'Schritt 11: Zehenfreiheit im Schwung':'Schritt 11: Swing A/B aus';
+ });
+ control('locomotion13',()=>{
+  states.locomotion13=!states.locomotion13;
+  states.mode='mocap';states.rotate=false;
+  for(const model of Object.values(versions))model.locomotion.reset();
+  el('locomotion13').setAttribute('aria-pressed',String(states.locomotion13));
+  el('locomotion13').textContent=states.locomotion13
+   ?'Schritt 13: Natural Locomotion EIN':'Schritt 13: Vergleich AUS';
+ });
+ control('speed13',()=>{
+  const speeds=[1.25,2.65,4.55,6.75];
+  const i=speeds.findIndex(v=>Math.abs(v-states.locomotionSpeed)<.02);
+  states.locomotionSpeed=speeds[(i+1)%speeds.length];
+  states.mode='mocap';
+  el('speed13').textContent='Schritt 13: Tempo '+states.locomotionSpeed.toFixed(2)+' m/s';
+ });
+ control('plant-lock12',()=>{
+   states.footPlantLock=!states.footPlantLock;
+   for(const model of Object.values(versions))model.plantLock.reset();
+   el('plant-lock12').setAttribute('aria-pressed',String(states.footPlantLock));
+   el('plant-lock12').textContent=states.footPlantLock
+    ?'Schritt 12: Welt-Fußkontakt':'Schritt 12: Lock A/B aus';
+  });
+  control('fixed-cam',()=>{
+ states.cameraFixed=!states.cameraFixed;states.rotate=false;
+ el('fixed-cam').setAttribute('aria-pressed',String(states.cameraFixed));
+ el('fixed-cam').textContent=states.cameraFixed?'Kamera: fest':'Kamera: Spieler folgen';
+});
+control('knee-axis',()=>{states.kneeAlign=!states.kneeAlign;
+ el('knee-axis').setAttribute('aria-pressed',String(states.kneeAlign));
+ el('knee-axis').textContent=states.kneeAlign?'Knieachse: stabil':'Knieachse: original';
+});
+control('kneeview',()=>{states.zoom='knees';states.rotate=false;states.angle=0;});
+control('shoulders',()=>{states.shoulderAlign=!states.shoulderAlign;
+ el('shoulders').setAttribute('aria-pressed',String(states.shoulderAlign));
+ el('shoulders').textContent=states.shoulderAlign?'Schultern: anatomisch':'Schultern: Mixamo Original';
+});
+control('chestview',()=>{states.zoom='chest';states.rotate=false;states.angle=0;});
+control('side',()=>{states.rotate=false;states.angle=Math.PI/2;states.zoom='full';
+ el('rotate').setAttribute('aria-pressed','false');});
+control('front',()=>{states.rotate=false;states.angle=0;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
+control('back',()=>{states.rotate=false;states.angle=Math.PI;states.zoom='full';el('rotate').setAttribute('aria-pressed','false')});
+control('face',()=>{states.rotate=false;states.angle=0;states.zoom='face';el('rotate').setAttribute('aria-pressed','false')});
+window.addEventListener('resize',fit);
+fit();requestAnimationFrame(loop);
+(async()=>{
+ try{
+  // Sequential loading avoids two decompressed MetaHuman bodies in mobile RAM.
+  const old=await loader.loadAsync('./assets/footera/models/footera-evolution-master.glb');
+  versions.before=readyModel(old);versions.before.root.visible=false;
+  const master=await loader.loadAsync('./assets/footera/models/footera-evolution-twist-prototype.glb');
+  versions.master=readyModel(master);
+  setVersions();renderAt(0);
+  status.textContent='Bereit – originale Mixamo-Captures, Step 7 Root und optionale Foot IK 2.0 + zeitstabile Höhenübergänge aus echter Schuhsohlenmessung. Isoliertes 3D-Studio.';
+  document.documentElement.dataset.ready='true';
+ }catch(err){
+  console.error(err);status.textContent='Lade-/Rigfehler: '+err.message;
+  document.documentElement.dataset.ready='error';
+ }
+})();
+</script></body></html>

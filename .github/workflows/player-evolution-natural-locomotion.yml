@@ -1,0 +1,23 @@
+name: Footera Player Evolution Step 13 – locomotion unit QA
+on:
+  push:
+    branches: ['feature/player-evolution-twist-bones']
+    paths:
+      - '3d-player-evolution-natural-locomotion.mjs'
+      - 'tests/player-evolution-natural-locomotion.test.mjs'
+      - '.github/workflows/player-evolution-natural-locomotion.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  captured-locomotion:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Source-preserving speed-matched gait and continuity tests
+        run: |
+          node --check 3d-player-evolution-natural-locomotion.mjs
+          node --test tests/player-evolution-natural-locomotion.test.mjs
