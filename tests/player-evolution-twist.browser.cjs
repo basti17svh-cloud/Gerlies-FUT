@@ -663,8 +663,8 @@ const server=http.createServer((req,res)=>{
      const c=data.collisionSoles;
      assert.ok(c?.before?.feet?.l?.meshCalibrated&&
       c?.before?.feet?.r?.meshCalibrated,name+' lacks authentic boot vertices');
-     assert.ok(c.before.feet.l.vertices>=24&&c.before.feet.r.vertices>=24,
-      name+' lacks skinned outsole samples');
+     assert.ok(c.before.feet.l.vertices>=500&&c.before.feet.r.vertices>=500,
+      name+' lacks full skinned outsole geometry (expected weighted shoe surface)');
      assert.ok(c.after.feet.l.lowPoint.every(Number.isFinite)&&
       c.after.feet.r.lowPoint.every(Number.isFinite),'Invalid skinned shoe contact');
      assert.ok(q.boneCount===60,'Shoe collision must use 60 bone rig');
