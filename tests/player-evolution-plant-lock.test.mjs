@@ -17,7 +17,8 @@ test('planted world ankle target never follows shoe slide or vertical hover',()=
  let a=lock.sample({time:0,key:'walk',phase:.20,feet:frames(0,.21)});
  assert.equal(a.active.length,1);
  assert.equal(a.feet.l.touchdown,true);
- assert.ok(Math.abs(a.feet.l.anchor[1]+.13)<1e-9);
+ // The ankle stays 8 cm above the measured sole; target is floor + 3 mm + 8 cm.
+ assert.ok(Math.abs(a.feet.l.anchor[1]-.083)<1e-9);
  const target=a.feet.l.anchor;
  for(let i=1;i<12;i++){
   a=lock.sample({time:i/60,key:'walk',phase:.20+i*.004,
