@@ -257,7 +257,8 @@ function captureWalkPose(model,t){
    anchorWorlds:states.rootTravel||plant12?anchorWorlds:null,
     groundContact:states.groundIK&&states.footPlant,groundY:0,
     contactWeights:plant12?.weights??null,contactPhases:plant12?.phases??null,
-    plantLock:!!plant12,footMotion:shoeMotion});
+    plantLock:!!plant12,footMotion:shoeMotion,
+     measuredSoles:plant12?model.collisionSoles?.sample({groundY:0}).feet:null});
   if(planted.pose.size){
    model.poses.submit('ik',planted.pose);
    model.poses.commit();
@@ -348,7 +349,8 @@ function capturedDirectionalPose(model,t){
    anchorWorlds,groundContact:true,groundY:0,
    contactWeights:plant12?.weights??contactWeights,
     contactPhases:plant12?.phases??contactPhases,
-    plantLock:!!plant12,footMotion:shoeMotion});
+    plantLock:!!plant12,footMotion:shoeMotion,
+     measuredSoles:plant12?model.collisionSoles?.sample({groundY:0}).feet:null});
   if(ground.pose.size){
    model.poses.submit('ik',ground.pose);model.poses.commit();
   }
