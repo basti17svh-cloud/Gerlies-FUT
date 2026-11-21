@@ -13,6 +13,7 @@ on:
       - '3d-player-evolution-transitions.mjs'
       - '3d-player-evolution-direction-contact.mjs'
       - '3d-player-evolution-foot-ik.mjs'
+      - '3d-player-evolution-contact-continuity.mjs'
       - 'tools/build-player-evolution-twist.py'
       - 'tests/player-evolution-twist.test.mjs'
       - 'tests/player-evolution-gait.test.mjs'
@@ -49,6 +50,7 @@ jobs:
           node --check 3d-player-evolution-transitions.mjs
           node --check 3d-player-evolution-direction-contact.mjs
           node --check 3d-player-evolution-foot-ik.mjs
+          node --check 3d-player-evolution-contact-continuity.mjs
           node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-ground-contact.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
         run: |
@@ -175,6 +177,16 @@ jobs:
                   ImageDraw.Draw(close).text((col*660+12,row*520+8),
                       f'{name} / GENUINE 3D SOLE CLOSE-UP / {kind}',fill='white')
           close.save(p/'foot-ik2-fixed-camera-close-up.jpg',quality=93)
+          # Step 9: actual temporal contact comparison, original 60-bone GLB.
+          temporal=Image.new('RGB',(1320,520*2),'#06131d')
+          for row,clip in enumerate(['run','sprint']):
+              for col,state in enumerate(['before','after']):
+                  source=Image.open(p/f'step9-{clip}-{state}.png').convert('RGB')
+                  source.thumbnail((635,485))
+                  temporal.paste(source,(col*660+(660-source.width)//2,row*520+27))
+                  ImageDraw.Draw(temporal).text((col*660+12,row*520+8),
+                      f'{clip} / Step 9 ROOT Y CONTINUITY / {state.upper()}',fill='white')
+          temporal.save(p/'step9-temporal-grounding-real-3d-before-after.jpg',quality=93)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
