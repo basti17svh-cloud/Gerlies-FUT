@@ -50,6 +50,7 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <button id="ground-continuity" aria-pressed="true">Schritt 9: Höhenübergänge weich</button>
  <button id="collision-safe" aria-pressed="true">Schritt 10: Sohle kollisionssicher</button>
 <button id="shoe-flight" aria-pressed="true">Schritt 11: Zehenfreiheit im Schwung</button>
+<button id="plant-lock12" aria-pressed="true">Schritt 12: Welt-Fußkontakt</button>
 <button id="fixed-cam" aria-pressed="false">Kamera: Spieler folgen</button>
 <button id="knee-axis" aria-pressed="true">Knieachse: stabil</button>
 <button id="kneeview">Knie nah</button>
@@ -67,6 +68,7 @@ button[aria-pressed=true]{background:#16ad91;color:#051b23;font-weight:800}
 <div class="note"><b>Foot IK 2.0 – Step 8:</b> Die Bodenabstände werden aus der echten 3D-Schuhsohle (Mesh-Vertices, wenn vorhanden) und nicht allein vom Knöchel abgeleitet. In der Standphase korrigiert ein anatomisch begrenzter Pass Fersen-/Zehenhöhe und Fußneigung, die Mixamo-Quaternions bleiben Quelle. Die Bodenerkennung bei Richtungswechseln ist weiter aus Schuhhöhe abgeleitet – keine echte Terrain-Raycasts, keine Live-Match-Physik. Die feste Kamera zeigt die Route ohne Spieler-Nachführung.</div>
 <div class="note"><b>Step 9 – Continuous Grounding:</b> Die gemessene Sohlen-Korrektur wird bei normalem Abspielen über eine zeitbasierte Geschwindigkeits- und Beschleunigungsgrenze geführt. Vorher-/Nachher-Schalter isoliert nur diese Höhenkontinuität. Bei beliebigem Zeitsprung wird für reproduzierbare Testbilder neu initialisiert. Kein Terrain-Raycaster, keine garantierte Kollisionsfreiheit während kurzer Übergänge.</div>
 <div class="note"><b>Step 11 – Foot Flight:</b> Gemessene Weltgeschwindigkeit des schwingenden Schuhs bzw. die originalen Gait-Phasen begrenzen die Sohlenkorrektur. Nur der nicht abgestützte bewegte Fuß darf zum Verhindern des Schlurfens angehoben und an der Spitze ausgerichtet werden. Der Standfuß bleibt unverändert; QA und optische Abnahme sind erforderlich.</div>
+<div class="note"><b>Step 12 – Welt-Fußkontakt:</b> Echte Schuhsohle und Knöchel bestimmen das Weltkontaktziel; bis zum Zehenabdruck bleibt es fixiert. Nicht erreichbare Ziele, Drift und Schweben werden gemessen. Experiment im flachen 3D-Studio, kein Match-Release.</div>
 <div class="note"><b>Worauf wir achten:</b> natürliche Körperproportionen, richtige Trikotform, geschlossene Gelenke und kein Herauslösen von Körperteilen. Der Gelenk-Test ist eine technische Pose und <b>noch keine fertige Fußballanimation</b>.</div>
 </main>
 <script type="module">
@@ -80,6 +82,7 @@ import {createFooteraGaitMotion} from './3d-player-evolution-gait.mjs';
 import {createFooteraCapturedGait} from './3d-player-evolution-mocap.mjs';
 import {createFooteraFootPlant,footeraGroundRootOffset} from './3d-player-evolution-foot-ik.mjs';
 import {createFooteraShoePhaseTracker,footeraGaitSwing} from './3d-player-evolution-shoe-phases.mjs';
+import {createFooteraPlantLock} from './3d-player-evolution-plant-lock.mjs';
 import {createFooteraContactContinuity} from './3d-player-evolution-contact-continuity.mjs';
  import {createFooteraCollisionSoles,createFooteraCollisionSafeContact}
   from './3d-player-evolution-collision-contact.mjs';
@@ -110,7 +113,7 @@ const grid=new THREE.GridHelper(84,168,0x246d67,0x1d4644);
 grid.position.y=-.013;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
 
 const kit={shirt:'#177e83',shirtSecondary:'#e1c67e',shorts:'#15303d',socks:'#177e83',pattern:'solid'};
-const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true,groundIK:true,cameraFixed:false,groundContinuity:true,collisionSafe:true,footMotion11:true},loader=new GLTFLoader();
+const versions={},states={version:'master',rotate:true,pose:false,angle:0,zoom:'full',time:0,mode:'idle',bone:'upperarm_l',deg:0,hipNatural:true,mocapClip:'run',footPlant:true,rootTravel:true,kneeAlign:true,shoulderAlign:true,direction:'strafeLeft',directionContact:true,groundIK:true,cameraFixed:false,groundContinuity:true,collisionSafe:true,footMotion11:true,footPlantLock:true},loader=new GLTFLoader();
 function colorKit(info){
  const cloth=document.createElement('canvas');cloth.width=1024;cloth.height=1024;
  paintFooteraHumanKit(cloth.getContext('2d'),1024,kit,{number:15,shirtName:'FOOTERA',sponsor:'FOOTERA',knit:true},info);
@@ -148,13 +151,14 @@ function readyModel(gltf){
   const collisionSoles=info.evolutionTwist?createFooteraCollisionSoles(root):null;
   const collisionContact=createFooteraCollisionSafeContact();
  const shoePhase=createFooteraShoePhaseTracker();
+  const plantLock=createFooteraPlantLock();
  const twist=info.evolutionTwist?createFooteraTwistSolver(root):null;
  const twistReport=twist?inspectFooteraTwistRig(root):null;
  if(twistReport&&!twistReport.ok)
   throw new Error('60-bone skinning failed: '+twistReport.errors.join(', '));
  const originals=new Map(),bones=new Map();
  root.traverse(o=>{if(o.isBone&&FOOTERA_EVOLUTION_BONES.some(b=>b.name===o.name)){originals.set(o.name,o.quaternion.clone());bones.set(o.name,o)}});
- return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,collisionSoles,collisionContact,shoePhase,lastMocap:null};
+ return{root,basePosition,info,poses,originals,bones,report,twist,twistReport,gait,capture,ik,shoulders,transitions,directionContact,contactContinuity,collisionSoles,collisionContact,shoePhase,plantLock,lastMocap:null};
 }
 function jointPose(model,t){
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
@@ -207,6 +211,13 @@ function applyPreviewRootGround(model,feet,time,key){
  }
  return flow;
 }
+function lockMeasuredFeet(model){
+ const feet=model.ik.measureFeet();
+ const outsole=model.collisionSoles?.sample({groundY:0});
+ if(outsole)for(const side of ['l','r'])
+  feet[side].lowest=outsole.feet[side].lowest;
+ return feet;
+}
 function captureWalkPose(model,t){
  model.gait.reset();
  const rate={walk:1.05,jog:1.4,run:1.7,sprint:2.1}[states.mocapClip];
@@ -229,17 +240,24 @@ function captureWalkPose(model,t){
  const shoeMotion=states.footMotion11&&states.groundIK
   ?Object.fromEntries(['l','r'].map(side=>[side,{swing:footeraGaitSwing(sample.phase,side)}])):null;
  model.shoePhase.reset();
- const anchorWorlds={};
+  const plant12=states.footPlantLock&&states.groundIK&&states.footPlant
+   ?model.plantLock.sample({time:t,key:'gait:'+states.mocapClip,
+     phase:sample.phase,feet:lockMeasuredFeet(model)})
+   :(model.plantLock.reset(),null);
+  const anchorWorlds={};
  if(states.rootTravel)for(const side of ['l','r'])
   anchorWorlds[side]=model.capture.worldFootAnchor(states.mocapClip,cycles,side,
    model.basePosition,model.root.quaternion).toArray();
- let planted=null;
- if(states.footPlant||states.kneeAlign){
+ if(plant12)for(const side of ['l','r'])
+   if(plant12.feet[side].locked)anchorWorlds[side]=plant12.anchors[side];
+  let planted=null;
+  if(states.footPlant||states.kneeAlign){
   planted=model.ik.computePose({clip:states.mocapClip,phase:sample.phase,
    strength:states.footPlant?1:0,kneeAlignment:states.kneeAlign?1:0,
-   anchorWorlds:states.rootTravel?anchorWorlds:null,
-   groundContact:states.groundIK&&states.footPlant,groundY:0,
-   footMotion:shoeMotion});
+   anchorWorlds:states.rootTravel||plant12?anchorWorlds:null,
+    groundContact:states.groundIK&&states.footPlant,groundY:0,
+    contactWeights:plant12?.weights??null,contactPhases:plant12?.phases??null,
+    plantLock:!!plant12,footMotion:shoeMotion});
   if(planted.pose.size){
    model.poses.submit('ik',planted.pose);
    model.poses.commit();
@@ -249,7 +267,8 @@ function captureWalkPose(model,t){
   ?applyPreviewRootGround(model,planted.feet,t,'gait:'+states.mocapClip)
   :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
  const groundRootY=grounding?.offset??0;
- model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
+  const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
+  model.lastMocap={clip:sample.clip,frame:sample.frame,phase:sample.phase,
   source:sample.source,hipTranslation:sample.translation,
   rootTravel:rootTravel.toArray(),
   worldFootAnchors:states.rootTravel?anchorWorlds:null,
@@ -266,7 +285,8 @@ function captureWalkPose(model,t){
   collisionRootOverRate:grounding?.overRate??0,
   collisionRootLimitExceeded:grounding?.limitExceeded??false,
   footMotion11:states.footMotion11,shoeMotion,
-  shoulders:upper.arms,shoulderSource:upper.source};
+   plantLock12:plant12?{...plant12,measured:plantMeasure12}:null,
+   shoulders:upper.arms,shoulderSource:upper.source};
  model.twist?.update();
 }
 function capturedDirectionalPose(model,t){
@@ -293,7 +313,7 @@ function capturedDirectionalPose(model,t){
  if(shoulders.pose.size){
   model.poses.submit('contact',shoulders.pose);model.poses.commit();
  }
- let ground=null,shoeMotion=null;
+ let ground=null,shoeMotion=null,plant12=null;
  if(states.groundIK&&states.footPlant&&states.directionContact){
   // Step 7 supplies the stationary shoe footprint and actual root path.
   // Only the CURRENT support foot is considered planted; swing remains
@@ -312,13 +332,23 @@ function capturedDirectionalPose(model,t){
     feet:Object.fromEntries(['l','r'].map(side=>[side,
      model.bones.get('foot_'+side).getWorldPosition(new THREE.Vector3()).toArray()]))
    }):(model.shoePhase.reset(),null);
-  const contactWeights={l:0,r:0},contactPhases={l:0,r:0};
+  if(states.footPlantLock){
+    plant12=model.plantLock.sample({time:t,key:'direction:'+states.direction,
+     feet:lockMeasuredFeet(model),supportSide:contact.supportSide,
+     supportWeight:contact.contactWeight,
+     supportProgress:contact.supportProgress});
+    for(const side of ['l','r'])
+     if(plant12.feet[side].locked)anchorWorlds[side]=plant12.anchors[side];
+   }else model.plantLock.reset();
+   const contactWeights={l:0,r:0},contactPhases={l:0,r:0};
   contactWeights[contact.supportSide]=contact.contactWeight;
   contactPhases[contact.supportSide]=contact.supportProgress;
   ground=model.ik.computePose({clip:'run',phase:sequence.phase,
    strength:1,kneeAlignment:states.kneeAlign?1:0,
    anchorWorlds,groundContact:true,groundY:0,
-   contactWeights,contactPhases,footMotion:shoeMotion});
+   contactWeights:plant12?.weights??contactWeights,
+    contactPhases:plant12?.phases??contactPhases,
+    plantLock:!!plant12,footMotion:shoeMotion});
   if(ground.pose.size){
    model.poses.submit('ik',ground.pose);model.poses.commit();
   }
@@ -327,7 +357,8 @@ function capturedDirectionalPose(model,t){
   ?applyPreviewRootGround(model,ground.feet,t,'direction:'+states.direction)
   :(model.contactContinuity.reset(),model.collisionContact.reset(),null);
  const groundRootY=grounding?.offset??0;
- model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
+  const plantMeasure12=plant12?model.plantLock.measure(lockMeasuredFeet(model)):null;
+  model.lastMocap={clip:sequence.clip,phase:sequence.phase,source:sequence.source,
   direction:{from:sequence.from,to:sequence.to,weight:sequence.weight,
    easedWeight:sequence.easedWeight,fromFrame:sequence.fromFrame,
    toFrame:sequence.toFrame,feet:sequence.feet,
@@ -355,7 +386,8 @@ function capturedDirectionalPose(model,t){
    groundKnees:ground?.knees??null,
    rootContactEnabled:states.directionContact,
    footMotion11:states.footMotion11,shoeMotion,
-   contactStats:contact.limits},shoulders:shoulders.arms};
+    plantLock12:plant12?{...plant12,measured:plantMeasure12}:null,
+    contactStats:contact.limits},shoulders:shoulders.arms};
  model.twist?.update();
 }
 function naturalWalkPose(model,t){
@@ -368,7 +400,7 @@ function naturalWalkPose(model,t){
 function resetPose(model){
  model.poses.beginFrame();model.poses.commit();
  model.gait.reset();model.capture.reset();model.root.position.copy(model.basePosition);
- model.lastMocap=null;model.contactContinuity.reset();model.collisionContact.reset();model.twist?.reset();
+ model.lastMocap=null;model.plantLock.reset();model.contactContinuity.reset();model.collisionContact.reset();model.twist?.reset();
 }
 function axialPose(model,bone,deg){
  resetPose(model);
@@ -460,9 +492,9 @@ function renderAt(t=0){
  camera.lookAt(center.x,focus+center.y,center.z);
  renderer.render(scene,camera);
 }
-window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true,groundIK=false,cameraFixed=false,groundContinuity=true,collisionSafe=false,footMotion11=false}={})=>{
+window.footeraQaRender=({version='master',angle=0,pose=false,time=0,zoom='full',mode='idle',bone='upperarm_l',deg=0,hipNatural=true,mocapClip='run',footPlant=true,rootTravel=true,kneeAlign=true,shoulderAlign=true,direction='strafeLeft',directionContact=true,groundIK=false,cameraFixed=false,groundContinuity=true,collisionSafe=false,footMotion11=false,footPlantLock=false}={})=>{
  if(!versions[version])throw Error('Model not ready');
- Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact,groundIK,cameraFixed,groundContinuity,collisionSafe,footMotion11});
+ Object.assign(states,{version,angle,pose,rotate:false,zoom,mode,bone,deg,hipNatural,mocapClip,footPlant,rootTravel,kneeAlign,shoulderAlign,direction,directionContact,groundIK,cameraFixed,groundContinuity,collisionSafe,footMotion11,footPlantLock});
  setVersions();renderAt(time);
  const m=versions[version];
  return{ok:true,version,boneCount:m.report.boneCount,twistReport:m.twistReport,skinnedMeshes:m.report.skinnedMeshes,
@@ -562,7 +594,14 @@ control('collision-safe',()=>{
   el('shoe-flight').textContent=states.footMotion11
    ?'Schritt 11: Zehenfreiheit im Schwung':'Schritt 11: Swing A/B aus';
  });
- control('fixed-cam',()=>{
+ control('plant-lock12',()=>{
+   states.footPlantLock=!states.footPlantLock;
+   for(const model of Object.values(versions))model.plantLock.reset();
+   el('plant-lock12').setAttribute('aria-pressed',String(states.footPlantLock));
+   el('plant-lock12').textContent=states.footPlantLock
+    ?'Schritt 12: Welt-Fußkontakt':'Schritt 12: Lock A/B aus';
+  });
+  control('fixed-cam',()=>{
  states.cameraFixed=!states.cameraFixed;states.rotate=false;
  el('fixed-cam').setAttribute('aria-pressed',String(states.cameraFixed));
  el('fixed-cam').textContent=states.cameraFixed?'Kamera: fest':'Kamera: Spieler folgen';
