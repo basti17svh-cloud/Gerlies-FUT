@@ -2,7 +2,7 @@ import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-pla
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedMirrored,extendedWallHeading,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21479';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21479';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21496';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21479';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21471';
@@ -359,7 +359,7 @@ export function shotImpact(type,sequence='central',finish='normal',placement=nul
  const dream=isDreamGoal(seq)?dreamImpact(seq,type,sign,placement):null;
  if(dream){sign=dream.sign;if(dream.point)return dream.point}
  const zone=placement?.zone||'channel';
- const x=type==='big_chance_saved'?(placement?(zone==='corner'?2.86:zone==='inside'?1.42:2.15):2.52):
+ let x=type==='big_chance_saved'?(placement?(zone==='corner'?2.86:zone==='inside'?1.42:2.15):2.52):
   type==='shot_post'?3.52:type==='big_chance_missed'?(placement?(zone==='corner'?6.05:zone==='inside'?4.45:5.1):5.1):
   placement?(zone==='corner'?3.13:zone==='inside'?1.12:2.24):inverted?(near?2.48:3.12):2.65;
  let y=type==='big_chance_saved'?1.14:type==='shot_post'?1.25:type==='big_chance_missed'?1.5:
@@ -369,6 +369,19 @@ export function shotImpact(type,sequence='central',finish='normal',placement=nul
  else if(style==='header')y=type==='shot_post'?1.25:placement?.height==='high'?2.02:1.38;
  else if(style==='power')y=type==='shot_post'?1.25:placement?.height==='high'?1.92:.83;
  else if(style==='chip')y=type==='shot_post'?1.25:1.64;
+ // V21.496 (Basti: "platzierter ins Eck und nicht so halbherzig"): a goal
+ // goes into a corner, low along the turf or high under the bar, never
+ // half-height past the keeper's hip. Saves and misses keep their spots.
+ if(type==='goal'&&!dream){
+  const gx=placement?(zone==='corner'?3.3:zone==='inside'?2.45:2.98):inverted?(near?3.05:3.22):3.05;
+  let gy=placement?.height==='high'?2.04:.3;
+  if(!placement&&inverted&&style==='finesse')gy=1.96;
+  if(style==='header')gy=placement?.height==='high'?2.0:.5;
+  else if(style==='power'&&placement?.height!=='high')gy=.42;
+  else if(style==='chip')gy=1.7;
+  else if(style==='volley'&&placement?.height!=='high')gy=.55;
+  x=gx;y=gy;
+ }
  if(type==='goal'&&placement?.style){
   // V21.204 goal variants (Basti): in off the bar, in off the inside of the
   // post, or a screamer into the top corner. Same goal, different picture.
@@ -3284,7 +3297,10 @@ export function play(event,signal){
   // Browser tests on a software renderer (1-2 fps) keep wall-clock pace and
   // skip the very-slow 2D fallback; real phones keep both safety nets.
   const realtimeTest=!!globalThis.FOOTERA_TEST_REALTIME_3D;
-  let playback=createHighlightPlayback(event,DURATION,realtimeTest?{maxFrameMs:2000}:undefined);
+  // V21.496: real shot pace from the shot's distance (same for every outcome).
+  const paceContact=event.type!=='ball_won'&&!extendedKind(event.sequence)&&!DEFENSIVE_SCENES.includes(event.sequence)?shotContact(event.sequence,event.finish,event.shotPlacement||null):null;
+  const shotDistance=paceContact?Math.hypot(paceContact[0],paceContact[1]-1,paceContact[2]+52.5):null;
+  let playback=createHighlightPlayback(event,DURATION,{...(realtimeTest?{maxFrameMs:2000}:{}),shotDistance});
   const replayRange=replayEligible?replayWindow(SHOT_TIME,goalArrival):null,WIPE=.32;
   const replaySeconds=replayRange?(replayRange.to-replayRange.from)/REPLAY_RATE+WIPE*2:0;
   let replayState=null;
@@ -3315,7 +3331,7 @@ export function play(event,signal){
    const modelVariant=footeraHumanPlayersWanted()&&isFooteraHumanModelReady()?'human':'quaternius';
    world=makeScene(renderer,sceneEvent,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant);
    // V21.439: a sprint to the corner flag makes the goal scene longer.
-   if(world.duration>DURATION)playback=createHighlightPlayback(event,DURATION,{...(realtimeTest?{maxFrameMs:2000}:{}),tail:world.duration-DURATION});
+   if(world.duration>DURATION)playback=createHighlightPlayback(event,DURATION,{...(realtimeTest?{maxFrameMs:2000}:{}),shotDistance,tail:world.duration-DURATION});
    layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const modelInfo=world.inspect();
    const imported=!!modelInfo.importedFootballer;
