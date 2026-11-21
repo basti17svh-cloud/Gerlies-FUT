@@ -16,6 +16,7 @@ on:
       - '3d-player-evolution-contact-continuity.mjs'
       - '3d-player-evolution-collision-contact.mjs'
       - '3d-player-evolution-shoe-phases.mjs'
+      - '3d-player-evolution-plant-lock.mjs'
       - 'tools/build-player-evolution-twist.py'
       - 'tests/player-evolution-twist.test.mjs'
       - 'tests/player-evolution-gait.test.mjs'
@@ -23,6 +24,7 @@ on:
       - 'tests/player-evolution-ground-contact.test.mjs'
       - 'tests/player-evolution-collision-contact.test.mjs'
       - 'tests/player-evolution-shoe-phases.test.mjs'
+      - 'tests/player-evolution-plant-lock.test.mjs'
       - 'tests/player-evolution-twist.browser.cjs'
       - 'player-evolution-twist-lab.html'
       - '.github/workflows/player-evolution-twist.yml'
@@ -57,7 +59,9 @@ jobs:
           node --check 3d-player-evolution-contact-continuity.mjs
           node --check 3d-player-evolution-collision-contact.mjs
           node --check 3d-player-evolution-shoe-phases.mjs
-          node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-collision-contact.test.mjs tests/player-evolution-shoe-phases.test.mjs tests/player-evolution-ground-contact.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
+          node --check 3d-player-evolution-plant-lock.mjs
+          node --check tests/player-evolution-plant-lock.test.mjs
+          node --test tests/player-evolution-mocap.test.mjs tests/player-evolution-collision-contact.test.mjs tests/player-evolution-shoe-phases.test.mjs tests/player-evolution-plant-lock.test.mjs tests/player-evolution-ground-contact.test.mjs tests/player-evolution-gait.test.mjs tests/player-evolution-twist.test.mjs tests/player-evolution-rig.test.mjs tests/player-evolution-master.test.mjs
       - name: Use preinstalled Chrome and portable FFmpeg for WebGL QA
         run: |
           npm install --prefix /tmp/footera-twist-qa playwright@1.51.1 @ffmpeg-installer/ffmpeg@1.1.0 pngjs@7.0.0
