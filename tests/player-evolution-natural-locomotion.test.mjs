@@ -90,3 +90,16 @@ test('invalid input and impossible contact calibration fail loudly',()=>{
  assert.throws(()=>a.sample({time:-1,targetSpeed:1}),RangeError);
  assert.throws(()=>a.sample({time:1,targetSpeed:999}),RangeError);
 });
+
+test('full stop does not continue walking in place',()=>{
+ const a=createFooteraNaturalLocomotion(fixture());
+ a.sample({time:0,targetSpeed:4.55});
+ for(let i=1;i<=12;i++)a.sample({time:i*.1,targetSpeed:4.55});
+ for(let i=13;i<=30;i++)a.sample({time:i*.1,targetSpeed:0});
+ const p=a.sample({time:3.1,targetSpeed:0});
+ const next=a.sample({time:3.2,targetSpeed:0});
+ assert.equal(p.speedMps,0);
+ assert.equal(next.speedMps,0);
+ assert.equal(next.cycles,p.cycles,'Gait feet must not treadmill at a complete stop');
+ assert.deepEqual(next.rootTravel,p.rootTravel,'Root must stay fixed during idle');
+});
